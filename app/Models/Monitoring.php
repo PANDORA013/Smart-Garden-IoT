@@ -12,8 +12,12 @@ class Monitoring extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'temperature',
+        'humidity',
         'soil_moisture',
-        'status_pompa',
+        'relay_status',
+        'device_name',
+        'ip_address',
     ];
 
     /**
@@ -22,7 +26,9 @@ class Monitoring extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'temperature' => 'float',
+        'humidity' => 'float',
         'soil_moisture' => 'float',
-        'status_pompa' => 'string',
+        'relay_status' => 'boolean',
     ];
 }

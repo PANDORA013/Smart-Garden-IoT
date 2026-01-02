@@ -1,52 +1,299 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🌱 Universal IoT Dashboard
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="https://img.shields.io/badge/Laravel-12.x-red?style=for-the-badge&logo=laravel" alt="Laravel">
+  <img src="http## 📖 Dokumentasi
+
+| File | Keterangan |
+|------|------------|
+| [DOKUMENTASI_AUTO_PROVISIONING.md](./DOKUMENTASI_AUTO_PROVISIONING.md) | ⭐ Plug & Play Auto-Provisioning (Complete Guide) |
+| [INSTALL_ARDUINO.md](./INSTALL_ARDUINO.md) | Panduan install Arduino IDE + ESP32 |
+| [QUICK_START.md](./QUICK_START.md) | Quick start guide |hields.io/badge/React-19.x-blue?style=for-the-badge&logo=react" alt="React">
+  <img src="https://img.shields.io/badge/ESP32-Arduino-green?style=for-the-badge&logo=arduino" alt="ESP32">
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License">
 </p>
 
-## About Laravel
+> **Universal IoT Dashboard** adalah platform monitoring dan kontrol IoT real-time berbasis web yang dapat digunakan untuk berbagai jenis sensor dan aktuator. Mendukung ESP32/Arduino dengan komunikasi HTTP REST API.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 🎯 Dashboard Real-time
+- **Multi-sensor monitoring**: Temperature (DHT22), Humidity, Soil Moisture
+- **Auto-refresh**: Update data setiap 3 detik
+- **Live chart**: Grafik real-time untuk visualisasi data sensor
+- **Manual control**: Toggle relay/pompa dari dashboard
+- **System uptime**: Monitoring waktu operasional sistem
 
-## Learning Laravel
+### � **NEW! Auto-Provisioning (Plug & Play)**
+- **Zero-config setup**: Arduino baru langsung kerja tanpa setup manual
+- **Dynamic configuration**: Ubah setting dari dashboard tanpa upload ulang code
+- **Multi-device support**: Manage banyak alat dengan ID unik
+- **Plant presets**: Default untuk cabai, tomat, dll (easy switch)
+- **Remote control**: Update threshold real-time dari web
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### �📊 Advanced Features
+- **Activity Logs**: Riwayat aktivitas dengan filter dan timestamp
+- **Device Management**: List perangkat IoT yang terhubung
+- **API Documentation**: Built-in API reference
+- **Responsive Design**: Mobile-friendly dengan Tailwind CSS
+- **Backward Compatible**: Support legacy Cabai monitoring format
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🚀 Quick Start
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Prerequisites
+- PHP 8.4+ dengan Composer
+- Node.js 18+ dengan NPM
+- Arduino IDE 2.x (untuk ESP32 development)
+- ESP32 Dev Module + Sensors
 
-### Premium Partners
+### Installation
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/PANDORA013/Smart-Garden-IoT.git
+   cd Smart-Garden-IoT
+   ```
 
-## Contributing
+2. **Install Dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. **Setup Database**
+   ```bash
+   php artisan migrate
+   ```
 
-## Code of Conduct
+4. **Run Development Server**
+   ```bash
+   php artisan serve
+   ```
+
+5. **Access Dashboard**
+   ```
+   http://localhost:8000/
+   ```
+
+---
+
+## 📱 Akses Dashboard
+
+Dashboard utama tersedia di: **`http://localhost:8000/`**
+
+---
+
+## 🔌 API Endpoints
+
+Base URL: `http://localhost:8000/api/monitoring`
+
+| Method | Endpoint | Keterangan |
+|--------|----------|------------|
+| POST | `/insert` | Insert data dari ESP32 |
+| GET | `/latest` | Ambil data terbaru |
+| GET | `/stats` | Ambil statistik sistem |
+| GET | `/history?limit=50` | Ambil riwayat data |
+| GET | `/logs?limit=20` | Ambil activity logs |
+| POST | `/relay/toggle` | Toggle relay manual |
+| DELETE | `/cleanup?days=7` | Hapus data lama |
+
+**Dokumentasi lengkap API:** [DOKUMENTASI_AUTO_PROVISIONING.md](./DOKUMENTASI_AUTO_PROVISIONING.md)
+
+---
+
+## 🧪 Testing Dashboard (Tanpa Hardware)
+
+Jalankan script PowerShell untuk testing auto-provisioning:
+
+```powershell
+.\test-auto-provisioning.ps1
+```
+
+Script akan:
+- Simulasi 3 Arduino check-in (CABAI_01, CABAI_02, TOMAT_01)
+- Test device registration & config loading
+- Test preset switching (Cabai → Tomat)
+- Menampilkan hasil testing semua API endpoints
+
+Setelah itu buka browser dan lihat dashboard ter-update!
+
+---
+
+## 🔧 Hardware Setup (ESP32)
+
+### Wiring Diagram
+
+| Sensor/Aktuator | ESP32 Pin | Keterangan |
+|-----------------|-----------|------------|
+| DHT22 Data | GPIO 4 | Temperature & Humidity |
+| Soil Moisture Analog | GPIO 34 | Kelembaban tanah |
+| Relay IN | GPIO 25 | Kontrol relay/pompa |
+| LED Status | GPIO 2 | Built-in LED |
+
+### Arduino Code (Auto-Provisioning) ⭐ **RECOMMENDED**
+
+File: `arduino/auto_provisioning_esp32.ino`
+
+**Install Library Arduino:**
+1. DHT sensor library (by Adafruit)
+2. ArduinoJson (by Benoit Blanchon)
+3. WiFi (built-in ESP32)
+4. HTTPClient (built-in ESP32)
+
+**Panduan lengkap:** [INSTALL_ARDUINO.md](./INSTALL_ARDUINO.md)
+
+---
+
+## � **NEW! Auto-Provisioning Setup (Plug & Play)**
+
+### Super Simple 3-Step Setup:
+
+**File:** `arduino/auto_provisioning_esp32.ino` ⭐ **RECOMMENDED**
+
+1. **Edit Device ID** (must be unique):
+   ```cpp
+   const char* DEVICE_ID = "CABAI_01";  // Change: CABAI_02, TOMAT_01, etc
+   ```
+
+2. **Edit WiFi & Server**:
+   ```cpp
+   const char* ssid = "YOUR_WIFI";
+   const char* password = "YOUR_PASSWORD";
+   const char* SERVER_IP = "192.168.1.70";  // Your laptop IP
+   ```
+
+3. **Upload & Done!**
+   - Arduino auto check-in to server
+   - Gets default Cabai configuration (40% threshold)
+   - Starts working immediately!
+   - Change settings from dashboard (no re-upload needed!)
+
+**Full Guide:** [DOKUMENTASI_AUTO_PROVISIONING.md](./DOKUMENTASI_AUTO_PROVISIONING.md)
+
+---
+
+## �📖 Dokumentasi
+
+| File | Keterangan |
+|------|------------|
+| [DOKUMENTASI_AUTO_PROVISIONING.md](./DOKUMENTASI_AUTO_PROVISIONING.md) | ⭐ **NEW!** Plug & Play Auto-Provisioning |
+| [DOKUMENTASI_UNIVERSAL.md](./DOKUMENTASI_UNIVERSAL.md) | Dokumentasi lengkap Universal Dashboard |
+| [DOKUMENTASI_CABAI.md](./DOKUMENTASI_CABAI.md) | Dokumentasi Cabai monitoring (legacy) |
+| [INSTALL_ARDUINO.md](./INSTALL_ARDUINO.md) | Panduan install Arduino IDE + ESP32 |
+| [QUICK_START.md](./QUICK_START.md) | Quick start guide |
+
+---
+
+## 🗂️ Project Structure
+
+```
+Smart-Garden-IoT/
+├── app/
+│   ├── Http/Controllers/
+│   │   ├── MonitoringController.php     # Monitoring API Controller
+│   │   └── DeviceController.php         # Device Management Controller
+│   └── Models/
+│       ├── Monitoring.php               # Monitoring Model
+│       └── DeviceSetting.php            # Device Settings Model
+├── arduino/
+│   └── auto_provisioning_esp32.ino      # ⭐ ESP32 Auto-Provisioning Code
+├── database/
+│   └── migrations/
+│       ├── *_create_monitorings_table.php
+│       └── *_create_device_settings_table.php
+├── resources/views/
+│   └── universal-dashboard.blade.php    # Universal Dashboard
+├── routes/
+│   ├── web.php                          # Web Routes
+│   └── api.php                          # API Routes (13 endpoints)
+├── test-auto-provisioning.ps1           # Test script
+└── README.md                            # This file
+```
+
+---
+
+## 🎨 Screenshots
+
+### Dashboard Real-time
+![Dashboard](https://via.placeholder.com/800x400?text=Universal+IoT+Dashboard)
+
+### Activity Logs
+![Logs](https://via.placeholder.com/800x400?text=Activity+Logs)
+
+### Device Management
+![Devices](https://via.placeholder.com/800x400?text=Device+Management)
+
+---
+
+## 🔐 Security (Production)
+
+⚠️ **IMPORTANT untuk Production Deployment:**
+
+1. Ganti SQLite dengan MySQL/PostgreSQL
+2. Tambahkan authentication (Laravel Sanctum)
+3. Enable rate limiting untuk API
+4. Setup HTTPS/SSL
+5. Configure CORS policy
+6. Enable firewall rules
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
+
+---
+
+## 📝 Changelog
+
+### v2.0.0 (2026-01-02) - Latest
+- ✅ **Auto-Provisioning System** - Plug & Play Arduino setup
+- ✅ **Multi-Device Support** - Manage unlimited devices with unique IDs
+- ✅ **Plant Presets** - Quick switch between Cabai (40%), Tomat (60%)
+- ✅ **Dynamic Configuration** - Update settings without re-uploading code
+- ✅ **Device Management API** - 6 new endpoints for device control
+- ✅ **Universal Dashboard** - Multi-sensor support (DHT22, Soil Moisture)
+- ✅ **Real-time Monitoring** - 3-second auto-refresh
+- ✅ **Activity Logs** - Track all system events
+- ✅ **Comprehensive Documentation** - 500+ lines guide
+
+---
+
+## 📄 License
+
+MIT License - Free to use and modify
+
+---
+
+## 👨‍💻 Developer
+
+**PANDORA013**
+- GitHub: [@PANDORA013](https://github.com/PANDORA013)
+- Repository: [Smart-Garden-IoT](https://github.com/PANDORA013/Smart-Garden-IoT)
+
+---
+
+## 📞 Support
+
+Jika ada masalah atau pertanyaan:
+1. Buka [Issues](https://github.com/PANDORA013/Smart-Garden-IoT/issues)
+2. Sertakan screenshot error
+3. Detail environment (OS, PHP version, ESP32 board)
+
+---
+
+<p align="center">Made with ❤️ for IoT Community</p>
+
 
 In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
