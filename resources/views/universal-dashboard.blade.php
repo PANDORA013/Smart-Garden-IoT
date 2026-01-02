@@ -75,12 +75,18 @@
                         <h2 class="text-2xl font-bold text-slate-900">Overview Sistem</h2>
                         <p class="text-slate-500 text-sm mt-1">Monitoring sensor dan kontrol aktuator realtime.</p>
                     </div>
-                    <div class="hidden sm:flex items-center gap-2">
-                        <span class="relative flex h-3 w-3">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" id="status-ping"></span>
-                          <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500" id="status-dot"></span>
-                        </span>
-                        <span class="text-sm font-bold text-green-600" id="online-status">Online</span>
+                    <div class="flex items-center gap-4">
+                        <button onclick="openSmartConfigModal()" class="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 font-bold shadow-lg shadow-red-500/30 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-gear"></i>
+                            🎮 Atur Strategi Penyiraman
+                        </button>
+                        <div class="hidden sm:flex items-center gap-2">
+                            <span class="relative flex h-3 w-3">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" id="status-ping"></span>
+                              <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500" id="status-dot"></span>
+                            </span>
+                            <span class="text-sm font-bold text-green-600" id="online-status">Online</span>
+                        </div>
                     </div>
                 </div>
 
@@ -246,7 +252,165 @@
         </main>
     </div>
 
-    <!-- ================= MODAL: MODE SELECTION ================= -->
+    <!-- ================= MODAL: SMART CONFIG (WIZARD STYLE) ================= -->
+    <div id="smartConfigModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="if(event.target.id === 'smartConfigModal') closeSmartConfigModal()">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-6 border-b border-slate-200 bg-gradient-to-r from-red-500 to-red-600">
+                <div>
+                    <h3 class="text-xl font-bold text-white">🎮 Pilih Metode Perawatan Tanaman</h3>
+                    <p class="text-sm text-red-100 mt-1">Pilih strategi yang paling sesuai dengan kebutuhan Anda</p>
+                </div>
+                <button onclick="closeSmartConfigModal()" class="text-white hover:text-red-100">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 bg-slate-50">
+                <!-- Device Selection -->
+                <div class="mb-6 bg-white p-4 rounded-xl shadow-sm">
+                    <label class="block text-sm font-bold text-slate-700 mb-3">📱 Pilih Perangkat:</label>
+                    <select id="config-device-id" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-red-500 font-medium">
+                        <option value="">Loading devices...</option>
+                    </select>
+                </div>
+
+                <!-- Mode Selection Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <!-- Mode 1: Pemula -->
+                    <div id="card-mode-1" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-green-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(1)">
+                        <div class="text-center">
+                            <div class="text-6xl mb-3">🌱</div>
+                            <h5 class="text-lg font-bold text-slate-800 mb-2">Mode Pemula</h5>
+                            <p class="text-sm text-slate-600 mb-3">Paling mudah. Siram otomatis jika tanah kering (< 40%). Tanpa ribet.</p>
+                            <span class="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">✅ Rekomendasi Awal</span>
+                        </div>
+                    </div>
+
+                    <!-- Mode 2: AI Fuzzy -->
+                    <div id="card-mode-2" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-blue-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(2)">
+                        <div class="text-center">
+                            <div class="text-6xl mb-3">🤖</div>
+                            <h5 class="text-lg font-bold text-slate-800 mb-2">Mode AI (Fuzzy)</h5>
+                            <p class="text-sm text-slate-600 mb-3">Hemat air & presisi. Menyesuaikan siraman dengan suhu udara panas/dingin.</p>
+                            <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">⭐ Paling Efisien</span>
+                        </div>
+                    </div>
+
+                    <!-- Mode 3: Jadwal -->
+                    <div id="card-mode-3" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-yellow-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(3)">
+                        <div class="text-center">
+                            <div class="text-6xl mb-3">📅</div>
+                            <h5 class="text-lg font-bold text-slate-800 mb-2">Mode Terjadwal</h5>
+                            <p class="text-sm text-slate-600 mb-3">Siram rutin pagi & sore. Cocok untuk pembiasaan tanaman.</p>
+                            <span class="inline-block px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">⏰ Teratur</span>
+                        </div>
+                    </div>
+
+                    <!-- Mode 4: Manual -->
+                    <div id="card-mode-4" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-slate-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(4)">
+                        <div class="text-center">
+                            <div class="text-6xl mb-3">🛠️</div>
+                            <h5 class="text-lg font-bold text-slate-800 mb-2">Mode Manual</h5>
+                            <p class="text-sm text-slate-600 mb-3">Kendali penuh. Anda tentukan sendiri kapan pompa menyala.</p>
+                            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">🎛️ Advanced</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Settings Area -->
+                <div id="detail-settings" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hidden">
+                    <h6 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-200">⚙️ Konfigurasi Detail</h6>
+                    
+                    <input type="hidden" id="selected-mode" value="1">
+                    
+                    <!-- Message for Auto Modes (1 & 2) -->
+                    <div id="msg-auto" class="hidden config-group">
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-info-circle text-blue-600 text-xl mt-1"></i>
+                                <div>
+                                    <p class="font-semibold text-blue-800 mb-1">Mode Otomatis Aktif</p>
+                                    <p class="text-sm text-blue-700">Sistem akan mengatur semuanya secara otomatis. Anda tidak perlu mengubah apa-apa. Cukup klik <strong>Simpan & Terapkan</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input for Mode 3: Schedule -->
+                    <div id="input-jadwal" class="hidden config-group space-y-4">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+                            <p class="text-sm text-yellow-800">
+                                <i class="fa-solid fa-lightbulb mr-2"></i>
+                                Tentukan jam penyiraman pagi dan sore. Sistem akan menyiram secara otomatis pada waktu yang ditentukan.
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">⏰ Jam Pagi:</label>
+                                <input type="time" id="conf-pagi" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-yellow-500" value="07:00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">🌅 Jam Sore:</label>
+                                <input type="time" id="conf-sore" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-yellow-500" value="17:00">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">⏱️ Durasi Siram (detik):</label>
+                            <input type="number" id="conf-durasi" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-yellow-500" value="5" min="1" max="60">
+                        </div>
+                    </div>
+
+                    <!-- Input for Mode 4: Manual -->
+                    <div id="input-manual" class="hidden config-group space-y-4">
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
+                            <p class="text-sm text-slate-700">
+                                <i class="fa-solid fa-sliders mr-2"></i>
+                                Geser slider untuk menentukan kapan pompa harus menyala berdasarkan kelembapan tanah.
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-3">
+                                Batas Kelembapan Kering (Pompa ON):
+                            </label>
+                            <div class="flex items-center gap-4">
+                                <input type="range" id="range-manual" class="flex-grow-1 w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="40" oninput="document.getElementById('val-manual').textContent = this.value + '%'">
+                                <span id="val-manual" class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-lg min-w-[70px] text-center">40%</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Pompa akan menyala jika kelembapan di bawah angka ini.
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-3">
+                                Batas Kelembapan Basah (Pompa OFF):
+                            </label>
+                            <div class="flex items-center gap-4">
+                                <input type="range" id="range-manual-stop" class="flex-grow-1 w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="70" oninput="document.getElementById('val-manual-stop').textContent = this.value + '%'">
+                                <span id="val-manual-stop" class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-lg min-w-[70px] text-center">70%</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Pompa akan mati jika kelembapan mencapai angka ini atau lebih.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-between items-center p-6 border-t border-slate-200 bg-slate-50">
+                <button onclick="closeSmartConfigModal()" class="px-6 py-2 text-slate-600 hover:text-slate-800 font-medium">Batal</button>
+                <button onclick="saveSmartConfiguration()" class="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 font-bold shadow-lg shadow-green-500/30 transition-all">
+                    <i class="fa-solid fa-check mr-2"></i> Simpan & Terapkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: MODE SELECTION (OLD - Keep for device management page) ================= -->
     <div id="modeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="if(event.target.id === 'modeModal') closeModeModal()">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <!-- Modal Header -->
@@ -538,6 +702,10 @@
                                 modeColor = 'bg-red-100 text-red-700 border-red-300';
                                 modeName = '🔴 Schedule';
                                 break;
+                            case 4:
+                                modeColor = 'bg-slate-100 text-slate-700 border-slate-300';
+                                modeName = '🛠️ Manual';
+                                break;
                             default:
                                 modeColor = 'bg-gray-100 text-gray-700 border-gray-300';
                                 modeName = 'Unknown';
@@ -580,7 +748,7 @@
                                         <span class="text-slate-500">🌱 Tanaman:</span> 
                                         <span class="font-semibold capitalize">${device.plant_type}</span>
                                     </div>
-                                    ${device.mode === 1 ? `
+                                    ${device.mode === 1 || device.mode === 4 ? `
                                         <div class="flex justify-between">
                                             <span class="text-slate-500">📊 Threshold:</span> 
                                             <span class="font-mono text-xs">${device.batas_siram}% - ${device.batas_stop}%</span>
@@ -697,7 +865,154 @@
             alert('Mobile menu belum diimplementasi');
         }
 
-        // --- MODAL FUNCTIONS ---
+        // --- SMART CONFIG MODAL FUNCTIONS ---
+        function openSmartConfigModal() {
+            document.getElementById('smartConfigModal').classList.remove('hidden');
+            document.getElementById('smartConfigModal').classList.add('flex');
+            
+            // Load devices for selection
+            loadDevicesForConfig();
+            
+            // Default select Mode 1
+            selectSmartMode(1);
+        }
+
+        function closeSmartConfigModal() {
+            document.getElementById('smartConfigModal').classList.add('hidden');
+            document.getElementById('smartConfigModal').classList.remove('flex');
+        }
+
+        async function loadDevicesForConfig() {
+            try {
+                const response = await axios.get('/api/devices');
+                const devices = response.data.data;
+                const select = document.getElementById('config-device-id');
+                
+                if (devices && devices.length > 0) {
+                    select.innerHTML = devices.map(device => 
+                        `<option value="${device.id}">${device.device_name || device.device_id} (${device.plant_type})</option>`
+                    ).join('');
+                } else {
+                    select.innerHTML = '<option value="">Tidak ada perangkat tersedia</option>';
+                }
+            } catch (error) {
+                console.error('Error loading devices for config:', error);
+                document.getElementById('config-device-id').innerHTML = '<option value="">Error loading devices</option>';
+            }
+        }
+
+        function selectSmartMode(mode) {
+            // Reset all cards
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('border-green-500', 'border-blue-500', 'border-yellow-500', 'border-slate-500', 'bg-green-50', 'bg-blue-50', 'bg-yellow-50', 'bg-slate-50', 'ring-4', 'ring-green-200', 'ring-blue-200', 'ring-yellow-200', 'ring-slate-200');
+            });
+            
+            // Highlight selected card
+            const selectedCard = document.getElementById(`card-mode-${mode}`);
+            if (mode === 1) {
+                selectedCard.classList.add('border-green-500', 'bg-green-50', 'ring-4', 'ring-green-200');
+            } else if (mode === 2) {
+                selectedCard.classList.add('border-blue-500', 'bg-blue-50', 'ring-4', 'ring-blue-200');
+            } else if (mode === 3) {
+                selectedCard.classList.add('border-yellow-500', 'bg-yellow-50', 'ring-4', 'ring-yellow-200');
+            } else if (mode === 4) {
+                selectedCard.classList.add('border-slate-500', 'bg-slate-50', 'ring-4', 'ring-slate-200');
+            }
+            
+            // Save selected mode
+            document.getElementById('selected-mode').value = mode;
+            
+            // Show detail settings area
+            document.getElementById('detail-settings').classList.remove('hidden');
+            
+            // Hide all config groups first
+            document.querySelectorAll('.config-group').forEach(group => {
+                group.classList.add('hidden');
+            });
+            
+            // Show appropriate config based on mode
+            if (mode === 1 || mode === 2) {
+                // Mode Pemula & AI Fuzzy: Auto (no config needed)
+                document.getElementById('msg-auto').classList.remove('hidden');
+            } else if (mode === 3) {
+                // Mode Jadwal: Show time inputs
+                document.getElementById('input-jadwal').classList.remove('hidden');
+            } else if (mode === 4) {
+                // Mode Manual: Show sliders
+                document.getElementById('input-manual').classList.remove('hidden');
+            }
+        }
+
+        async function saveSmartConfiguration() {
+            const deviceId = document.getElementById('config-device-id').value;
+            const mode = parseInt(document.getElementById('selected-mode').value);
+            
+            if (!deviceId) {
+                alert('⚠️ Silakan pilih perangkat terlebih dahulu!');
+                return;
+            }
+            
+            // Build request data based on mode
+            const requestData = { mode };
+            
+            if (mode === 1) {
+                // Mode Pemula: Force to standard (40% ON, 70% OFF)
+                requestData.batas_siram = 40;
+                requestData.batas_stop = 70;
+            } else if (mode === 2) {
+                // Mode AI Fuzzy: No additional parameters (fully automatic)
+                // Backend will handle fuzzy logic
+            } else if (mode === 3) {
+                // Mode Jadwal: Get schedule times
+                requestData.jam_pagi = document.getElementById('conf-pagi').value;
+                requestData.jam_sore = document.getElementById('conf-sore').value;
+                requestData.durasi_siram = parseInt(document.getElementById('conf-durasi').value);
+            } else if (mode === 4) {
+                // Mode Manual: Get user-defined thresholds
+                requestData.batas_siram = parseInt(document.getElementById('range-manual').value);
+                requestData.batas_stop = parseInt(document.getElementById('range-manual-stop').value);
+                
+                // Validation: batas_stop must be greater than batas_siram
+                if (requestData.batas_stop <= requestData.batas_siram) {
+                    alert('⚠️ Batas Basah (OFF) harus lebih tinggi dari Batas Kering (ON)!');
+                    return;
+                }
+            }
+            
+            try {
+                const response = await axios.post(`/api/devices/${deviceId}/mode`, requestData);
+                
+                if (response.data.success) {
+                    // Show success message with mode name
+                    const modeNames = {
+                        1: '🌱 Mode Pemula',
+                        2: '🤖 Mode AI (Fuzzy)',
+                        3: '📅 Mode Terjadwal',
+                        4: '🛠️ Mode Manual'
+                    };
+                    
+                    alert(`✅ Berhasil! ${modeNames[mode]} telah diterapkan.\n\nArduino akan update konfigurasi dalam 1 menit.`);
+                    
+                    // Close modal
+                    closeSmartConfigModal();
+                    
+                    // Refresh dashboard if on devices page
+                    if (!document.getElementById('page-devices').classList.contains('hidden-page')) {
+                        loadDevices();
+                    }
+                    
+                    // Refresh stats
+                    fetchStats();
+                } else {
+                    alert('❌ Gagal menyimpan pengaturan: ' + (response.data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving smart configuration:', error);
+                alert('❌ Error: ' + (error.response?.data?.message || 'Network error'));
+            }
+        }
+
+        // --- MODAL FUNCTIONS (OLD - for device management page) ---
         function openModeModal(deviceId, currentMode, deviceData) {
             document.getElementById('modeModal').classList.remove('hidden');
             document.getElementById('modeModal').classList.add('flex');

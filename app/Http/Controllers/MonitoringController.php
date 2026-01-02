@@ -262,4 +262,139 @@ class MonitoringController extends Controller
             'data' => $logs
         ], 200);
     }
+
+    /**
+     * Data untuk Dashboard Frontend (Multi-Device dengan Settings)
+     * Endpoint: GET /api/monitoring
+     * 
+     * Mengembalikan data terakhir dari SETIAP device_id unik
+     * dengan join ke tabel device_settings
+     */
+    public function api_show()
+    {
+        // Ambil data terakhir dari SETIAP device_id unik
+        // Join dengan tabel device_settings agar frontend tahu Mode & Kalibrasi
+        $data = \DB::table('monitorings as m')
+            ->leftJoin('device_settings as s', 'm.device_name', '=', 's.device_id')
+            ->select(
+                'm.*',
+                's.id as setting_id',
+                's.mode',
+                's.batas_siram',
+                's.batas_stop',
+                's.jam_pagi',
+                's.jam_sore',
+                's.durasi_siram',
+                's.sensor_min as min_kering',
+                's.sensor_max as max_basah',
+                's.plant_type',
+                's.firmware_version'
+            )
+            ->whereIn('m.id', function($query) {
+                $query->select(\DB::raw('MAX(id)'))
+                      ->from('monitorings')
+                      ->groupBy('device_name');
+            })
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'count' => $data->count(),
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * Update Setting dari Modal Frontend
+     * Endpoint: POST /api/settings/update
+     * 
+     * Compatible dengan format lama untuk backward compatibility
+     */
+    public function updateSettings(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'device_id' => 'required|string',
+            'mode' => 'nullable|integer|in:1,2,3,4',
+            'batas_kering' => 'nullable|integer|min:0|max:100',
+            'batas_siram' => 'nullable|integer|min:0|max:100',
+            'batas_stop' => 'nullable|integer|min:0|max:100',
+            'jam_pagi' => 'nullable|date_format:H:i',
+            'jam_sore' => 'nullable|date_format:H:i',
+            'durasi_siram' => 'nullable|integer|min:1|max:60',
+            'min_kering' => 'nullable|integer|min:0|max:4095',
+            'max_basah' => 'nullable|integer|min:0|max:4095',
+            'sensor_min' => 'nullable|integer|min:0|max:4095',
+            'sensor_max' => 'nullable|integer|min:0|max:4095',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Cari atau buat setting untuk device ini (Auto-provisioning)
+        $setting = \App\Models\DeviceSetting::firstOrCreate(
+            ['device_id' => $request->device_id],
+            ['mode' => 1] // Default Mode Basic
+        );
+
+        // Update field yang dikirim (support field names lama & baru)
+        $updateData = [];
+        
+        // Mode
+        if ($request->has('mode')) {
+            $updateData['mode'] = $request->mode;
+        }
+        
+        // Threshold (support both naming conventions)
+        if ($request->has('batas_kering')) {
+            $updateData['batas_siram'] = $request->batas_kering;
+        }
+        if ($request->has('batas_siram')) {
+            $updateData['batas_siram'] = $request->batas_siram;
+        }
+        if ($request->has('batas_stop')) {
+            $updateData['batas_stop'] = $request->batas_stop;
+        }
+        
+        // Schedule
+        if ($request->has('jam_pagi')) {
+            $updateData['jam_pagi'] = $request->jam_pagi;
+        }
+        if ($request->has('jam_sore')) {
+            $updateData['jam_sore'] = $request->jam_sore;
+        }
+        if ($request->has('durasi_siram')) {
+            $updateData['durasi_siram'] = $request->durasi_siram;
+        }
+        
+        // Calibration (support both naming conventions)
+        if ($request->has('min_kering')) {
+            $updateData['sensor_min'] = $request->min_kering;
+        }
+        if ($request->has('max_basah')) {
+            $updateData['sensor_max'] = $request->max_basah;
+        }
+        if ($request->has('sensor_min')) {
+            $updateData['sensor_min'] = $request->sensor_min;
+        }
+        if ($request->has('sensor_max')) {
+            $updateData['sensor_max'] = $request->sensor_max;
+        }
+
+        // Update setting
+        if (!empty($updateData)) {
+            $setting->update($updateData);
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => 'success', // Backward compatibility
+            'message' => 'Setting berhasil diupdate',
+            'data' => $setting->fresh()
+        ]);
+    }
 }

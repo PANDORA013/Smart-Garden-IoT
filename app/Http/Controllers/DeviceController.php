@@ -91,9 +91,15 @@ class DeviceController extends Controller
                     'device_id' => $device->device_id,
                     'device_name' => $device->device_name,
                     'plant_type' => $device->plant_type,
+                    'mode' => $device->mode,
+                    'batas_siram' => $device->batas_siram,
+                    'batas_stop' => $device->batas_stop,
+                    'jam_pagi' => $device->jam_pagi,
+                    'jam_sore' => $device->jam_sore,
+                    'durasi_siram' => $device->durasi_siram,
+                    'firmware_version' => $device->firmware_version,
                     'is_active' => $device->is_active,
-                    'last_seen' => $device->last_seen?->diffForHumans(),
-                    'last_seen_timestamp' => $device->last_seen,
+                    'last_seen' => $device->last_seen,
                     'status' => $this->getDeviceStatus($device),
                 ];
             })
@@ -216,7 +222,7 @@ class DeviceController extends Controller
         $device = DeviceSetting::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'mode' => 'required|integer|in:1,2,3',
+            'mode' => 'required|integer|in:1,2,3,4',
             'batas_siram' => 'nullable|integer|min:0|max:100',
             'batas_stop' => 'nullable|integer|min:0|max:100',
             'jam_pagi' => 'nullable|date_format:H:i',
@@ -237,7 +243,7 @@ class DeviceController extends Controller
 
         // Update parameter berdasarkan mode
         if ($request->mode == 1) {
-            // Mode Basic: Update threshold
+            // Mode Pemula: Force to standard (auto-set by smart config)
             if ($request->has('batas_siram')) {
                 $updateData['batas_siram'] = $request->batas_siram;
             }
@@ -255,12 +261,35 @@ class DeviceController extends Controller
             if ($request->has('durasi_siram')) {
                 $updateData['durasi_siram'] = $request->durasi_siram;
             }
+        } elseif ($request->mode == 4) {
+            // Mode Manual: User-defined thresholds
+            if ($request->has('batas_siram')) {
+                $updateData['batas_siram'] = $request->batas_siram;
+            }
+            if ($request->has('batas_stop')) {
+                $updateData['batas_stop'] = $request->batas_stop;
+            }
+            
+            // Validation: batas_stop must be greater than batas_siram
+            if (isset($updateData['batas_stop']) && isset($updateData['batas_siram'])) {
+                if ($updateData['batas_stop'] <= $updateData['batas_siram']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Batas Basah (OFF) harus lebih tinggi dari Batas Kering (ON)'
+                    ], 422);
+                }
+            }
         }
         // Mode 2 (Fuzzy) tidak ada parameter tambahan
 
         $device->update($updateData);
 
-        $modeName = ['1' => 'Basic Threshold', '2' => 'Fuzzy Logic', '3' => 'Schedule'][$request->mode];
+        $modeName = [
+            '1' => 'Mode Pemula (Basic)', 
+            '2' => 'Mode AI (Fuzzy Logic)', 
+            '3' => 'Mode Terjadwal (Schedule)',
+            '4' => 'Mode Manual'
+        ][$request->mode];
 
         return response()->json([
             'success' => true,

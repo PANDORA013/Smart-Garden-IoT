@@ -41,3 +41,8 @@ Route::prefix('monitoring')->group(function () {
     // Cleanup data lama
     Route::delete('/cleanup', [MonitoringController::class, 'cleanup']);
 });
+
+// ===== BACKWARD COMPATIBILITY ROUTES =====
+// Untuk kompatibilitas dengan frontend yang menggunakan endpoint lama
+Route::get('/monitoring', [MonitoringController::class, 'api_show']); // Multi-device data dengan settings
+Route::post('/settings/update', [MonitoringController::class, 'updateSettings']); // Update settings dari modal
