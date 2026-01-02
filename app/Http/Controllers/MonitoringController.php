@@ -22,10 +22,19 @@ class MonitoringController extends Controller
      *   "ip_address": "192.168.1.105"
      * }
      * 
-     * Backward compatible dengan format lama:
+     * Response: Data + Config untuk Arduino
      * {
-     *   "soil_moisture": 35.5,
-     *   "status_pompa": "Hidup"
+     *   "success": true,
+     *   "message": "Data berhasil disimpan",
+     *   "config": {
+     *     "mode": 1,
+     *     "batas_siram": 40,
+     *     "batas_stop": 70,
+     *     "jam_pagi": "07:00",
+     *     "jam_sore": "17:00",
+     *     "sensor_min": 4095,
+     *     "sensor_max": 1500
+     *   }
      * }
      */
     public function insert(Request $request)
@@ -63,10 +72,48 @@ class MonitoringController extends Controller
         // Simpan ke database
         $monitoring = Monitoring::create($data);
 
+        // AUTO-PROVISIONING: Cek/Buat setting untuk device ini
+        // Jika device baru pertama kali check-in, otomatis buatkan default settings
+        $deviceName = $request->device_name ?? 'ESP32-Default';
+        $config = \App\Models\DeviceSetting::firstOrCreate(
+            ['device_id' => $deviceName],
+            [
+                'device_name' => $deviceName,
+                'plant_type' => 'cabai',
+                'mode' => 1, // Default: Mode Pemula
+                'batas_siram' => 40,
+                'batas_stop' => 70,
+                'jam_pagi' => '07:00:00',
+                'jam_sore' => '17:00:00',
+                'durasi_siram' => 5,
+                'sensor_min' => 4095,
+                'sensor_max' => 1500,
+                'is_active' => true,
+                'firmware_version' => $request->firmware_version ?? 'v1.0',
+                'last_seen' => now()
+            ]
+        );
+
+        // Update last_seen timestamp
+        $config->touch();
+
+        // KIRIM BALIK CONFIG KE ARDUINO (PENTING!)
+        // Arduino akan membaca JSON ini untuk update mode & parameter-nya
         return response()->json([
             'success' => true,
             'message' => 'Data berhasil disimpan',
-            'data' => $monitoring
+            'data' => $monitoring,
+            'config' => [
+                'mode' => $config->mode,
+                'batas_siram' => $config->batas_siram,
+                'batas_stop' => $config->batas_stop,
+                'jam_pagi' => substr($config->jam_pagi, 0, 5), // Format HH:MM
+                'jam_sore' => substr($config->jam_sore, 0, 5),
+                'durasi_siram' => $config->durasi_siram,
+                'sensor_min' => $config->sensor_min,
+                'sensor_max' => $config->sensor_max,
+                'is_active' => $config->is_active
+            ]
         ], 201);
     }
 

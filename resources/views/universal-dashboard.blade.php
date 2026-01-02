@@ -72,76 +72,80 @@
             <div id="page-dashboard" class="page-content">
                 <div class="flex justify-between items-end mb-8">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900">📊 Monitoring Real-time</h2>
-                        <p class="text-slate-500 text-sm mt-1">Pantau kondisi tanaman Anda secara langsung</p>
+                        <h2 class="text-2xl font-bold text-slate-900">🌿 Monitoring Tanaman Real-time</h2>
+                        <p class="text-slate-500 text-sm mt-1">Pantau kondisi sensor dan status perangkat secara langsung</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="relative flex h-3 w-3">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" id="status-ping"></span>
-                          <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500" id="status-dot"></span>
-                        </span>
-                        <span class="text-sm font-bold text-green-600" id="online-status">Online</span>
+                    <div class="flex items-center gap-4">
+                        <div class="hidden sm:flex items-center gap-2">
+                            <span class="relative flex h-3 w-3">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" id="status-ping"></span>
+                              <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500" id="status-dot"></span>
+                            </span>
+                            <span class="text-sm font-bold text-green-600" id="online-status">Online</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Stats Grid - 1 Tanaman -->
+                <!-- Stats Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <!-- Suhu -->
+                    <!-- Card 1: Suhu -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-blue-50 rounded-xl text-blue-600"><i class="fa-solid fa-temperature-half text-xl"></i></div>
                         </div>
-                        <p class="text-slate-500 text-sm font-medium">Suhu Udara</p>
+                        <p class="text-slate-500 text-sm font-medium">Sensor Suhu</p>
                         <h3 class="text-3xl font-bold text-slate-800 mt-1" id="sensor-temp">--°C</h3>
-                        <p class="text-xs text-slate-400 mt-2">Kondisi: <span id="temp-condition">-</span></p>
+                        <p class="text-xs text-slate-400 mt-2">Update setiap 3 detik</p>
                     </div>
                     
-                    <!-- Kelembaban Udara -->
+                    <!-- Card 2: Kelembaban Udara -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
                         <div class="flex justify-between items-start mb-4">
-                            <div class="p-3 bg-indigo-50 rounded-xl text-indigo-600"><i class="fa-solid fa-cloud text-xl"></i></div>
+                            <div class="p-3 bg-indigo-50 rounded-xl text-indigo-600"><i class="fa-solid fa-droplet text-xl"></i></div>
                         </div>
                         <p class="text-slate-500 text-sm font-medium">Kelembaban Udara</p>
                         <h3 class="text-3xl font-bold text-slate-800 mt-1" id="sensor-humidity">--%</h3>
-                        <p class="text-xs text-slate-400 mt-2">Kondisi: <span id="humidity-condition">-</span></p>
+                        <p class="text-xs text-slate-400 mt-2">Relative Humidity</p>
                     </div>
                     
-                    <!-- Kelembaban Tanah -->
+                    <!-- Card 3: Kelembaban Tanah -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-green-50 rounded-xl text-green-600"><i class="fa-solid fa-seedling text-xl"></i></div>
                         </div>
                         <p class="text-slate-500 text-sm font-medium">Kelembaban Tanah</p>
-                        <h3 class="text-3xl font-bold text-slate-800 mt-1" id="soil-moisture">--%</h3>
-                        <p class="text-xs text-slate-400 mt-2">Status: <span id="soil-condition" class="font-semibold">-</span></p>
+                        <h3 class="text-3xl font-bold text-slate-800 mt-1" id="sensor-soil">--%</h3>
+                        <p class="text-xs text-slate-400 mt-2">Soil Moisture Level</p>
                     </div>
                     
-                    <!-- Status Relay -->
+                    <!-- Card 4: Status Relay -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
                         <div class="flex justify-between items-start mb-4">
-                            <div class="p-3 bg-amber-50 rounded-xl text-amber-600"><i class="fa-solid fa-droplet text-xl"></i></div>
+                            <div class="p-3 bg-amber-50 rounded-xl text-amber-600"><i class="fa-solid fa-lightbulb text-xl"></i></div>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="toggleSwitch" class="sr-only peer" onchange="toggleRelay()">
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                             </label>
                         </div>
-                        <p class="text-slate-500 text-sm font-medium">Pompa/Relay</p>
+                        <p class="text-slate-500 text-sm font-medium">Status Pompa</p>
                         <h3 class="text-3xl font-bold text-slate-800 mt-1" id="relay-status">OFF</h3>
-                        <p class="text-xs text-slate-400 mt-2">Kontrol manual</p>
+                        <p class="text-xs text-slate-400 mt-2">Manual Control</p>
                     </div>
                 </div>
-                
-                <!-- Info Device -->
+
+                <!-- Device Info Card -->
                 <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-2xl shadow-lg mb-8 text-white">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h4 class="text-lg font-bold mb-1">🌿 <span id="device-name-display">Loading...</span></h4>
-                            <p class="text-sm text-blue-100">Jenis Tanaman: <span id="plant-type-display" class="font-semibold">-</span></p>
-                            <p class="text-xs text-blue-200 mt-1">Mode: <span id="mode-display" class="font-bold">-</span></p>
+                            <h3 class="text-lg font-bold mb-2">📱 <span id="device-name-display">Loading...</span></h3>
+                            <p class="text-sm opacity-90">Jenis Tanaman: <span id="plant-type-display" class="font-bold">-</span></p>
+                            <p class="text-sm opacity-90">Mode Operasi: <span id="mode-display" class="font-bold">-</span></p>
                         </div>
                         <div class="text-right">
-                            <p class="text-xs text-blue-200">Uptime Sistem</p>
-                            <h3 class="text-2xl font-bold" id="uptime">0j 0m</h3>
+                            <p class="text-xs opacity-75">IP Address</p>
+                            <p class="font-mono text-sm" id="device-ip-display">-</p>
+                            <p class="text-xs opacity-75 mt-2">Last Update</p>
+                            <p class="text-sm font-medium" id="last-update-display">-</p>
                         </div>
                     </div>
                 </div>
@@ -155,21 +159,13 @@
 
             <!-- ================= PAGE 2: PERANGKAT (DEVICES) ================= -->
             <div id="page-devices" class="page-content hidden-page">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900">Perangkat Terhubung</h2>
-                        <p class="text-slate-500 text-sm mt-1">Data device dari database (bukan test data)</p>
-                    </div>
-                    <button onclick="loadDevices()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold text-sm">
-                        <i class="fa-solid fa-refresh mr-2"></i>Refresh
-                    </button>
-                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-6">Manajemen Perangkat</h2>
                 
-                <!-- Device Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="devices-container">
-                    <div class="col-span-full text-center py-12 text-slate-400">
+                    <!-- Devices akan di-load via JavaScript -->
+                    <div class="text-center py-12 text-slate-400">
                         <i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i>
-                        <p>Loading devices dari database...</p>
+                        <p>Loading devices...</p>
                     </div>
                 </div>
             </div>
@@ -207,50 +203,50 @@
 
             <!-- ================= PAGE 4: PENGATURAN (SETTINGS) ================= -->
             <div id="page-settings" class="page-content hidden-page">
-                <h2 class="text-2xl font-bold text-slate-900 mb-6">⚙️ Konfigurasi Sistem</h2>
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">⚙️ Pengaturan Sistem</h2>
+                        <p class="text-slate-500 text-sm mt-1">Konfigurasi mode operasi dan strategi penyiraman</p>
+                    </div>
+                </div>
                 
-                <!-- Big Button: Pilih Mode Operasi -->
-                <div class="bg-gradient-to-r from-red-500 to-red-600 p-8 rounded-2xl shadow-xl mb-8 text-white cursor-pointer hover:shadow-2xl transition-all" onclick="openSmartConfigModal()">
+                <!-- Smart Config Card (MOVED FROM DASHBOARD) -->
+                <div class="bg-gradient-to-r from-red-500 to-red-600 p-8 rounded-2xl shadow-xl mb-8 text-white">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-2xl font-bold mb-2">🎮 Pilih Mode Operasi</h3>
-                            <p class="text-red-100 text-sm">Klik di sini untuk mengatur strategi penyiraman tanaman Anda</p>
-                            <p class="text-red-200 text-xs mt-2">Mode saat ini: <span id="current-mode-badge" class="font-bold">Loading...</span></p>
+                            <h3 class="text-2xl font-bold mb-2">🎮 Atur Strategi Penyiraman</h3>
+                            <p class="text-red-100 mb-4">Pilih metode perawatan yang paling sesuai dengan kebutuhan tanaman Anda</p>
+                            <button onclick="openSmartConfigModal()" class="px-8 py-3 bg-white text-red-600 rounded-xl hover:bg-red-50 font-bold shadow-lg transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-gear"></i>
+                                Buka Wizard Pengaturan
+                            </button>
                         </div>
-                        <div class="text-6xl opacity-80">
-                            <i class="fa-solid fa-gear"></i>
+                        <div class="hidden lg:block text-8xl opacity-20">
+                            <i class="fa-solid fa-seedling"></i>
                         </div>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Card Info Device -->
+                    <!-- Card Info Mode Aktif -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
                             <div class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i class="fa-solid fa-info-circle"></i></div>
-                            <h3 class="font-bold text-lg">Informasi Device</h3>
+                            <h3 class="font-bold text-lg">Mode Operasi Aktif</h3>
                         </div>
                         
-                        <div class="space-y-4" id="device-info-settings">
-                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                                <span class="text-slate-600 text-sm">Nama Device:</span>
-                                <span class="font-bold text-slate-800" id="info-device-name">-</span>
+                        <div id="current-mode-info" class="space-y-4">
+                            <div class="bg-slate-50 p-4 rounded-xl">
+                                <p class="text-sm text-slate-500 mb-2">Device:</p>
+                                <p class="font-bold text-lg" id="settings-device-name">Loading...</p>
                             </div>
-                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                                <span class="text-slate-600 text-sm">Jenis Tanaman:</span>
-                                <span class="font-bold text-slate-800 capitalize" id="info-plant-type">-</span>
+                            <div class="bg-slate-50 p-4 rounded-xl">
+                                <p class="text-sm text-slate-500 mb-2">Mode Saat Ini:</p>
+                                <p class="font-bold text-lg" id="settings-current-mode">-</p>
                             </div>
-                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                                <span class="text-slate-600 text-sm">Mode Operasi:</span>
-                                <span class="font-bold text-slate-800" id="info-mode">-</span>
-                            </div>
-                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                                <span class="text-slate-600 text-sm">Firmware:</span>
-                                <span class="font-bold text-slate-800" id="info-firmware">-</span>
-                            </div>
-                            <div class="flex justify-between items-center py-2">
-                                <span class="text-slate-600 text-sm">Status:</span>
-                                <span class="font-bold text-green-600" id="info-status">-</span>
+                            <div class="bg-slate-50 p-4 rounded-xl">
+                                <p class="text-sm text-slate-500 mb-2">Tanaman:</p>
+                                <p class="font-bold text-lg capitalize" id="settings-plant-type">-</p>
                             </div>
                         </div>
                     </div>
@@ -272,16 +268,12 @@
                                 <code class="text-xs font-mono text-slate-700">GET /api/monitoring/latest</code>
                             </div>
                             <div class="bg-slate-50 p-3 rounded-lg">
-                                <p class="text-xs text-slate-500 mb-1">Multi-Device Data</p>
-                                <code class="text-xs font-mono text-slate-700">GET /api/monitoring</code>
+                                <p class="text-xs text-slate-500 mb-1">Device Check-in</p>
+                                <code class="text-xs font-mono text-slate-700">GET /api/device/check-in</code>
                             </div>
                             <div class="bg-slate-50 p-3 rounded-lg">
-                                <p class="text-xs text-slate-500 mb-1">Statistics</p>
-                                <code class="text-xs font-mono text-slate-700">GET /api/monitoring/stats</code>
-                            </div>
-                            <div class="bg-slate-50 p-3 rounded-lg">
-                                <p class="text-xs text-slate-500 mb-1">Update Settings</p>
-                                <code class="text-xs font-mono text-slate-700">POST /api/settings/update</code>
+                                <p class="text-xs text-slate-500 mb-1">Update Mode</p>
+                                <code class="text-xs font-mono text-slate-700">POST /api/devices/{id}/mode</code>
                             </div>
                         </div>
                     </div>
@@ -307,107 +299,53 @@
 
             <!-- Modal Body -->
             <div class="p-6 bg-slate-50">
-                <!-- Info Box -->
-                <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg">
-                    <div class="flex items-start gap-3">
-                        <i class="fa-solid fa-info-circle text-blue-600 text-xl mt-1"></i>
-                        <div>
-                            <p class="text-sm font-bold text-slate-800">Mode yang Anda pilih akan diterapkan ke <span class="text-blue-600">semua perangkat</span> yang terdeteksi sistem.</p>
-                            <p class="text-xs text-slate-600 mt-1">Sistem akan otomatis menyesuaikan pengaturan untuk setiap device yang terhubung.</p>
-                        </div>
-                    </div>
+                <!-- Device Selection -->
+                <div class="mb-6 bg-white p-4 rounded-xl shadow-sm">
+                    <label class="block text-sm font-bold text-slate-700 mb-3">📱 Pilih Perangkat:</label>
+                    <select id="config-device-id" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-red-500 font-medium">
+                        <option value="">Loading devices...</option>
+                    </select>
                 </div>
 
                 <!-- Mode Selection Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <!-- Mode 1: Pemula (Threshold Otomatis) -->
-                    <div id="card-mode-1" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-green-500 hover:shadow-lg cursor-pointer transition-all p-6" onclick="selectSmartMode(1)">
-                        <div>
-                            <div class="flex items-center gap-3 mb-4">
-                                <div class="text-5xl">🌱</div>
-                                <div>
-                                    <h5 class="text-lg font-bold text-slate-800">Mode Pemula</h5>
-                                    <span class="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">✅ Rekomendasi</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <p class="text-sm font-bold text-slate-700">🎯 Cara Kerja:</p>
-                                <ul class="text-sm text-slate-600 space-y-1 ml-4">
-                                    <li>• Pompa <b>nyala otomatis</b> jika kelembapan tanah < 40%</li>
-                                    <li>• Pompa <b>mati otomatis</b> saat mencapai 70%</li>
-                                    <li>• Tidak perlu setting apapun</li>
-                                </ul>
-                                <p class="text-xs text-slate-500 italic mt-3">💡 Cocok untuk: Pemula, tanaman indoor, pot kecil</p>
-                            </div>
+                    <!-- Mode 1: Pemula -->
+                    <div id="card-mode-1" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-green-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(1)">
+                        <div class="text-center">
+                            <div class="text-6xl mb-3">🌱</div>
+                            <h5 class="text-lg font-bold text-slate-800 mb-2">Mode Pemula</h5>
+                            <p class="text-sm text-slate-600 mb-3">Paling mudah. Siram otomatis jika tanah kering (< 40%). Tanpa ribet.</p>
+                            <span class="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">✅ Rekomendasi Awal</span>
                         </div>
                     </div>
 
-                    <!-- Mode 2: AI Fuzzy Logic -->
-                    <div id="card-mode-2" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-blue-500 hover:shadow-lg cursor-pointer transition-all p-6" onclick="selectSmartMode(2)">
-                        <div>
-                            <div class="flex items-center gap-3 mb-4">
-                                <div class="text-5xl">🤖</div>
-                                <div>
-                                    <h5 class="text-lg font-bold text-slate-800">Mode AI Fuzzy</h5>
-                                    <span class="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">⭐ Paling Hemat</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <p class="text-sm font-bold text-slate-700">🎯 Cara Kerja:</p>
-                                <ul class="text-sm text-slate-600 space-y-1 ml-4">
-                                    <li>• AI menganalisis <b>suhu udara + kelembapan tanah</b></li>
-                                    <li>• Jika panas (>30°C) → Siram lebih lama (8 detik)</li>
-                                    <li>• Jika dingin (<25°C) → Siram sebentar (3 detik)</li>
-                                    <li>• <b>Hemat air 30-40%</b> vs mode manual</li>
-                                </ul>
-                                <p class="text-xs text-slate-500 italic mt-3">💡 Cocok untuk: Outdoor, cuaca tidak stabil, penghematan air</p>
-                            </div>
+                    <!-- Mode 2: AI Fuzzy -->
+                    <div id="card-mode-2" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-blue-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(2)">
+                        <div class="text-center">
+                            <div class="text-6xl mb-3">🤖</div>
+                            <h5 class="text-lg font-bold text-slate-800 mb-2">Mode AI (Fuzzy)</h5>
+                            <p class="text-sm text-slate-600 mb-3">Hemat air & presisi. Menyesuaikan siraman dengan suhu udara panas/dingin.</p>
+                            <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">⭐ Paling Efisien</span>
                         </div>
                     </div>
 
-                    <!-- Mode 3: Terjadwal (Timer NTP) -->
-                    <div id="card-mode-3" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-yellow-500 hover:shadow-lg cursor-pointer transition-all p-6" onclick="selectSmartMode(3)">
-                        <div>
-                            <div class="flex items-center gap-3 mb-4">
-                                <div class="text-5xl">📅</div>
-                                <div>
-                                    <h5 class="text-lg font-bold text-slate-800">Mode Terjadwal</h5>
-                                    <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">⏰ Disiplin</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <p class="text-sm font-bold text-slate-700">🎯 Cara Kerja:</p>
-                                <ul class="text-sm text-slate-600 space-y-1 ml-4">
-                                    <li>• Siram <b>rutin</b> setiap pagi & sore (jam yang Anda tentukan)</li>
-                                    <li>• Durasi penyiraman bisa diatur (1-30 detik)</li>
-                                    <li>• Waktu sinkron otomatis via NTP (pool.ntp.org)</li>
-                                    <li>• Tidak terpengaruh kondisi tanah</li>
-                                </ul>
-                                <p class="text-xs text-slate-500 italic mt-3">💡 Cocok untuk: Kebun besar, tanaman yang suka rutinitas, petani</p>
-                            </div>
+                    <!-- Mode 3: Jadwal -->
+                    <div id="card-mode-3" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-yellow-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(3)">
+                        <div class="text-center">
+                            <div class="text-6xl mb-3">📅</div>
+                            <h5 class="text-lg font-bold text-slate-800 mb-2">Mode Terjadwal</h5>
+                            <p class="text-sm text-slate-600 mb-3">Siram rutin pagi & sore. Cocok untuk pembiasaan tanaman.</p>
+                            <span class="inline-block px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">⏰ Teratur</span>
                         </div>
                     </div>
 
-                    <!-- Mode 4: Manual (Custom Threshold) -->
-                    <div id="card-mode-4" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-slate-500 hover:shadow-lg cursor-pointer transition-all p-6" onclick="selectSmartMode(4)">
-                        <div>
-                            <div class="flex items-center gap-3 mb-4">
-                                <div class="text-5xl">🛠️</div>
-                                <div>
-                                    <h5 class="text-lg font-bold text-slate-800">Mode Manual</h5>
-                                    <span class="inline-block px-2 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">🎛️ Expert</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <p class="text-sm font-bold text-slate-700">🎯 Cara Kerja:</p>
-                                <ul class="text-sm text-slate-600 space-y-1 ml-4">
-                                    <li>• Anda <b>tentukan sendiri</b> threshold ON & OFF</li>
-                                    <li>• Misal: ON=35%, OFF=80% (range lebih lebar)</li>
-                                    <li>• Kontrol penuh untuk eksperimen</li>
-                                    <li>• Bisa disesuaikan per jenis tanaman</li>
-                                </ul>
-                                <p class="text-xs text-slate-500 italic mt-3">💡 Cocok untuk: Pengguna advanced, eksperimen, tanaman langka</p>
-                            </div>
+                    <!-- Mode 4: Manual -->
+                    <div id="card-mode-4" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-slate-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(4)">
+                        <div class="text-center">
+                            <div class="text-6xl mb-3">🛠️</div>
+                            <h5 class="text-lg font-bold text-slate-800 mb-2">Mode Manual</h5>
+                            <p class="text-sm text-slate-600 mb-3">Kendali penuh. Anda tentukan sendiri kapan pompa menyala.</p>
+                            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">🎛️ Advanced</span>
                         </div>
                     </div>
                 </div>
@@ -689,128 +627,65 @@
         // --- API FUNCTIONS ---
         async function fetchStats() {
             try {
-                // Ambil data dari endpoint multi-device
-                const response = await axios.get('/api/monitoring');
-                if (response.data.success && response.data.data && response.data.data.length > 0) {
-                    // Ambil device pertama (fokus 1 tanaman)
-                    const device = response.data.data[0];
+                const response = await axios.get(`${API_BASE_URL}/stats`);
+                if (response.data.success) {
+                    const data = response.data.data;
                     
                     // Update sensor cards
                     document.getElementById('sensor-temp').textContent = 
-                        device.temperature ? `${device.temperature.toFixed(1)}°C` : '--°C';
+                        data.temperature ? `${data.temperature.toFixed(1)}°C` : '--°C';
                     document.getElementById('sensor-humidity').textContent = 
-                        device.humidity ? `${device.humidity.toFixed(0)}%` : '--%';
-                    document.getElementById('soil-moisture').textContent = 
-                        device.soil_moisture ? `${device.soil_moisture.toFixed(0)}%` : '--%';
+                        data.humidity ? `${data.humidity.toFixed(0)}%` : '--%';
+                    document.getElementById('sensor-soil').textContent = 
+                        data.soil_moisture ? `${data.soil_moisture.toFixed(0)}%` : '--%';
                     document.getElementById('relay-status').textContent = 
-                        device.relay_status == 1 ? 'ON' : 'OFF';
-                    
-                    // Update kondisi
-                    updateConditions(device.temperature, device.humidity, device.soil_moisture);
+                        data.relay_status ? 'ON' : 'OFF';
                     
                     // Update toggle switch
-                    document.getElementById('toggleSwitch').checked = device.relay_status == 1;
+                    document.getElementById('toggleSwitch').checked = data.relay_status;
                     
-                    // Update device info
-                    document.getElementById('device-name-display').textContent = device.device_name || 'Unknown Device';
-                    document.getElementById('plant-type-display').textContent = device.plant_type || '-';
+                    // Update device info card (Dashboard)
+                    document.getElementById('device-name-display').textContent = 
+                        data.device_name || 'Smart Garden Device';
+                    document.getElementById('plant-type-display').textContent = 
+                        data.plant_type || '-';
                     
-                    // Update mode display
+                    // Mode mapping
                     const modeNames = {
-                        1: '🟢 Mode Pemula (Basic)',
-                        2: '🤖 Mode AI (Fuzzy Logic)',
+                        1: '🟢 Mode Pemula',
+                        2: '🤖 Mode AI Fuzzy',
                         3: '📅 Mode Terjadwal',
                         4: '🛠️ Mode Manual'
                     };
-                    document.getElementById('mode-display').textContent = modeNames[device.mode] || 'Unknown';
-                    document.getElementById('current-mode-badge').textContent = modeNames[device.mode] || 'Unknown';
+                    document.getElementById('mode-display').textContent = 
+                        modeNames[data.mode] || '-';
                     
-                    // Update device info di settings page
-                    updateDeviceInfoSettings(device);
+                    document.getElementById('device-ip-display').textContent = 
+                        data.ip_address || '-';
+                    document.getElementById('last-update-display').textContent = 
+                        new Date().toLocaleTimeString('id-ID');
+                    
+                    // Update settings page info
+                    if (document.getElementById('settings-device-name')) {
+                        document.getElementById('settings-device-name').textContent = 
+                            data.device_name || 'Smart Garden Device';
+                    }
+                    if (document.getElementById('settings-current-mode')) {
+                        document.getElementById('settings-current-mode').textContent = 
+                            modeNames[data.mode] || '-';
+                    }
+                    if (document.getElementById('settings-plant-type')) {
+                        document.getElementById('settings-plant-type').textContent = 
+                            data.plant_type || '-';
+                    }
                     
                     // Update status
                     updateConnectionStatus(true);
-                } else {
-                    // Fallback ke endpoint stats lama
-                    const statsResponse = await axios.get(`${API_BASE_URL}/stats`);
-                    if (statsResponse.data.success) {
-                        const data = statsResponse.data.data;
-                        document.getElementById('sensor-temp').textContent = 
-                            data.temperature ? `${data.temperature.toFixed(1)}°C` : '--°C';
-                        document.getElementById('sensor-humidity').textContent = 
-                            data.humidity ? `${data.humidity.toFixed(0)}%` : '--%';
-                        document.getElementById('soil-moisture').textContent = 
-                            data.soil_moisture ? `${data.soil_moisture.toFixed(0)}%` : '--%';
-                        document.getElementById('relay-status').textContent = 
-                            data.relay_status ? 'ON' : 'OFF';
-                        document.getElementById('toggleSwitch').checked = data.relay_status;
-                        
-                        updateConditions(data.temperature, data.humidity, data.soil_moisture);
-                        updateConnectionStatus(true);
-                    }
                 }
             } catch (error) {
                 console.error('Error fetching stats:', error);
                 updateConnectionStatus(false);
             }
-        }
-        
-        // Helper function: Update kondisi sensor
-        function updateConditions(temp, humidity, soil) {
-            // Kondisi suhu
-            const tempCondition = document.getElementById('temp-condition');
-            if (temp > 30) {
-                tempCondition.textContent = 'Panas';
-                tempCondition.className = 'font-semibold text-red-600';
-            } else if (temp >= 25) {
-                tempCondition.textContent = 'Normal';
-                tempCondition.className = 'font-semibold text-green-600';
-            } else {
-                tempCondition.textContent = 'Dingin';
-                tempCondition.className = 'font-semibold text-blue-600';
-            }
-            
-            // Kondisi kelembaban udara
-            const humidityCondition = document.getElementById('humidity-condition');
-            if (humidity > 70) {
-                humidityCondition.textContent = 'Lembab';
-                humidityCondition.className = 'font-semibold text-blue-600';
-            } else if (humidity >= 50) {
-                humidityCondition.textContent = 'Normal';
-                humidityCondition.className = 'font-semibold text-green-600';
-            } else {
-                humidityCondition.textContent = 'Kering';
-                humidityCondition.className = 'font-semibold text-amber-600';
-            }
-            
-            // Kondisi tanah
-            const soilCondition = document.getElementById('soil-condition');
-            if (soil < 30) {
-                soilCondition.textContent = 'Kering (Perlu Siram)';
-                soilCondition.className = 'font-semibold text-red-600';
-            } else if (soil >= 30 && soil < 60) {
-                soilCondition.textContent = 'Sedang';
-                soilCondition.className = 'font-semibold text-amber-600';
-            } else {
-                soilCondition.textContent = 'Basah';
-                soilCondition.className = 'font-semibold text-green-600';
-            }
-        }
-        
-        // Helper function: Update device info di settings
-        function updateDeviceInfoSettings(device) {
-            document.getElementById('info-device-name').textContent = device.device_name || '-';
-            document.getElementById('info-plant-type').textContent = device.plant_type || '-';
-            
-            const modeNames = {
-                1: '🟢 Basic Threshold',
-                2: '🤖 Fuzzy Logic AI',
-                3: '📅 Schedule Timer',
-                4: '🛠️ Manual'
-            };
-            document.getElementById('info-mode').textContent = modeNames[device.mode] || '-';
-            document.getElementById('info-firmware').textContent = device.firmware_version || 'v1.0';
-            document.getElementById('info-status').textContent = device.relay_status == 1 ? 'Pompa ON' : 'Pompa OFF';
         }
 
         async function fetchHistory() {
@@ -1061,13 +936,35 @@
             document.getElementById('smartConfigModal').classList.remove('hidden');
             document.getElementById('smartConfigModal').classList.add('flex');
             
-            // Default select Mode 1 (Pemula)
+            // Load devices for selection
+            loadDevicesForConfig();
+            
+            // Default select Mode 1
             selectSmartMode(1);
         }
 
         function closeSmartConfigModal() {
             document.getElementById('smartConfigModal').classList.add('hidden');
             document.getElementById('smartConfigModal').classList.remove('flex');
+        }
+
+        async function loadDevicesForConfig() {
+            try {
+                const response = await axios.get('/api/devices');
+                const devices = response.data.data;
+                const select = document.getElementById('config-device-id');
+                
+                if (devices && devices.length > 0) {
+                    select.innerHTML = devices.map(device => 
+                        `<option value="${device.id}">${device.device_name || device.device_id} (${device.plant_type})</option>`
+                    ).join('');
+                } else {
+                    select.innerHTML = '<option value="">Tidak ada perangkat tersedia</option>';
+                }
+            } catch (error) {
+                console.error('Error loading devices for config:', error);
+                document.getElementById('config-device-id').innerHTML = '<option value="">Error loading devices</option>';
+            }
         }
 
         function selectSmartMode(mode) {
@@ -1113,7 +1010,13 @@
         }
 
         async function saveSmartConfiguration() {
+            const deviceId = document.getElementById('config-device-id').value;
             const mode = parseInt(document.getElementById('selected-mode').value);
+            
+            if (!deviceId) {
+                alert('⚠️ Silakan pilih perangkat terlebih dahulu!');
+                return;
+            }
             
             // Build request data based on mode
             const requestData = { mode };
@@ -1143,60 +1046,31 @@
             }
             
             try {
-                // Get all devices yang terdeteksi sistem
-                const devicesResponse = await axios.get('/api/devices');
-                const devices = devicesResponse.data.data;
+                const response = await axios.post(`/api/devices/${deviceId}/mode`, requestData);
                 
-                if (!devices || devices.length === 0) {
-                    alert('⚠️ Tidak ada perangkat yang terdeteksi.\n\nPastikan ESP32 sudah terhubung dan check-in ke sistem.');
-                    return;
-                }
-                
-                // Apply mode ke SEMUA device yang terdeteksi
-                let successCount = 0;
-                let failedDevices = [];
-                
-                for (const device of devices) {
-                    try {
-                        const response = await axios.post(`/api/devices/${device.id}/mode`, requestData);
-                        if (response.data.success) {
-                            successCount++;
-                        } else {
-                            failedDevices.push(device.device_name || device.device_id);
-                        }
-                    } catch (error) {
-                        failedDevices.push(device.device_name || device.device_id);
-                    }
-                }
-                
-                // Show result message
-                const modeNames = {
-                    1: '🌱 Mode Pemula',
-                    2: '🤖 Mode AI (Fuzzy)',
-                    3: '📅 Mode Terjadwal',
-                    4: '🛠️ Mode Manual'
-                };
-                
-                if (successCount > 0) {
-                    let message = `✅ Berhasil! ${modeNames[mode]} telah diterapkan ke ${successCount} perangkat.\n\n`;
-                    message += `Perangkat akan update konfigurasi dalam 1 menit saat check-in berikutnya.`;
+                if (response.data.success) {
+                    // Show success message with mode name
+                    const modeNames = {
+                        1: '🌱 Mode Pemula',
+                        2: '🤖 Mode AI (Fuzzy)',
+                        3: '📅 Mode Terjadwal',
+                        4: '🛠️ Mode Manual'
+                    };
                     
-                    if (failedDevices.length > 0) {
-                        message += `\n\n⚠️ Gagal pada: ${failedDevices.join(', ')}`;
-                    }
-                    
-                    alert(message);
+                    alert(`✅ Berhasil! ${modeNames[mode]} telah diterapkan.\n\nArduino akan update konfigurasi dalam 1 menit.`);
                     
                     // Close modal
                     closeSmartConfigModal();
                     
-                    // Refresh dashboard
-                    fetchStats();
+                    // Refresh dashboard if on devices page
                     if (!document.getElementById('page-devices').classList.contains('hidden-page')) {
                         loadDevices();
                     }
+                    
+                    // Refresh stats
+                    fetchStats();
                 } else {
-                    alert('❌ Gagal menyimpan pengaturan ke semua perangkat.\n\nCek koneksi dan coba lagi.');
+                    alert('❌ Gagal menyimpan pengaturan: ' + (response.data.message || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('Error saving smart configuration:', error);
