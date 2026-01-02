@@ -46,3 +46,4 @@ Route::prefix('monitoring')->group(function () {
 // Untuk kompatibilitas dengan frontend yang menggunakan endpoint lama
 Route::get('/monitoring', [MonitoringController::class, 'api_show']); // Multi-device data dengan settings
 Route::post('/settings/update', [MonitoringController::class, 'updateSettings']); // Update settings dari modal
+Route::post('/settings/reboot', [MonitoringController::class, 'rebootDevice']); // Reboot device command

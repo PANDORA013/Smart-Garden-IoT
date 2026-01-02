@@ -397,4 +397,46 @@ class MonitoringController extends Controller
             'data' => $setting->fresh()
         ]);
     }
+
+    /**
+     * Reboot Device (Kirim Perintah Restart)
+     * Endpoint: POST /api/settings/reboot
+     * 
+     * Mengirim flag reboot ke device yang akan dibaca saat check-in berikutnya
+     */
+    public function rebootDevice(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'device_id' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Cari device setting
+        $setting = \App\Models\DeviceSetting::where('device_id', $request->device_id)->first();
+        
+        if (!$setting) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Device tidak ditemukan'
+            ], 404);
+        }
+
+        // Set notes dengan flag reboot (akan dibaca ESP32 saat check-in)
+        $setting->update([
+            'notes' => 'REBOOT_REQUESTED_AT_' . now()->timestamp
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Perintah reboot terkirim. Device akan restart saat check-in berikutnya.',
+            'device_id' => $request->device_id
+        ]);
+    }
 }
