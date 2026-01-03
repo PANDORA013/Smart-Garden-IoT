@@ -92,6 +92,8 @@ class DeviceController extends Controller
                     'device_name' => $device->device_name,
                     'plant_type' => $device->plant_type,
                     'mode' => $device->mode,
+                    'sensor_min' => $device->sensor_min,
+                    'sensor_max' => $device->sensor_max,
                     'batas_siram' => $device->batas_siram,
                     'batas_stop' => $device->batas_stop,
                     'jam_pagi' => $device->jam_pagi,
@@ -228,6 +230,8 @@ class DeviceController extends Controller
             'jam_pagi' => 'nullable|date_format:H:i',
             'jam_sore' => 'nullable|date_format:H:i',
             'durasi_siram' => 'nullable|integer|min:1|max:60',
+            'sensor_min' => 'nullable|integer|min:0|max:4095',
+            'sensor_max' => 'nullable|integer|min:0|max:4095',
         ]);
 
         if ($validator->fails()) {
@@ -240,6 +244,14 @@ class DeviceController extends Controller
 
         // Update mode
         $updateData = ['mode' => $request->mode];
+
+        // Update kalibrasi ADC (berlaku untuk semua mode)
+        if ($request->has('sensor_min')) {
+            $updateData['sensor_min'] = $request->sensor_min;
+        }
+        if ($request->has('sensor_max')) {
+            $updateData['sensor_max'] = $request->sensor_max;
+        }
 
         // Update parameter berdasarkan mode
         if ($request->mode == 1) {

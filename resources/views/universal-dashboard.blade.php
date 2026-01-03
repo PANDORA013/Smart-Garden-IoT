@@ -431,6 +431,58 @@
                 </div>
             </div>
 
+            <!-- Kalibrasi Sensor (Teknisi Only) -->
+            <div class="p-6 border-t border-slate-200 bg-amber-50">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                        <i class="fa-solid fa-wrench text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">🔧 Kalibrasi Sensor (Teknisi)</h4>
+                        <p class="text-sm text-slate-600">
+                            Sesuaikan nilai ADC sensor untuk akurasi optimal. Perubahan ini akan otomatis dikirim ke Pico W tanpa upload ulang code.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                            <i class="fa-solid fa-sun text-amber-500 mr-1"></i>
+                            Nilai ADC Kering (Udara):
+                        </label>
+                        <input type="number" id="input-adc-min" 
+                               class="w-full px-4 py-2 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-500" 
+                               value="4095" min="0" max="4095" placeholder="Default: 4095">
+                        <p class="text-xs text-slate-500 mt-1">
+                            <i class="fa-solid fa-info-circle mr-1"></i>
+                            Nilai ADC saat sensor di udara (kering maksimal)
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                            <i class="fa-solid fa-droplet text-blue-500 mr-1"></i>
+                            Nilai ADC Basah (Air):
+                        </label>
+                        <input type="number" id="input-adc-max" 
+                               class="w-full px-4 py-2 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500" 
+                               value="1500" min="0" max="4095" placeholder="Default: 1500">
+                        <p class="text-xs text-slate-500 mt-1">
+                            <i class="fa-solid fa-info-circle mr-1"></i>
+                            Nilai ADC saat sensor di air (basah maksimal)
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mt-3 p-3 bg-white border border-amber-200 rounded-lg">
+                    <p class="text-xs text-slate-600">
+                        <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i>
+                        <strong>Cara Kalibrasi:</strong> 1) Ukur sensor di udara (catat nilai), 2) Celupkan ke air (catat nilai), 3) Masukkan kedua nilai di atas, 4) Simpan. Pico akan update otomatis dalam 10 detik.
+                    </p>
+                </div>
+            </div>
+
             <!-- Modal Footer -->
             <div class="flex justify-between items-center p-6 border-t border-slate-200 bg-slate-50">
                 <button onclick="closeSmartConfigModal()" class="px-6 py-2 text-slate-600 hover:text-slate-800 font-medium">Batal</button>
@@ -958,6 +1010,20 @@
                     select.innerHTML = devices.map(device => 
                         `<option value="${device.id}">${device.device_name || device.device_id} (${device.plant_type})</option>`
                     ).join('');
+                    
+                    // Load kalibrasi ADC dari device pertama
+                    const firstDevice = devices[0];
+                    document.getElementById('input-adc-min').value = firstDevice.sensor_min || 4095;
+                    document.getElementById('input-adc-max').value = firstDevice.sensor_max || 1500;
+                    
+                    // Add event listener untuk update ADC saat device berubah
+                    select.addEventListener('change', async (e) => {
+                        const selectedDevice = devices.find(d => d.id == e.target.value);
+                        if (selectedDevice) {
+                            document.getElementById('input-adc-min').value = selectedDevice.sensor_min || 4095;
+                            document.getElementById('input-adc-max').value = selectedDevice.sensor_max || 1500;
+                        }
+                    });
                 } else {
                     select.innerHTML = '<option value="">Tidak ada perangkat tersedia</option>';
                 }
@@ -1021,6 +1087,19 @@
             // Build request data based on mode
             const requestData = { mode };
             
+            // === KALIBRASI ADC (ALWAYS SEND) ===
+            const adcMin = parseInt(document.getElementById('input-adc-min').value);
+            const adcMax = parseInt(document.getElementById('input-adc-max').value);
+            
+            // Validation: ADC Min must be greater than ADC Max
+            if (adcMin <= adcMax) {
+                alert('⚠️ Nilai ADC Kering harus lebih besar dari ADC Basah!\n\nContoh: Kering=4095, Basah=1500');
+                return;
+            }
+            
+            requestData.sensor_min = adcMin;
+            requestData.sensor_max = adcMax;
+            
             if (mode === 1) {
                 // Mode Pemula: Force to standard (40% ON, 70% OFF)
                 requestData.batas_siram = 40;
@@ -1057,7 +1136,7 @@
                         4: '🛠️ Mode Manual'
                     };
                     
-                    alert(`✅ Berhasil! ${modeNames[mode]} telah diterapkan.\n\nArduino akan update konfigurasi dalam 1 menit.`);
+                    alert(`✅ Berhasil! ${modeNames[mode]} + Kalibrasi ADC telah diterapkan.\n\n🔄 Pico W akan update konfigurasi dalam 10 detik.\n📊 ADC Range: ${adcMin} (kering) → ${adcMax} (basah)`);
                     
                     // Close modal
                     closeSmartConfigModal();
