@@ -5,35 +5,43 @@ namespace App\Http\Controllers;
 use App\Models\Monitoring;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class MonitoringController extends Controller
 {
     /**
-     * Insert data dari ESP32/Arduino
+     * Insert data dari Raspberry Pi Pico W / ESP32
      * Endpoint: POST /api/monitoring/insert
      * 
-     * Expected JSON from microcontroller (Universal IoT):
+     * **2-WAY COMMUNICATION:**
+     * 1. Terima data sensor dari Pico
+     * 2. Simpan ke database
+     * 3. AMBIL konfigurasi dari device_settings
+     * 4. RETURN konfigurasi ke Pico (Kalibrasi + Mode + Threshold)
+     * 
+     * Expected JSON from Pico Gateway:
      * {
+     *   "device_id": "PICO_CABAI_01",
      *   "temperature": 28.5,
      *   "humidity": 64.0,
      *   "soil_moisture": 35.5,
+     *   "raw_adc": 3200,
      *   "relay_status": true,
-     *   "device_name": "ESP32-Main",
      *   "ip_address": "192.168.1.105"
      * }
      * 
-     * Response: Data + Config untuk Arduino
+     * Response (Config for Pico):
      * {
      *   "success": true,
-     *   "message": "Data berhasil disimpan",
      *   "config": {
      *     "mode": 1,
-     *     "batas_siram": 40,
-     *     "batas_stop": 70,
+     *     "adc_min": 4095,
+     *     "adc_max": 1500,
+     *     "batas_kering": 40,
+     *     "batas_basah": 70,
      *     "jam_pagi": "07:00",
      *     "jam_sore": "17:00",
-     *     "sensor_min": 4095,
-     *     "sensor_max": 1500
+     *     "durasi_siram": 5
      *   }
      * }
      */
@@ -41,9 +49,11 @@ class MonitoringController extends Controller
     {
         // Validasi input (flexible untuk backward compatibility)
         $validator = Validator::make($request->all(), [
+            'device_id' => 'required|string|max:100',
             'temperature' => 'nullable|numeric|min:-50|max:100',
             'humidity' => 'nullable|numeric|min:0|max:100',
             'soil_moisture' => 'nullable|numeric|min:0|max:100',
+            'raw_adc' => 'nullable|integer|min:0|max:4095',
             'relay_status' => 'nullable|boolean',
             'status_pompa' => 'nullable|string|in:Hidup,Mati',
             'device_name' => 'nullable|string|max:100',
@@ -58,61 +68,59 @@ class MonitoringController extends Controller
             ], 422);
         }
 
-        // Map data untuk backward compatibility
+        // 1. SIMPAN DATA SENSOR
         $data = [
+            'device_id' => $request->device_id,
+            'device_name' => $request->device_name ?? $request->device_id,
             'temperature' => $request->temperature,
             'humidity' => $request->humidity,
             'soil_moisture' => $request->soil_moisture,
-            'relay_status' => $request->relay_status ?? ($request->status_pompa === 'Hidup' ? true : false),
-            'device_name' => $request->device_name,
-            'ip_address' => $request->ip_address,
+            'raw_adc' => $request->raw_adc,
+            'relay_status' => $request->relay_status ?? ($request->status_pompa === 'Hidup'),
             'status_pompa' => $request->status_pompa ?? ($request->relay_status ? 'Hidup' : 'Mati'),
+            'ip_address' => $request->ip_address,
         ];
 
-        // Simpan ke database
         $monitoring = Monitoring::create($data);
 
-        // AUTO-PROVISIONING: Cek/Buat setting untuk device ini
-        // Jika device baru pertama kali check-in, otomatis buatkan default settings
-        $deviceName = $request->device_name ?? 'ESP32-Default';
-        $config = \App\Models\DeviceSetting::firstOrCreate(
-            ['device_id' => $deviceName],
+        // 2. AMBIL/BUAT KONFIGURASI (Auto-Provisioning)
+        $setting = \App\Models\DeviceSetting::firstOrCreate(
+            ['device_id' => $request->device_id],
             [
-                'device_name' => $deviceName,
-                'plant_type' => 'cabai',
-                'mode' => 1, // Default: Mode Pemula
+                'device_name' => $request->device_name ?? $request->device_id,
+                'mode' => 1, // Default: Basic Threshold
+                'sensor_min' => 4095, // Default: Sensor kering di udara
+                'sensor_max' => 1500, // Default: Sensor basah di air
                 'batas_siram' => 40,
                 'batas_stop' => 70,
-                'jam_pagi' => '07:00:00',
-                'jam_sore' => '17:00:00',
-                'durasi_siram' => 5,
-                'sensor_min' => 4095,
-                'sensor_max' => 1500,
-                'is_active' => true,
-                'firmware_version' => $request->firmware_version ?? 'v1.0',
-                'last_seen' => now()
             ]
         );
 
-        // Update last_seen timestamp
-        $config->touch();
+        // Update last_seen
+        $setting->update(['last_seen' => now()]);
 
-        // KIRIM BALIK CONFIG KE ARDUINO (PENTING!)
-        // Arduino akan membaca JSON ini untuk update mode & parameter-nya
+        // 3. KIRIM KONFIGURASI BALIK KE PICO (2-Way Communication)
         return response()->json([
             'success' => true,
             'message' => 'Data berhasil disimpan',
             'data' => $monitoring,
+            
+            // === CONFIG UNTUK PICO (Otak Cerdas) ===
             'config' => [
-                'mode' => $config->mode,
-                'batas_siram' => $config->batas_siram,
-                'batas_stop' => $config->batas_stop,
-                'jam_pagi' => substr($config->jam_pagi, 0, 5), // Format HH:MM
-                'jam_sore' => substr($config->jam_sore, 0, 5),
-                'durasi_siram' => $config->durasi_siram,
-                'sensor_min' => $config->sensor_min,
-                'sensor_max' => $config->sensor_max,
-                'is_active' => $config->is_active
+                'mode' => $setting->mode,
+                
+                // Kalibrasi ADC (Pico gunakan ini untuk konversi ADC → %)
+                'adc_min' => $setting->sensor_min,
+                'adc_max' => $setting->sensor_max,
+                
+                // Threshold Mode 1 (Basic)
+                'batas_kering' => $setting->batas_siram,
+                'batas_basah' => $setting->batas_stop,
+                
+                // Schedule Mode 3
+                'jam_pagi' => substr($setting->jam_pagi, 0, 5), // "07:00"
+                'jam_sore' => substr($setting->jam_sore, 0, 5), // "17:00"
+                'durasi_siram' => $setting->durasi_siram,
             ]
         ], 201);
     }
@@ -219,12 +227,20 @@ class MonitoringController extends Controller
     }
 
     /**
-     * Get statistics untuk dashboard
-     * Endpoint: GET /api/monitoring/stats
+     * Get statistics untuk dashboard (Multi-Device Support)
+     * Endpoint: GET /api/monitoring/stats?device_id=PICO_CABAI_01
      */
-    public function stats()
+    public function stats(Request $request)
     {
-        $latest = Monitoring::latest()->first();
+        $deviceId = $request->input('device_id');
+        
+        // Query latest data (dengan atau tanpa filter device_id)
+        $query = Monitoring::latest();
+        if ($deviceId) {
+            $query->where('device_id', $deviceId);
+        }
+        $latest = $query->first();
+        
         $count = Monitoring::count();
         
         // Hitung uptime (asumsi: waktu dari record pertama)
@@ -234,17 +250,28 @@ class MonitoringController extends Controller
         $uptimeMinutes = $uptime % 60;
 
         // Average values (24 jam terakhir)
-        $avgTemp = Monitoring::where('created_at', '>', now()->subDay())
-            ->whereNotNull('temperature')
-            ->avg('temperature');
+        $avgQuery = Monitoring::where('created_at', '>', now()->subDay());
+        if ($deviceId) {
+            $avgQuery->where('device_id', $deviceId);
+        }
         
-        $avgHumidity = Monitoring::where('created_at', '>', now()->subDay())
-            ->whereNotNull('humidity')
-            ->avg('humidity');
+        $avgTemp = $avgQuery->whereNotNull('temperature')->avg('temperature');
+        $avgHumidity = $avgQuery->whereNotNull('humidity')->avg('humidity');
+
+        // Ambil info device dari settings jika ada
+        $deviceInfo = null;
+        if ($latest && $latest->device_id) {
+            $deviceInfo = \App\Models\DeviceSetting::where('device_id', $latest->device_id)->first();
+        }
 
         return response()->json([
             'success' => true,
             'data' => [
+                'device_id' => $latest->device_id ?? null,
+                'device_name' => $latest->device_name ?? 'Smart Garden',
+                'plant_type' => $deviceInfo->plant_type ?? 'cabai',
+                'mode' => $deviceInfo->mode ?? 1,
+                'ip_address' => $latest->ip_address ?? null,
                 'temperature' => $latest->temperature ?? 0,
                 'humidity' => $latest->humidity ?? 0,
                 'soil_moisture' => $latest->soil_moisture ?? 0,
@@ -321,8 +348,8 @@ class MonitoringController extends Controller
     {
         // Ambil data terakhir dari SETIAP device_id unik
         // Join dengan tabel device_settings agar frontend tahu Mode & Kalibrasi
-        $data = \DB::table('monitorings as m')
-            ->leftJoin('device_settings as s', 'm.device_name', '=', 's.device_id')
+        $data = DB::table('monitorings as m')
+            ->leftJoin('device_settings as s', 'm.device_id', '=', 's.device_id')
             ->select(
                 'm.*',
                 's.id as setting_id',
@@ -338,9 +365,9 @@ class MonitoringController extends Controller
                 's.firmware_version'
             )
             ->whereIn('m.id', function($query) {
-                $query->select(\DB::raw('MAX(id)'))
+                $query->select(DB::raw('MAX(id)'))
                       ->from('monitorings')
-                      ->groupBy('device_name');
+                      ->groupBy('device_id');
             })
             ->get();
 

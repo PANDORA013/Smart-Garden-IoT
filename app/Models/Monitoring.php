@@ -12,12 +12,15 @@ class Monitoring extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'device_id',
+        'device_name',
+        'ip_address',
         'temperature',
         'humidity',
         'soil_moisture',
+        'status_pompa',
         'relay_status',
-        'device_name',
-        'ip_address',
+        'raw_adc',
     ];
 
     /**
@@ -30,5 +33,6 @@ class Monitoring extends Model
         'humidity' => 'float',
         'soil_moisture' => 'float',
         'relay_status' => 'boolean',
+        'raw_adc' => 'integer',
     ];
 }
