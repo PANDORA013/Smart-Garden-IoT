@@ -835,113 +835,112 @@
             const container = document.getElementById('devices-container');
             
             try {
-                const response = await axios.get('/api/devices');
+                const response = await axios.get('/api/devices'); 
                 const devices = response.data.data;
                 
                 if (devices && devices.length > 0) {
                     container.innerHTML = devices.map(device => {
-                        // Determine mode badge
-                        let modeColor = '';
-                        let modeName = '';
                         
-                        switch(device.mode) {
-                            case 1:
-                                modeColor = 'bg-green-100 text-green-700 border-green-300';
-                                modeName = '🟢 Basic';
-                                break;
-                            case 2:
-                                modeColor = 'bg-blue-100 text-blue-700 border-blue-300';
-                                modeName = '🔵 Fuzzy AI';
-                                break;
-                            case 3:
-                                modeColor = 'bg-red-100 text-red-700 border-red-300';
-                                modeName = '🔴 Schedule';
-                                break;
-                            case 4:
-                                modeColor = 'bg-slate-100 text-slate-700 border-slate-300';
-                                modeName = '🛠️ Manual';
-                                break;
-                            default:
-                                modeColor = 'bg-gray-100 text-gray-700 border-gray-300';
-                                modeName = 'Unknown';
+                        // 1. Cek Status Online/Offline (Hitung selisih waktu data terakhir)
+                        let isOnline = false;
+                        if(device.created_at) {
+                            const lastSeen = new Date(device.created_at);
+                            const now = new Date();
+                            const diffSeconds = (now - lastSeen) / 1000;
+                            isOnline = diffSeconds < 60; // Online jika ada data masuk < 60 detik lalu
                         }
+
+                        const statusBadge = isOnline 
+                            ? '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full border border-green-300 shadow-sm"><i class="fa-solid fa-circle text-[8px] mr-1"></i> ONLINE</span>'
+                            : '<span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full border border-red-300 shadow-sm"><i class="fa-solid fa-circle text-[8px] mr-1"></i> OFFLINE</span>';
+
+                        // 2. Tampilkan Sensor yang Terdeteksi
+                        let sensorListHtml = '';
+                        if (device.connected_devices) {
+                            const sensors = device.connected_devices.split(',');
+                            
+                            sensors.forEach(s => {
+                                s = s.trim();
+                                // Filter "Pico W" agar tidak muncul dua kali, dan pastikan string tidak kosong
+                                if(s && s !== "Pico W") { 
+                                    // Tentukan Icon & Warna tiap sensor
+                                    let icon = 'fa-microchip';
+                                    let color = 'text-slate-600 bg-slate-50 border-slate-200';
+                                    
+                                    if(s.includes('DHT')) { icon = 'fa-temperature-high'; color = 'text-orange-600 bg-orange-50 border-orange-200'; }
+                                    else if(s.includes('Soil')) { icon = 'fa-water'; color = 'text-blue-600 bg-blue-50 border-blue-200'; }
+                                    else if(s.includes('LCD') || s.includes('OLED')) { icon = 'fa-tv'; color = 'text-cyan-600 bg-cyan-50 border-cyan-200'; }
+                                    else if(s.includes('Relay')) { icon = 'fa-bolt'; color = 'text-yellow-600 bg-yellow-50 border-yellow-200'; }
+                                    else if(s.includes('Servo')) { icon = 'fa-gears'; color = 'text-purple-600 bg-purple-50 border-purple-200'; }
+
+                                    // Render Baris Sensor
+                                    sensorListHtml += `
+                                        <div class="flex items-center justify-between p-3 rounded-lg border ${color} mb-2">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                                    <i class="fa-solid ${icon}"></i>
+                                                </div>
+                                                <span class="font-semibold text-sm">${s}</span>
+                                            </div>
+                                            <div class="flex items-center gap-1 text-green-600 text-xs font-bold bg-white px-2 py-1 rounded-md shadow-sm">
+                                                <i class="fa-solid fa-check"></i> OK
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                            });
+                        } 
                         
-                        // Status badge
-                        let statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full border border-green-300">● ONLINE</span>';
-                        if (device.status === 'idle') {
-                            statusBadge = '<span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full border border-yellow-300">● IDLE</span>';
-                        } else if (device.status === 'offline') {
-                            statusBadge = '<span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full border border-red-300">● OFFLINE</span>';
+                        if (sensorListHtml === '') {
+                            sensorListHtml = `
+                                <div class="text-center p-4 border-2 border-dashed border-slate-200 rounded-xl text-slate-400">
+                                    <i class="fa-solid fa-plug-circle-xmark text-xl mb-1"></i>
+                                    <p class="text-xs">Tidak ada sensor terdeteksi</p>
+                                </div>
+                            `;
                         }
-                        
+
+                        // 3. Render Card Utama
                         return `
-                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover transition-all">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                                            <i class="fa-solid fa-microchip text-xl"></i>
+                            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-100 relative overflow-hidden group">
+                                <div class="flex justify-between items-start mb-6 relative z-10">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-slate-300">
+                                            <i class="fa-brands fa-raspberry-pi text-2xl"></i>
                                         </div>
                                         <div>
-                                            <h3 class="font-bold text-slate-800">${device.device_name || device.device_id}</h3>
-                                            <p class="text-xs text-slate-500">${device.device_id}</p>
+                                            <h3 class="font-bold text-lg text-slate-800 leading-tight">${device.device_name || 'Smart Garden'}</h3>
+                                            <p class="text-xs text-slate-500 font-mono mt-1">${device.device_id}</p>
                                         </div>
                                     </div>
                                     ${statusBadge}
                                 </div>
                                 
-                                <!-- Mode Badge -->
-                                <div class="mb-4 pb-4 border-b border-slate-100">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs font-medium text-slate-500">Mode Operasi:</span>
-                                        <span class="px-3 py-1 ${modeColor} text-xs font-bold rounded-lg border">${modeName}</span>
+                                <div class="relative z-10">
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+                                        Hardware Terhubung
+                                    </h4>
+                                    <div class="space-y-1">
+                                        ${sensorListHtml}
                                     </div>
                                 </div>
-                                
-                                <!-- Settings -->
-                                <div class="space-y-2 text-sm text-slate-600 mb-4">
-                                    <div class="flex justify-between">
-                                        <span class="text-slate-500">🌱 Tanaman:</span> 
-                                        <span class="font-semibold capitalize">${device.plant_type}</span>
-                                    </div>
-                                    ${device.mode === 1 || device.mode === 4 ? `
-                                        <div class="flex justify-between">
-                                            <span class="text-slate-500">📊 Threshold:</span> 
-                                            <span class="font-mono text-xs">${device.batas_siram}% - ${device.batas_stop}%</span>
-                                        </div>
-                                    ` : ''}
-                                    ${device.mode === 3 ? `
-                                        <div class="flex justify-between">
-                                            <span class="text-slate-500">⏰ Jadwal:</span> 
-                                            <span class="font-mono text-xs">${device.jam_pagi?.substring(0,5)} & ${device.jam_sore?.substring(0,5)}</span>
-                                        </div>
-                                    ` : ''}
-                                    <div class="flex justify-between">
-                                        <span class="text-slate-500">🔧 Firmware:</span> 
-                                        <span class="font-mono text-xs">${device.firmware_version || 'N/A'}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-slate-500">⏱️ Last Seen:</span> 
-                                        <span class="text-xs">${device.last_seen ? new Date(device.last_seen).toLocaleString('id-ID', {hour: '2-digit', minute: '2-digit'}) : 'Never'}</span>
-                                    </div>
-                                </div>
-                                
-                                <!-- Actions -->
-                                <div class="flex gap-2 pt-4 border-t border-slate-100">
-                                    <button onclick="openModeModal(${device.id}, ${device.mode}, ${JSON.stringify(device).replace(/"/g, '&quot;')})" class="flex-1 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-semibold text-sm transition-all">
-                                        <i class="fa-solid fa-sliders mr-1"></i> Ubah Mode
-                                    </button>
+
+                                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+                                    <span><i class="fa-regular fa-clock mr-1"></i> Update: ${device.created_at ? new Date(device.created_at).toLocaleTimeString('id-ID') : '-'}</span>
+                                    <span>IP: ${device.ip_address || '-'}</span>
                                 </div>
                             </div>
                         `;
                     }).join('');
                 } else {
+                    // Tampilan jika belum ada device sama sekali
                     container.innerHTML = `
-                        <div class="col-span-full text-center py-12">
-                            <div class="inline-block p-6 bg-slate-50 rounded-2xl">
-                                <i class="fa-solid fa-microchip text-4xl text-slate-300 mb-3"></i>
-                                <p class="text-slate-400 font-medium">Tidak ada perangkat terhubung</p>
-                                <p class="text-sm text-slate-400 mt-1">Upload Arduino code untuk registrasi otomatis</p>
+                        <div class="col-span-full text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300">
+                            <div class="inline-block p-4 bg-slate-50 rounded-full mb-4">
+                                <i class="fa-solid fa-satellite-dish text-4xl text-slate-400"></i>
                             </div>
+                            <h3 class="text-lg font-bold text-slate-700">Belum Ada Perangkat</h3>
+                            <p class="text-slate-500 text-sm mt-1">Nyalakan Pico W Anda untuk memulai deteksi otomatis.</p>
                         </div>
                     `;
                 }
