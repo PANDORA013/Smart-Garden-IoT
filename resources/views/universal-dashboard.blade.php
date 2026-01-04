@@ -24,8 +24,11 @@
 
     <div class="flex h-screen overflow-hidden">
         
+        <!-- Mobile Overlay (background gelap saat menu terbuka) -->
+        <div id="mobile-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" onclick="toggleMobileMenu()"></div>
+        
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-900 text-white hidden md:flex flex-col fixed h-full z-10">
+        <aside id="sidebar" class="w-64 bg-slate-900 text-white fixed h-full z-30 transition-transform duration-300 -translate-x-full md:translate-x-0 md:flex flex-col">
             <div class="p-6 flex items-center gap-3 border-b border-slate-800">
                 <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
                     <i class="fa-solid fa-network-wired"></i>
@@ -980,7 +983,14 @@
         }
 
         function toggleMobileMenu() {
-            alert('Mobile menu belum diimplementasi');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            // Toggle sidebar: geser masuk/keluar
+            sidebar.classList.toggle('-translate-x-full');
+            
+            // Toggle overlay (background gelap)
+            overlay.classList.toggle('hidden');
         }
 
         // --- SMART CONFIG MODAL FUNCTIONS ---
