@@ -13,6 +13,7 @@ class Monitoring extends Model
      */
     protected $fillable = [
         'device_id',
+        'connected_devices',
         'device_name',
         'ip_address',
         'temperature',

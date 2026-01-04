@@ -143,6 +143,14 @@
                             <h3 class="text-lg font-bold mb-2">📱 <span id="device-name-display">Loading...</span></h3>
                             <p class="text-sm opacity-90">Jenis Tanaman: <span id="plant-type-display" class="font-bold">-</span></p>
                             <p class="text-sm opacity-90">Mode Operasi: <span id="mode-display" class="font-bold">-</span></p>
+                            
+                            <!-- Auto-Detected Devices -->
+                            <div class="mt-4 pt-3 border-t border-white/20">
+                                <p class="text-xs opacity-75 mb-2">🔌 Perangkat Terdeteksi Otomatis:</p>
+                                <div id="detected-devices-list" class="flex flex-wrap gap-2">
+                                    <span class="text-xs bg-white/20 px-2 py-1 rounded">Menunggu data...</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="text-right">
                             <p class="text-xs opacity-75">IP Address</p>
@@ -719,6 +727,32 @@
                         data.ip_address || '-';
                     document.getElementById('last-update-display').textContent = 
                         new Date().toLocaleTimeString('id-ID');
+                    
+                    // Update detected devices list
+                    const deviceListContainer = document.getElementById('detected-devices-list');
+                    if (data.connected_devices) {
+                        const devices = data.connected_devices.split(',');
+                        let html = '';
+                        devices.forEach(dev => {
+                            dev = dev.trim();
+                            if(dev) {
+                                // Icon mapping
+                                let icon = 'fa-microchip';
+                                if(dev.includes('DHT')) icon = 'fa-temperature-high';
+                                if(dev.includes('LCD')) icon = 'fa-tv';
+                                if(dev.includes('Servo')) icon = 'fa-gears';
+                                if(dev.includes('Soil')) icon = 'fa-droplet';
+                                if(dev.includes('Relay')) icon = 'fa-toggle-on';
+                                
+                                html += `<span class="flex items-center gap-1 px-2 py-1 bg-white text-blue-600 text-xs font-bold rounded-lg shadow-sm">
+                                    <i class="fa-solid ${icon}"></i> ${dev}
+                                </span>`;
+                            }
+                        });
+                        deviceListContainer.innerHTML = html || '<span class="text-xs bg-white/20 px-2 py-1 rounded">Tidak ada data</span>';
+                    } else {
+                        deviceListContainer.innerHTML = '<span class="text-xs bg-white/20 px-2 py-1 rounded">Menunggu data...</span>';
+                    }
                     
                     // Update settings page info
                     if (document.getElementById('settings-device-name')) {

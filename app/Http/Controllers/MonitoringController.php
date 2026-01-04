@@ -50,6 +50,7 @@ class MonitoringController extends Controller
         // Validasi input (flexible untuk backward compatibility)
         $validator = Validator::make($request->all(), [
             'device_id' => 'required|string|max:100',
+            'connected_devices' => 'nullable|string',
             'temperature' => 'nullable|numeric|min:-50|max:100',
             'humidity' => 'nullable|numeric|min:0|max:100',
             'soil_moisture' => 'nullable|numeric|min:0|max:100',
@@ -71,6 +72,7 @@ class MonitoringController extends Controller
         // 1. SIMPAN DATA SENSOR
         $data = [
             'device_id' => $request->device_id,
+            'connected_devices' => $request->connected_devices,
             'device_name' => $request->device_name ?? $request->device_id,
             'temperature' => $request->temperature,
             'humidity' => $request->humidity,
