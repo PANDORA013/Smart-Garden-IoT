@@ -1,29 +1,4 @@
 {
-  "version": 2,
-  "framework": null,
   "buildCommand": "npm run build",
-  "outputDirectory": "public",
-  "installCommand": "npm install",
-  "devCommand": "php artisan serve",
-  "routes": [
-    {
-      "src": "/build/(.*)",
-      "dest": "/build/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.php"
-    }
-  ],
-  "functions": {
-    "api/index.php": {
-      "runtime": "vercel-php@0.6.0"
-    }
-  },
-  "env": {
-    "APP_ENV": "production",
-    "APP_DEBUG": "false",
-    "APP_URL": "https://your-domain.vercel.app",
-    "DB_CONNECTION": "mysql"
-  }
+  "outputDirectory": "public"
 }
