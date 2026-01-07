@@ -202,57 +202,138 @@
                 </div>
             </div>
 
-            <!-- ================= PAGE 4: PENGATURAN (SETTINGS) - MINIMALIST DESIGN ================= -->
+            <!-- ================= PAGE 4: PENGATURAN (SETTINGS) ================= -->
             <div id="page-settings" class="page-content hidden-page">
-                <!-- Centered Container (Mobile First) -->
-                <div class="max-w-md mx-auto">
-                    <!-- Minimalist Settings Card -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <!-- Header -->
-                        <div class="px-6 py-4 border-b border-gray-50 flex justify-between items-center">
-                            <h2 class="text-lg font-bold text-gray-800">Pengaturan</h2>
-                            <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">⚙️ Pengaturan Sistem</h2>
+                        <p class="text-slate-500 text-sm mt-1">Konfigurasi mode operasi dan strategi penyiraman</p>
+                    </div>
+                </div>
+
+                <!-- Main Settings Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+                    <!-- Header -->
+                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="text-lg font-bold text-slate-800">Konfigurasi Perangkat</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            <span class="text-xs font-medium text-green-600">Aktif</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Body -->
+                    <div class="p-6 space-y-6">
+                        <!-- Nama Perangkat -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Perangkat</label>
+                            <input type="text" id="minimal-device-name" 
+                                   class="w-full px-4 py-3 text-base font-medium border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors" 
+                                   placeholder="Smart Garden #1">
                         </div>
                         
-                        <!-- Body -->
-                        <div class="p-6 space-y-6">
-                            <!-- Nama Perangkat -->
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nama Perangkat</label>
-                                <input type="text" id="minimal-device-name" class="w-full text-lg font-medium border-b border-gray-100 focus:border-green-500 outline-none py-2 transition-colors" placeholder="Smart Garden #1">
+                        <!-- Mode Selector -->
+                        <div class="space-y-3">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Mode Operasi</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="setMinimalMode(1)" id="minimal-mode-1" 
+                                        class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-green-400 bg-white">
+                                    <div class="text-2xl mb-1">🌱</div>
+                                    <div>Basic</div>
+                                    <div class="text-[10px] text-slate-400 font-normal mt-1">Threshold Sederhana</div>
+                                </button>
+                                <button onclick="setMinimalMode(2)" id="minimal-mode-2" 
+                                        class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-blue-400 bg-white">
+                                    <div class="text-2xl mb-1">🤖</div>
+                                    <div>Fuzzy AI</div>
+                                    <div class="text-[10px] text-slate-400 font-normal mt-1">Hemat & Presisi</div>
+                                </button>
+                                <button onclick="setMinimalMode(3)" id="minimal-mode-3" 
+                                        class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-yellow-400 bg-white">
+                                    <div class="text-2xl mb-1">📅</div>
+                                    <div>Jadwal</div>
+                                    <div class="text-[10px] text-slate-400 font-normal mt-1">Pagi & Sore</div>
+                                </button>
+                                <button onclick="setMinimalMode(4)" id="minimal-mode-4" 
+                                        class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-slate-400 bg-white">
+                                    <div class="text-2xl mb-1">🛠️</div>
+                                    <div>Manual</div>
+                                    <div class="text-[10px] text-slate-400 font-normal mt-1">Kontrol Penuh</div>
+                                </button>
                             </div>
-                            
-                            <!-- Mode Selector -->
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mode Operasi</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button onclick="setMinimalMode(1)" id="minimal-mode-1" class="py-2 px-3 rounded-xl text-sm font-medium transition-all border border-gray-200 text-gray-500">
-                                        Basic
-                                    </button>
-                                    <button onclick="setMinimalMode(2)" id="minimal-mode-2" class="py-2 px-3 rounded-xl text-sm font-medium transition-all border border-gray-200 text-gray-500">
-                                        Fuzzy AI
-                                    </button>
-                                    <button onclick="setMinimalMode(3)" id="minimal-mode-3" class="py-2 px-3 rounded-xl text-sm font-medium transition-all border border-gray-200 text-gray-500">
-                                        Jadwal
-                                    </button>
-                                    <button onclick="setMinimalMode(4)" id="minimal-mode-4" class="py-2 px-3 rounded-xl text-sm font-medium transition-all border border-gray-200 text-gray-500">
-                                        Manual
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Dynamic Settings Area -->
-                            <div id="minimal-settings-area" class="bg-gray-50 rounded-xl p-5 border border-gray-100 space-y-4">
+                        </div>
+                        
+                        <!-- Dynamic Settings Area -->
+                        <div class="bg-slate-50 rounded-xl p-5 border border-slate-100">
+                            <div id="minimal-settings-area" class="space-y-4">
                                 <!-- Content akan diisi via JavaScript -->
                             </div>
-                            
-                            <!-- Save Button -->
-                            <button onclick="saveMinimalSettings()" id="minimal-save-btn" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-medium transition-colors shadow-sm">
-                                Simpan Perubahan
+                        </div>
+                        
+                        <!-- Save Button -->
+                        <button onclick="saveMinimalSettings()" id="minimal-save-btn" 
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-save"></i>
+                            Simpan Perubahan
+                        </button>
+                        
+                        <!-- Notification -->
+                        <div id="minimal-notif" class="hidden text-center text-sm font-medium py-3 rounded-xl"></div>
+                    </div>
+                </div>
+
+                <!-- Info Cards Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Card: Mode Info -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-50">
+                            <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                <i class="fa-solid fa-info-circle text-lg"></i>
+                            </div>
+                            <h3 class="font-bold text-base text-slate-800">Status Mode Aktif</h3>
+                        </div>
+                        <div id="minimal-mode-info" class="space-y-3">
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-sm text-slate-500">Mode Saat Ini:</span>
+                                <span class="font-bold text-slate-800" id="current-mode-display">Basic</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-sm text-slate-500">Device ID:</span>
+                                <span class="font-mono text-sm text-slate-700" id="current-device-id">PICO_01</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-sm text-slate-500">Last Update:</span>
+                                <span class="text-sm text-slate-600" id="settings-last-update">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Quick Actions -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-50">
+                            <div class="p-2 bg-green-50 text-green-600 rounded-lg">
+                                <i class="fa-solid fa-bolt text-lg"></i>
+                            </div>
+                            <h3 class="font-bold text-base text-slate-800">Quick Actions</h3>
+                        </div>
+                        <div class="space-y-2">
+                            <button onclick="testPump()" class="w-full text-left px-4 py-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors flex items-center gap-3">
+                                <i class="fa-solid fa-flask text-blue-600"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-slate-800">Test Pompa</div>
+                                    <div class="text-xs text-slate-500">Nyalakan pompa 5 detik</div>
+                                </div>
                             </button>
-                            
-                            <!-- Notification -->
-                            <div id="minimal-notif" class="hidden text-center text-sm font-medium py-2 rounded-lg"></div>
+                            <button onclick="refreshSettings()" class="w-full text-left px-4 py-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors flex items-center gap-3">
+                                <i class="fa-solid fa-refresh text-green-600"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-slate-800">Refresh Config</div>
+                                    <div class="text-xs text-slate-500">Muat ulang pengaturan</div>
+                                </div>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1287,16 +1368,40 @@
             minimalCurrentMode = mode;
             minimalSettings.mode = mode;
             
-            // Update button styles
+            // Update button styles dengan design yang konsisten
             for (let i = 1; i <= 4; i++) {
                 const btn = document.getElementById(`minimal-mode-${i}`);
                 if (i === mode) {
-                    btn.classList.remove('border-gray-200', 'text-gray-500');
-                    btn.classList.add('bg-green-50', 'text-green-700', 'border-green-500');
+                    // Active state dengan warna berbeda per mode
+                    btn.classList.remove('border-slate-200', 'text-slate-600', 'bg-white');
+                    if (mode === 1) {
+                        btn.classList.add('border-green-500', 'bg-green-50', 'text-green-700', 'shadow-md');
+                    } else if (mode === 2) {
+                        btn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700', 'shadow-md');
+                    } else if (mode === 3) {
+                        btn.classList.add('border-yellow-500', 'bg-yellow-50', 'text-yellow-700', 'shadow-md');
+                    } else if (mode === 4) {
+                        btn.classList.add('border-slate-500', 'bg-slate-50', 'text-slate-700', 'shadow-md');
+                    }
                 } else {
-                    btn.classList.remove('bg-green-50', 'text-green-700', 'border-green-500');
-                    btn.classList.add('border-gray-200', 'text-gray-500');
+                    // Inactive state
+                    btn.classList.remove('border-green-500', 'bg-green-50', 'text-green-700', 
+                                        'border-blue-500', 'bg-blue-50', 'text-blue-700',
+                                        'border-yellow-500', 'bg-yellow-50', 'text-yellow-700',
+                                        'border-slate-500', 'bg-slate-50', 'text-slate-700', 'shadow-md');
+                    btn.classList.add('border-slate-200', 'text-slate-600', 'bg-white');
                 }
+            }
+            
+            // Update mode display
+            const modeNames = {
+                1: '🌱 Basic Threshold',
+                2: '🤖 Fuzzy Logic AI',
+                3: '📅 Schedule Timer',
+                4: '🛠️ Manual Control'
+            };
+            if (document.getElementById('current-mode-display')) {
+                document.getElementById('current-mode-display').textContent = modeNames[mode];
             }
             
             // Update dynamic settings area
@@ -1307,55 +1412,95 @@
             const area = document.getElementById('minimal-settings-area');
             
             if (minimalCurrentMode === 1 || minimalCurrentMode === 4) {
-                // Basic/Manual: Threshold settings
+                // Basic/Manual: Threshold settings dengan style konsisten
                 area.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">Batas Kering (ON)</span>
-                        <div class="flex items-center gap-2">
-                            <input type="number" id="minimal-batas-siram" value="${minimalSettings.batas_siram}" 
-                                   class="w-16 text-center rounded border-gray-200 text-sm py-1" min="0" max="100">
-                            <span class="text-sm text-gray-500">%</span>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-2">
+                            <label class="text-sm font-medium text-slate-700">Batas Kering (Pompa ON)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="minimal-batas-siram" value="${minimalSettings.batas_siram}" 
+                                       class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none text-sm font-medium" 
+                                       min="0" max="100">
+                                <span class="text-sm font-medium text-slate-500">%</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">Batas Basah (OFF)</span>
-                        <div class="flex items-center gap-2">
-                            <input type="number" id="minimal-batas-stop" value="${minimalSettings.batas_stop}" 
-                                   class="w-16 text-center rounded border-gray-200 text-sm py-1" min="0" max="100">
-                            <span class="text-sm text-gray-500">%</span>
+                        <div class="flex justify-between items-center py-2">
+                            <label class="text-sm font-medium text-slate-700">Batas Basah (Pompa OFF)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="minimal-batas-stop" value="${minimalSettings.batas_stop}" 
+                                       class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none text-sm font-medium" 
+                                       min="0" max="100">
+                                <span class="text-sm font-medium text-slate-500">%</span>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p class="text-xs text-blue-700">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Pompa akan menyala otomatis jika kelembaban tanah di bawah batas kering, dan mati saat mencapai batas basah.
+                            </p>
                         </div>
                     </div>
                 `;
             } else if (minimalCurrentMode === 2) {
-                // Fuzzy AI: Auto message
+                // Fuzzy AI: Info card dengan style dashboard
                 area.innerHTML = `
-                    <div class="text-center py-3">
-                        <div class="text-3xl mb-2">🤖</div>
-                        <p class="text-sm text-gray-600 italic">Sistem AI akan mengatur penyiraman secara otomatis berdasarkan suhu dan kelembaban tanah.</p>
+                    <div class="text-center py-6">
+                        <div class="inline-block p-4 bg-blue-50 rounded-2xl mb-3">
+                            <i class="fa-solid fa-robot text-5xl text-blue-600"></i>
+                        </div>
+                        <h4 class="font-bold text-slate-800 mb-2">Mode Fuzzy Logic AI</h4>
+                        <p class="text-sm text-slate-600 mb-4">
+                            Sistem akan mengatur durasi penyiraman secara otomatis berdasarkan kombinasi <strong>suhu udara</strong> dan <strong>kelembaban tanah</strong>.
+                        </p>
+                        <div class="bg-white rounded-lg p-4 space-y-2 text-left border border-blue-100">
+                            <div class="flex items-center gap-2 text-sm">
+                                <i class="fa-solid fa-fire text-red-500"></i>
+                                <span class="text-slate-600">Panas (>30°C) + Kering = Siram <strong>8 detik</strong></span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <i class="fa-solid fa-sun text-yellow-500"></i>
+                                <span class="text-slate-600">Sedang (25-30°C) + Kering = Siram <strong>5 detik</strong></span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <i class="fa-solid fa-snowflake text-blue-500"></i>
+                                <span class="text-slate-600">Dingin (<25°C) + Kering = Siram <strong>3 detik</strong></span>
+                            </div>
+                        </div>
                     </div>
                 `;
             } else if (minimalCurrentMode === 3) {
-                // Schedule: Time settings
+                // Schedule: Time settings dengan style konsisten
                 area.innerHTML = `
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-xs text-gray-400 block mb-1">Jam Pagi</label>
-                            <input type="time" id="minimal-jam-pagi" value="${minimalSettings.jam_pagi}" 
-                                   class="w-full text-sm rounded border-gray-200 py-1">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-2">⏰ Jadwal Pagi</label>
+                                <input type="time" id="minimal-jam-pagi" value="${minimalSettings.jam_pagi}" 
+                                       class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-yellow-500 focus:outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-2">🌅 Jadwal Sore</label>
+                                <input type="time" id="minimal-jam-sore" value="${minimalSettings.jam_sore}" 
+                                       class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-yellow-500 focus:outline-none font-medium">
+                            </div>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 block mb-1">Jam Sore</label>
-                            <input type="time" id="minimal-jam-sore" value="${minimalSettings.jam_sore}" 
-                                   class="w-full text-sm rounded border-gray-200 py-1">
+                            <label class="block text-xs font-medium text-slate-500 mb-3">⏱️ Durasi Siram (detik)</label>
+                            <div class="flex items-center gap-4">
+                                <input type="range" id="minimal-durasi" value="${minimalSettings.durasi_siram}" 
+                                       min="1" max="60" 
+                                       class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-yellow-600"
+                                       oninput="document.getElementById('minimal-durasi-value').textContent = this.value + ' detik'">
+                                <span id="minimal-durasi-value" class="text-sm font-bold text-yellow-600 min-w-[70px] text-right">
+                                    ${minimalSettings.durasi_siram} detik
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 block mb-1">Durasi Siram (detik)</label>
-                        <div class="flex items-center gap-3">
-                            <input type="range" id="minimal-durasi" value="${minimalSettings.durasi_siram}" 
-                                   min="1" max="60" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
-                                   oninput="document.getElementById('minimal-durasi-value').textContent = this.value">
-                            <span id="minimal-durasi-value" class="text-sm font-medium text-green-600">${minimalSettings.durasi_siram}</span>
+                        <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <p class="text-xs text-yellow-700">
+                                <i class="fa-solid fa-clock mr-1"></i>
+                                Pompa akan menyala otomatis pada waktu yang ditentukan sesuai durasi yang diatur.
+                            </p>
                         </div>
                     </div>
                 `;
@@ -1422,6 +1567,35 @@
                 loadMinimalSettings();
             }
         };
+
+        // Quick Actions Functions
+        async function testPump() {
+            if (!confirm('Tes pompa akan menyalakan pompa selama 5 detik. Lanjutkan?')) {
+                return;
+            }
+            
+            try {
+                const response = await axios.post('/api/monitoring/relay/toggle', {
+                    status: true,
+                    test_mode: true,
+                    duration: 5
+                });
+                
+                if (response.data.success) {
+                    alert('✅ Pompa berhasil dinyalakan! Akan mati otomatis setelah 5 detik.');
+                } else {
+                    alert('❌ Gagal menyalakan pompa.');
+                }
+            } catch (error) {
+                console.error('Error testing pump:', error);
+                alert('❌ Error: Tidak dapat menghubungi server.');
+            }
+        }
+
+        function refreshSettings() {
+            loadMinimalSettings();
+            alert('✅ Pengaturan berhasil dimuat ulang!');
+        }
 
         // ...existing code...
     </script>
