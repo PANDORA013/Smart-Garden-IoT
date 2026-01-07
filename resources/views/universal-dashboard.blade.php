@@ -238,7 +238,7 @@
                         <!-- Mode Selector -->
                         <div class="space-y-3">
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Mode Operasi</label>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-3 gap-3">
                                 <button onclick="setMinimalMode(1)" id="minimal-mode-1" 
                                         class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-green-400 bg-white">
                                     <div class="text-2xl mb-1">🌱</div>
@@ -252,16 +252,10 @@
                                     <div class="text-[10px] text-slate-400 font-normal mt-1">Hemat & Presisi</div>
                                 </button>
                                 <button onclick="setMinimalMode(3)" id="minimal-mode-3" 
-                                        class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-yellow-400 bg-white">
-                                    <div class="text-2xl mb-1">📅</div>
-                                    <div>Jadwal</div>
-                                    <div class="text-[10px] text-slate-400 font-normal mt-1">Pagi & Sore</div>
-                                </button>
-                                <button onclick="setMinimalMode(4)" id="minimal-mode-4" 
-                                        class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-slate-400 bg-white">
+                                        class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-purple-400 bg-white">
                                     <div class="text-2xl mb-1">🛠️</div>
                                     <div>Manual</div>
-                                    <div class="text-[10px] text-slate-400 font-normal mt-1">Kontrol Penuh</div>
+                                    <div class="text-[10px] text-slate-400 font-normal mt-1">Threshold + Jadwal</div>
                                 </button>
                             </div>
                         </div>
@@ -763,8 +757,7 @@
                     const modeNames = {
                         1: '🟢 Mode Pemula',
                         2: '🤖 Mode AI Fuzzy',
-                        3: '📅 Mode Terjadwal',
-                        4: '🛠️ Mode Manual'
+                        3: '️ Mode Manual'
                     };
                     document.getElementById('mode-display').textContent = 
                         modeNames[data.mode] || '-';
@@ -1390,7 +1383,7 @@
             minimalSettings.mode = mode;
             
             // Update button styles dengan design yang konsisten
-            for (let i = 1; i <= 4; i++) {
+            for (let i = 1; i <= 3; i++) {
                 const btn = document.getElementById(`minimal-mode-${i}`);
                 if (i === mode) {
                     // Active state dengan warna berbeda per mode
@@ -1400,16 +1393,13 @@
                     } else if (mode === 2) {
                         btn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700', 'shadow-md');
                     } else if (mode === 3) {
-                        btn.classList.add('border-yellow-500', 'bg-yellow-50', 'text-yellow-700', 'shadow-md');
-                    } else if (mode === 4) {
-                        btn.classList.add('border-slate-500', 'bg-slate-50', 'text-slate-700', 'shadow-md');
+                        btn.classList.add('border-purple-500', 'bg-purple-50', 'text-purple-700', 'shadow-md');
                     }
                 } else {
                     // Inactive state
                     btn.classList.remove('border-green-500', 'bg-green-50', 'text-green-700', 
                                         'border-blue-500', 'bg-blue-50', 'text-blue-700',
-                                        'border-yellow-500', 'bg-yellow-50', 'text-yellow-700',
-                                        'border-slate-500', 'bg-slate-50', 'text-slate-700', 'shadow-md');
+                                        'border-purple-500', 'bg-purple-50', 'text-purple-700', 'shadow-md');
                     btn.classList.add('border-slate-200', 'text-slate-600', 'bg-white');
                 }
             }
@@ -1418,8 +1408,7 @@
             const modeNames = {
                 1: '🌱 Basic Threshold',
                 2: '🤖 Fuzzy Logic AI',
-                3: '📅 Schedule Timer',
-                4: '🛠️ Manual Control'
+                3: '🛠️ Manual Control'
             };
             if (document.getElementById('current-mode-display')) {
                 document.getElementById('current-mode-display').textContent = modeNames[mode];
@@ -1432,8 +1421,8 @@
         function updateMinimalSettingsArea() {
             const area = document.getElementById('minimal-settings-area');
             
-            if (minimalCurrentMode === 1 || minimalCurrentMode === 4) {
-                // Basic/Manual: Threshold settings dengan style konsisten
+            if (minimalCurrentMode === 1) {
+                // Basic: Threshold settings dengan style konsisten
                 area.innerHTML = `
                     <div class="space-y-4">
                         <div class="flex justify-between items-center py-2">
@@ -1490,37 +1479,69 @@
                     </div>
                 `;
             } else if (minimalCurrentMode === 3) {
-                // Schedule: Time settings dengan style konsisten
+                // Manual: Gabungan Threshold + Schedule dengan style konsisten
                 area.innerHTML = `
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-500 mb-2">⏰ Jadwal Pagi</label>
-                                <input type="time" id="minimal-jam-pagi" value="${minimalSettings.jam_pagi}" 
-                                       class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-yellow-500 focus:outline-none font-medium">
+                    <div class="space-y-6">
+                        <!-- Threshold Settings -->
+                        <div class="space-y-4 pb-4 border-b border-slate-200">
+                            <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-droplet"></i> Pengaturan Threshold Kelembaban
+                            </h5>
+                            <div class="flex justify-between items-center py-2">
+                                <label class="text-sm font-medium text-slate-700">Batas Kering (Pompa ON)</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="minimal-batas-siram" value="${minimalSettings.batas_siram}" 
+                                           class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:outline-none text-sm font-medium" 
+                                           min="0" max="100">
+                                    <span class="text-sm font-medium text-slate-500">%</span>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-500 mb-2">🌅 Jadwal Sore</label>
-                                <input type="time" id="minimal-jam-sore" value="${minimalSettings.jam_sore}" 
-                                       class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-yellow-500 focus:outline-none font-medium">
+                            <div class="flex justify-between items-center py-2">
+                                <label class="text-sm font-medium text-slate-700">Batas Basah (Pompa OFF)</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="minimal-batas-stop" value="${minimalSettings.batas_stop}" 
+                                           class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:outline-none text-sm font-medium" 
+                                           min="0" max="100">
+                                    <span class="text-sm font-medium text-slate-500">%</span>
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-3">⏱️ Durasi Siram (detik)</label>
-                            <div class="flex items-center gap-4">
-                                <input type="range" id="minimal-durasi" value="${minimalSettings.durasi_siram}" 
-                                       min="1" max="60" 
-                                       class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-yellow-600"
-                                       oninput="document.getElementById('minimal-durasi-value').textContent = this.value + ' detik'">
-                                <span id="minimal-durasi-value" class="text-sm font-bold text-yellow-600 min-w-[70px] text-right">
-                                    ${minimalSettings.durasi_siram} detik
-                                </span>
+                        
+                        <!-- Schedule Settings -->
+                        <div class="space-y-4">
+                            <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-clock"></i> Pengaturan Jadwal Penyiraman
+                            </h5>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 mb-2">⏰ Jadwal Pagi</label>
+                                    <input type="time" id="minimal-jam-pagi" value="${minimalSettings.jam_pagi}" 
+                                           class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:outline-none font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 mb-2">🌅 Jadwal Sore</label>
+                                    <input type="time" id="minimal-jam-sore" value="${minimalSettings.jam_sore}" 
+                                           class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:outline-none font-medium">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-3">⏱️ Durasi Siram (detik)</label>
+                                <div class="flex items-center gap-4">
+                                    <input type="range" id="minimal-durasi" value="${minimalSettings.durasi_siram}" 
+                                           min="1" max="60" 
+                                           class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                                           oninput="document.getElementById('minimal-durasi-value').textContent = this.value + ' detik'">
+                                    <span id="minimal-durasi-value" class="text-sm font-bold text-purple-600 min-w-[70px] text-right">
+                                        ${minimalSettings.durasi_siram} detik
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <p class="text-xs text-yellow-700">
-                                <i class="fa-solid fa-clock mr-1"></i>
-                                Pompa akan menyala otomatis pada waktu yang ditentukan sesuai durasi yang diatur.
+                        
+                        <div class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                            <p class="text-xs text-purple-700">
+                                <i class="fa-solid fa-lightbulb mr-1"></i>
+                                <strong>Mode Manual:</strong> Pompa akan menyala otomatis berdasarkan threshold kelembaban, ATAU sesuai jadwal yang ditentukan (pagi/sore) dengan durasi yang diatur.
                             </p>
                         </div>
                     </div>
@@ -1542,14 +1563,19 @@
                 };
                 
                 // Add mode-specific data
-                if (minimalCurrentMode === 1 || minimalCurrentMode === 4) {
+                if (minimalCurrentMode === 1) {
+                    // Mode Basic: Threshold only
                     data.batas_siram = parseInt(document.getElementById('minimal-batas-siram').value);
                     data.batas_stop = parseInt(document.getElementById('minimal-batas-stop').value);
                 } else if (minimalCurrentMode === 3) {
+                    // Mode Manual: Threshold + Schedule
+                    data.batas_siram = parseInt(document.getElementById('minimal-batas-siram').value);
+                    data.batas_stop = parseInt(document.getElementById('minimal-batas-stop').value);
                     data.jam_pagi = document.getElementById('minimal-jam-pagi').value;
                     data.jam_sore = document.getElementById('minimal-jam-sore').value;
                     data.durasi_siram = parseInt(document.getElementById('minimal-durasi').value);
                 }
+                // Mode 2 (Fuzzy AI): No additional settings needed
                 
                 // Save mode settings
                 await axios.post(`/api/devices/${minimalDeviceId}/mode`, data);
