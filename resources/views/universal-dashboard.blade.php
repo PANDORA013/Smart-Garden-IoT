@@ -1328,7 +1328,7 @@
 
         // ==================== MINIMALIST SETTINGS FUNCTIONS ====================
         let minimalCurrentMode = 1;
-        let minimalDeviceId = 1; // Default device
+        let minimalDeviceId = 'PICO_TEST_01'; // Device ID (string, bukan integer)
         let minimalSettings = {
             device_name: '',
             mode: 1,
@@ -1342,6 +1342,18 @@
         // Load settings when switching to settings page
         async function loadMinimalSettings() {
             try {
+                // Cari device pertama yang available
+                const devicesRes = await axios.get('/api/devices');
+                if (devicesRes.data.data && devicesRes.data.data.length > 0) {
+                    const firstDevice = devicesRes.data.data[0];
+                    minimalDeviceId = firstDevice.device_id;
+                    
+                    // Update display
+                    if (document.getElementById('current-device-id')) {
+                        document.getElementById('current-device-id').textContent = minimalDeviceId;
+                    }
+                }
+                
                 const response = await axios.get(`/api/devices/${minimalDeviceId}`);
                 if (response.data.success) {
                     const data = response.data.data;
@@ -1357,10 +1369,19 @@
                     
                     // Update UI
                     document.getElementById('minimal-device-name').value = minimalSettings.device_name;
+                    
+                    // Update last update time
+                    if (document.getElementById('settings-last-update')) {
+                        document.getElementById('settings-last-update').textContent = 
+                            new Date().toLocaleTimeString('id-ID');
+                    }
+                    
                     setMinimalMode(minimalSettings.mode);
                 }
             } catch (error) {
                 console.error('Error loading minimal settings:', error);
+                // Tetap tampilkan form dengan nilai default jika gagal
+                setMinimalMode(1);
             }
         }
 
