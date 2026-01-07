@@ -1,21 +1,21 @@
 import React from 'react';
+import SettingsPage from './Pages/SettingsPage';
 
 function SmartGardenApp() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-green-600 mb-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-green-700 mb-2">
           🌿 Smart Garden IoT
         </h1>
-        <p className="text-gray-600 mb-8">
-          Sistem Monitoring & Kontrol Tanaman Pintar
+        <p className="text-gray-600">
+          Pengaturan Sistem Penyiraman Otomatis
         </p>
-        <div className="bg-white p-8 rounded-lg shadow-lg">
-          <p className="text-sm text-gray-500">
-            Dashboard sedang dalam pengembangan...
-          </p>
-        </div>
       </div>
+      
+      {/* Panggil Component Settings */}
+      <SettingsPage deviceId={1} /> 
+      
     </div>
   );
 }
