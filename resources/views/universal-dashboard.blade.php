@@ -202,80 +202,57 @@
                 </div>
             </div>
 
-            <!-- ================= PAGE 4: PENGATURAN (SETTINGS) ================= -->
+            <!-- ================= PAGE 4: PENGATURAN (SETTINGS) - MINIMALIST DESIGN ================= -->
             <div id="page-settings" class="page-content hidden-page">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900">⚙️ Pengaturan Sistem</h2>
-                        <p class="text-slate-500 text-sm mt-1">Konfigurasi mode operasi dan strategi penyiraman</p>
-                    </div>
-                </div>
-                
-                <!-- Smart Config Card (MOVED FROM DASHBOARD) -->
-                <div class="bg-gradient-to-r from-red-500 to-red-600 p-8 rounded-2xl shadow-xl mb-8 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-2xl font-bold mb-2">🎮 Atur Strategi Penyiraman</h3>
-                            <p class="text-red-100 mb-4">Pilih metode perawatan yang paling sesuai dengan kebutuhan tanaman Anda</p>
-                            <button onclick="openSmartConfigModal()" class="px-8 py-3 bg-white text-red-600 rounded-xl hover:bg-red-50 font-bold shadow-lg transition-all flex items-center gap-2">
-                                <i class="fa-solid fa-gear"></i>
-                                Buka Wizard Pengaturan
-                            </button>
-                        </div>
-                        <div class="hidden lg:block text-8xl opacity-20">
-                            <i class="fa-solid fa-seedling"></i>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Card Info Mode Aktif -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
-                            <div class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i class="fa-solid fa-info-circle"></i></div>
-                            <h3 class="font-bold text-lg">Mode Operasi Aktif</h3>
+                <!-- Centered Container (Mobile First) -->
+                <div class="max-w-md mx-auto">
+                    <!-- Minimalist Settings Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <!-- Header -->
+                        <div class="px-6 py-4 border-b border-gray-50 flex justify-between items-center">
+                            <h2 class="text-lg font-bold text-gray-800">Pengaturan</h2>
+                            <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
                         </div>
                         
-                        <div id="current-mode-info" class="space-y-4">
-                            <div class="bg-slate-50 p-4 rounded-xl">
-                                <p class="text-sm text-slate-500 mb-2">Device:</p>
-                                <p class="font-bold text-lg" id="settings-device-name">Loading...</p>
+                        <!-- Body -->
+                        <div class="p-6 space-y-6">
+                            <!-- Nama Perangkat -->
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nama Perangkat</label>
+                                <input type="text" id="minimal-device-name" class="w-full text-lg font-medium border-b border-gray-100 focus:border-green-500 outline-none py-2 transition-colors" placeholder="Smart Garden #1">
                             </div>
-                            <div class="bg-slate-50 p-4 rounded-xl">
-                                <p class="text-sm text-slate-500 mb-2">Mode Saat Ini:</p>
-                                <p class="font-bold text-lg" id="settings-current-mode">-</p>
+                            
+                            <!-- Mode Selector -->
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mode Operasi</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="setMinimalMode(1)" id="minimal-mode-1" class="py-2 px-3 rounded-xl text-sm font-medium transition-all border border-gray-200 text-gray-500">
+                                        Basic
+                                    </button>
+                                    <button onclick="setMinimalMode(2)" id="minimal-mode-2" class="py-2 px-3 rounded-xl text-sm font-medium transition-all border border-gray-200 text-gray-500">
+                                        Fuzzy AI
+                                    </button>
+                                    <button onclick="setMinimalMode(3)" id="minimal-mode-3" class="py-2 px-3 rounded-xl text-sm font-medium transition-all border border-gray-200 text-gray-500">
+                                        Jadwal
+                                    </button>
+                                    <button onclick="setMinimalMode(4)" id="minimal-mode-4" class="py-2 px-3 rounded-xl text-sm font-medium transition-all border border-gray-200 text-gray-500">
+                                        Manual
+                                    </button>
+                                </div>
                             </div>
-                            <div class="bg-slate-50 p-4 rounded-xl">
-                                <p class="text-sm text-slate-500 mb-2">Tanaman:</p>
-                                <p class="font-bold text-lg capitalize" id="settings-plant-type">-</p>
+                            
+                            <!-- Dynamic Settings Area -->
+                            <div id="minimal-settings-area" class="bg-gray-50 rounded-xl p-5 border border-gray-100 space-y-4">
+                                <!-- Content akan diisi via JavaScript -->
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Card API Info -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
-                            <div class="p-2 bg-purple-50 text-purple-600 rounded-lg"><i class="fa-solid fa-code"></i></div>
-                            <h3 class="font-bold text-lg">API Endpoints</h3>
-                        </div>
-
-                        <div class="space-y-3">
-                            <div class="bg-slate-50 p-3 rounded-lg">
-                                <p class="text-xs text-slate-500 mb-1">Insert Data</p>
-                                <code class="text-xs font-mono text-slate-700">POST /api/monitoring/insert</code>
-                            </div>
-                            <div class="bg-slate-50 p-3 rounded-lg">
-                                <p class="text-xs text-slate-500 mb-1">Latest Data</p>
-                                <code class="text-xs font-mono text-slate-700">GET /api/monitoring/latest</code>
-                            </div>
-                            <div class="bg-slate-50 p-3 rounded-lg">
-                                <p class="text-xs text-slate-500 mb-1">Device Check-in</p>
-                                <code class="text-xs font-mono text-slate-700">GET /api/device/check-in</code>
-                            </div>
-                            <div class="bg-slate-50 p-3 rounded-lg">
-                                <p class="text-xs text-slate-500 mb-1">Update Mode</p>
-                                <code class="text-xs font-mono text-slate-700">POST /api/devices/{id}/mode</code>
-                            </div>
+                            
+                            <!-- Save Button -->
+                            <button onclick="saveMinimalSettings()" id="minimal-save-btn" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-medium transition-colors shadow-sm">
+                                Simpan Perubahan
+                            </button>
+                            
+                            <!-- Notification -->
+                            <div id="minimal-notif" class="hidden text-center text-sm font-medium py-2 rounded-lg"></div>
                         </div>
                     </div>
                 </div>
@@ -1267,6 +1244,184 @@
                 alert('❌ Error: ' + (error.response?.data?.message || 'Network error'));
             }
         }
+
+        // ==================== MINIMALIST SETTINGS FUNCTIONS ====================
+        let minimalCurrentMode = 1;
+        let minimalDeviceId = 1; // Default device
+        let minimalSettings = {
+            device_name: '',
+            mode: 1,
+            batas_siram: 40,
+            batas_stop: 70,
+            jam_pagi: '07:00',
+            jam_sore: '17:00',
+            durasi_siram: 5
+        };
+
+        // Load settings when switching to settings page
+        async function loadMinimalSettings() {
+            try {
+                const response = await axios.get(`/api/devices/${minimalDeviceId}`);
+                if (response.data.success) {
+                    const data = response.data.data;
+                    minimalSettings = {
+                        device_name: data.device_name || '',
+                        mode: data.mode || 1,
+                        batas_siram: data.batas_siram || 40,
+                        batas_stop: data.batas_stop || 70,
+                        jam_pagi: data.jam_pagi ? data.jam_pagi.substring(0, 5) : '07:00',
+                        jam_sore: data.jam_sore ? data.jam_sore.substring(0, 5) : '17:00',
+                        durasi_siram: data.durasi_siram || 5
+                    };
+                    
+                    // Update UI
+                    document.getElementById('minimal-device-name').value = minimalSettings.device_name;
+                    setMinimalMode(minimalSettings.mode);
+                }
+            } catch (error) {
+                console.error('Error loading minimal settings:', error);
+            }
+        }
+
+        function setMinimalMode(mode) {
+            minimalCurrentMode = mode;
+            minimalSettings.mode = mode;
+            
+            // Update button styles
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`minimal-mode-${i}`);
+                if (i === mode) {
+                    btn.classList.remove('border-gray-200', 'text-gray-500');
+                    btn.classList.add('bg-green-50', 'text-green-700', 'border-green-500');
+                } else {
+                    btn.classList.remove('bg-green-50', 'text-green-700', 'border-green-500');
+                    btn.classList.add('border-gray-200', 'text-gray-500');
+                }
+            }
+            
+            // Update dynamic settings area
+            updateMinimalSettingsArea();
+        }
+
+        function updateMinimalSettingsArea() {
+            const area = document.getElementById('minimal-settings-area');
+            
+            if (minimalCurrentMode === 1 || minimalCurrentMode === 4) {
+                // Basic/Manual: Threshold settings
+                area.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Batas Kering (ON)</span>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="minimal-batas-siram" value="${minimalSettings.batas_siram}" 
+                                   class="w-16 text-center rounded border-gray-200 text-sm py-1" min="0" max="100">
+                            <span class="text-sm text-gray-500">%</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Batas Basah (OFF)</span>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="minimal-batas-stop" value="${minimalSettings.batas_stop}" 
+                                   class="w-16 text-center rounded border-gray-200 text-sm py-1" min="0" max="100">
+                            <span class="text-sm text-gray-500">%</span>
+                        </div>
+                    </div>
+                `;
+            } else if (minimalCurrentMode === 2) {
+                // Fuzzy AI: Auto message
+                area.innerHTML = `
+                    <div class="text-center py-3">
+                        <div class="text-3xl mb-2">🤖</div>
+                        <p class="text-sm text-gray-600 italic">Sistem AI akan mengatur penyiraman secara otomatis berdasarkan suhu dan kelembaban tanah.</p>
+                    </div>
+                `;
+            } else if (minimalCurrentMode === 3) {
+                // Schedule: Time settings
+                area.innerHTML = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Jam Pagi</label>
+                            <input type="time" id="minimal-jam-pagi" value="${minimalSettings.jam_pagi}" 
+                                   class="w-full text-sm rounded border-gray-200 py-1">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Jam Sore</label>
+                            <input type="time" id="minimal-jam-sore" value="${minimalSettings.jam_sore}" 
+                                   class="w-full text-sm rounded border-gray-200 py-1">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-1">Durasi Siram (detik)</label>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="minimal-durasi" value="${minimalSettings.durasi_siram}" 
+                                   min="1" max="60" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                                   oninput="document.getElementById('minimal-durasi-value').textContent = this.value">
+                            <span id="minimal-durasi-value" class="text-sm font-medium text-green-600">${minimalSettings.durasi_siram}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        async function saveMinimalSettings() {
+            const btn = document.getElementById('minimal-save-btn');
+            const notif = document.getElementById('minimal-notif');
+            
+            btn.disabled = true;
+            btn.textContent = 'Menyimpan...';
+            
+            try {
+                // Collect data
+                const data = {
+                    mode: minimalCurrentMode
+                };
+                
+                // Add mode-specific data
+                if (minimalCurrentMode === 1 || minimalCurrentMode === 4) {
+                    data.batas_siram = parseInt(document.getElementById('minimal-batas-siram').value);
+                    data.batas_stop = parseInt(document.getElementById('minimal-batas-stop').value);
+                } else if (minimalCurrentMode === 3) {
+                    data.jam_pagi = document.getElementById('minimal-jam-pagi').value;
+                    data.jam_sore = document.getElementById('minimal-jam-sore').value;
+                    data.durasi_siram = parseInt(document.getElementById('minimal-durasi').value);
+                }
+                
+                // Save mode settings
+                await axios.post(`/api/devices/${minimalDeviceId}/mode`, data);
+                
+                // Save device name if changed
+                const deviceName = document.getElementById('minimal-device-name').value;
+                if (deviceName) {
+                    await axios.put(`/api/devices/${minimalDeviceId}`, { device_name: deviceName });
+                }
+                
+                // Show success notification
+                notif.textContent = '✅ Berhasil disimpan!';
+                notif.className = 'text-center text-sm font-medium py-2 rounded-lg bg-green-50 text-green-700 border border-green-200';
+                notif.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    notif.classList.add('hidden');
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error saving minimal settings:', error);
+                notif.textContent = '❌ Gagal menyimpan.';
+                notif.className = 'text-center text-sm font-medium py-2 rounded-lg bg-red-50 text-red-700 border border-red-200';
+                notif.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Simpan Perubahan';
+            }
+        }
+
+        // Override switchPage to load minimal settings when switching to settings page
+        const originalSwitchPage = switchPage;
+        switchPage = function(pageId) {
+            originalSwitchPage(pageId);
+            if (pageId === 'settings') {
+                loadMinimalSettings();
+            }
+        };
 
         // ...existing code...
     </script>
