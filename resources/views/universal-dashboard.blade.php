@@ -90,7 +90,7 @@
                 </div>
 
                 <!-- Stats Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     <!-- Card 1: Suhu -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
                         <div class="flex justify-between items-start mb-4">
@@ -101,17 +101,7 @@
                         <p class="text-xs text-slate-400 mt-2">Update setiap 3 detik</p>
                     </div>
                     
-                    <!-- Card 2: Kelembaban Udara -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-3 bg-indigo-50 rounded-xl text-indigo-600"><i class="fa-solid fa-droplet text-xl"></i></div>
-                        </div>
-                        <p class="text-slate-500 text-sm font-medium">Kelembaban Udara</p>
-                        <h3 class="text-3xl font-bold text-slate-800 mt-1" id="sensor-humidity">--%</h3>
-                        <p class="text-xs text-slate-400 mt-2">Relative Humidity</p>
-                    </div>
-                    
-                    <!-- Card 3: Kelembaban Tanah -->
+                    <!-- Card 2: Kelembaban Tanah -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-green-50 rounded-xl text-green-600"><i class="fa-solid fa-seedling text-xl"></i></div>
@@ -121,7 +111,7 @@
                         <p class="text-xs text-slate-400 mt-2">Soil Moisture Level</p>
                     </div>
                     
-                    <!-- Card 4: Status Relay -->
+                    <!-- Card 3: Status Relay -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-amber-50 rounded-xl text-amber-600"><i class="fa-solid fa-lightbulb text-xl"></i></div>
@@ -697,8 +687,6 @@
                     // Update sensor cards
                     document.getElementById('sensor-temp').textContent = 
                         data.temperature ? `${data.temperature.toFixed(1)}°C` : '--°C';
-                    document.getElementById('sensor-humidity').textContent = 
-                        data.humidity ? `${data.humidity.toFixed(0)}%` : '--%';
                     document.getElementById('sensor-soil').textContent = 
                         data.soil_moisture ? `${data.soil_moisture.toFixed(0)}%` : '--%';
                     document.getElementById('relay-status').textContent = 

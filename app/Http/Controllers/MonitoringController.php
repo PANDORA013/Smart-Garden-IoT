@@ -52,7 +52,6 @@ class MonitoringController extends Controller
             'device_id' => 'required|string|max:100',
             'connected_devices' => 'nullable|string',
             'temperature' => 'nullable|numeric|min:-50|max:100',
-            'humidity' => 'nullable|numeric|min:0|max:100',
             'soil_moisture' => 'nullable|numeric|min:0|max:100',
             'raw_adc' => 'nullable|integer|min:0|max:4095',
             'relay_status' => 'nullable|boolean',
@@ -75,7 +74,6 @@ class MonitoringController extends Controller
             'connected_devices' => $request->connected_devices,
             'device_name' => $request->device_name ?? $request->device_id,
             'temperature' => $request->temperature,
-            'humidity' => $request->humidity,
             'soil_moisture' => $request->soil_moisture,
             'raw_adc' => $request->raw_adc,
             'relay_status' => $request->relay_status ?? ($request->status_pompa === 'Hidup'),
@@ -141,7 +139,6 @@ class MonitoringController extends Controller
                 'message' => 'Belum ada data',
                 'data' => [
                     'temperature' => 0,
-                    'humidity' => 0,
                     'soil_moisture' => 0,
                     'relay_status' => false,
                     'status_pompa' => 'Mati',
@@ -258,7 +255,6 @@ class MonitoringController extends Controller
         }
         
         $avgTemp = $avgQuery->whereNotNull('temperature')->avg('temperature');
-        $avgHumidity = $avgQuery->whereNotNull('humidity')->avg('humidity');
 
         // Ambil info device dari settings jika ada
         $deviceInfo = null;
@@ -275,14 +271,12 @@ class MonitoringController extends Controller
                 'mode' => $deviceInfo->mode ?? 1,
                 'ip_address' => $latest->ip_address ?? null,
                 'temperature' => $latest->temperature ?? 0,
-                'humidity' => $latest->humidity ?? 0,
                 'soil_moisture' => $latest->soil_moisture ?? 0,
                 'relay_status' => $latest->relay_status ?? false,
                 'uptime_hours' => $uptimeHours,
                 'uptime_minutes' => $uptimeMinutes,
                 'total_records' => $count,
                 'avg_temperature_24h' => round($avgTemp ?? 0, 1),
-                'avg_humidity_24h' => round($avgHumidity ?? 0, 1),
             ]
         ], 200);
     }
@@ -328,7 +322,6 @@ class MonitoringController extends Controller
                     'device' => $item->device_name ?? 'System',
                     'message' => $message ?: 'Data monitoring diterima',
                     'temperature' => $item->temperature,
-                    'humidity' => $item->humidity,
                 ];
             });
 

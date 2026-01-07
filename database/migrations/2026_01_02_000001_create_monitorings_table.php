@@ -24,7 +24,6 @@ return new class extends Migration
             // === SENSOR READINGS (Wajib untuk Fuzzy Logic) ===
             $table->float('soil_moisture')->default(0)->comment('Kelembapan tanah (%)');
             $table->float('temperature')->nullable()->comment('Suhu udara (°C) - untuk Fuzzy Logic');
-            $table->float('humidity')->nullable()->comment('Kelembaban udara (%) - untuk Fuzzy Logic');
             
             // === ACTUATOR STATUS (2-Way Feedback) ===
             $table->string('status_pompa', 10)->default('Mati')->comment('Status pompa (Hidup/Mati)');

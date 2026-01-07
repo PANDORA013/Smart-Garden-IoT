@@ -17,7 +17,6 @@ class Monitoring extends Model
         'device_name',
         'ip_address',
         'temperature',
-        'humidity',
         'soil_moisture',
         'status_pompa',
         'relay_status',
@@ -31,7 +30,6 @@ class Monitoring extends Model
      */
     protected $casts = [
         'temperature' => 'float',
-        'humidity' => 'float',
         'soil_moisture' => 'float',
         'relay_status' => 'boolean',
         'raw_adc' => 'integer',

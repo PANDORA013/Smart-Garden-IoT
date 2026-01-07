@@ -106,21 +106,19 @@ void loop() {
   int rawADC = analogRead(SOIL_SENSOR_PIN);
   float soilMoisture = mapADCtoPercent(rawADC, adcMin, adcMax);
   float temperature = dht.readTemperature();
-  float humidity = dht.readHumidity();
   
   // Validasi Sensor DHT22
-  if (isnan(temperature) || isnan(humidity)) {
+  if (isnan(temperature)) {
     Serial.println("⚠️ DHT22 Error! Using default values...");
     temperature = 28.0;
-    humidity = 60.0;
   }
   
   // Logika Kontrol Pompa (Berdasarkan Mode)
-  controlPump(soilMoisture, temperature, humidity);
+  controlPump(soilMoisture, temperature);
   
   // Kirim Data ke Server (Setiap 10 Detik)
   if (millis() - lastSendTime >= SEND_INTERVAL) {
-    sendDataToServer(rawADC, soilMoisture, temperature, humidity);
+    sendDataToServer(rawADC, soilMoisture, temperature);
     lastSendTime = millis();
   }
   
@@ -173,7 +171,7 @@ float mapADCtoPercent(int adc, int minVal, int maxVal) {
 // ===========================
 // FUNGSI: Kontrol Pompa (3 Mode)
 // ===========================
-void controlPump(float soil, float temp, float hum) {
+void controlPump(float soil, float temp) {
   bool shouldPumpOn = false;
   
   // === MODE 1: BASIC THRESHOLD ===
@@ -246,7 +244,7 @@ void controlPump(float soil, float temp, float hum) {
 // ===========================
 // FUNGSI: Kirim Data ke Server (2-Way Communication)
 // ===========================
-void sendDataToServer(int rawADC, float soil, float temp, float hum) {
+void sendDataToServer(int rawADC, float soil, float temp) {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("❌ WiFi not connected!");
     return;
@@ -260,7 +258,6 @@ void sendDataToServer(int rawADC, float soil, float temp, float hum) {
   StaticJsonDocument<512> doc;
   doc["device_id"] = deviceId;
   doc["temperature"] = temp;
-  doc["humidity"] = hum;
   doc["soil_moisture"] = soil;
   doc["raw_adc"] = rawADC;
   doc["relay_status"] = pumpState;
