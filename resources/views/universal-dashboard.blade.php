@@ -1328,8 +1328,7 @@
             batas_siram: 40,
             batas_stop: 70,
             jam_pagi: '07:00',
-            jam_sore: '17:00',
-            durasi_siram: 5
+            jam_sore: '17:00'
         };
 
         // Load settings when switching to settings page
@@ -1479,7 +1478,7 @@
                     </div>
                 `;
             } else if (minimalCurrentMode === 3) {
-                // Manual: Gabungan Threshold + Schedule dengan style konsisten
+                // Manual: Threshold + Schedule (Unified)
                 area.innerHTML = `
                     <div class="space-y-6">
                         <!-- Threshold Settings -->
@@ -1524,24 +1523,12 @@
                                            class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:outline-none font-medium">
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-500 mb-3">⏱️ Durasi Siram (detik)</label>
-                                <div class="flex items-center gap-4">
-                                    <input type="range" id="minimal-durasi" value="${minimalSettings.durasi_siram}" 
-                                           min="1" max="60" 
-                                           class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                                           oninput="document.getElementById('minimal-durasi-value').textContent = this.value + ' detik'">
-                                    <span id="minimal-durasi-value" class="text-sm font-bold text-purple-600 min-w-[70px] text-right">
-                                        ${minimalSettings.durasi_siram} detik
-                                    </span>
-                                </div>
-                            </div>
                         </div>
                         
                         <div class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
                             <p class="text-xs text-purple-700">
                                 <i class="fa-solid fa-lightbulb mr-1"></i>
-                                <strong>Mode Manual:</strong> Pompa akan menyala otomatis berdasarkan threshold kelembaban, ATAU sesuai jadwal yang ditentukan (pagi/sore) dengan durasi yang diatur.
+                                <strong>Mode Manual:</strong> Pompa bekerja otomatis berdasarkan threshold (mati saat basah) dan juga menyala pada jadwal pagi/sore. Durasi ditentukan oleh threshold, bukan timer fixed.
                             </p>
                         </div>
                     </div>
@@ -1568,12 +1555,12 @@
                     data.batas_siram = parseInt(document.getElementById('minimal-batas-siram').value);
                     data.batas_stop = parseInt(document.getElementById('minimal-batas-stop').value);
                 } else if (minimalCurrentMode === 3) {
-                    // Mode Manual: Threshold + Schedule
+                    // Mode Manual: Threshold + Schedule (unified)
                     data.batas_siram = parseInt(document.getElementById('minimal-batas-siram').value);
                     data.batas_stop = parseInt(document.getElementById('minimal-batas-stop').value);
                     data.jam_pagi = document.getElementById('minimal-jam-pagi').value;
                     data.jam_sore = document.getElementById('minimal-jam-sore').value;
-                    data.durasi_siram = parseInt(document.getElementById('minimal-durasi').value);
+                    // No durasi_siram - pompa akan mati otomatis berdasarkan threshold
                 }
                 // Mode 2 (Fuzzy AI): No additional settings needed
                 
@@ -1643,6 +1630,8 @@
             loadMinimalSettings();
             alert('✅ Pengaturan berhasil dimuat ulang!');
         }
+
+        // ...existing code...
 
         // ...existing code...
     </script>
