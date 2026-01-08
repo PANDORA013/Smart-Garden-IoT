@@ -52,11 +52,10 @@ Smart Garden IoT is a complete web-based monitoring and control system for autom
 
 ### Prerequisites
 - PHP 8.1+ with Composer
-- SQLite3
+- MySQL Database
 - Raspberry Pi Pico W
 - DHT22 temperature sensor
 - Capacitive soil moisture sensor
-- ESP32 Dev Module + Sensors
 
 ### Installation
 
@@ -77,17 +76,21 @@ Smart Garden IoT is a complete web-based monitoring and control system for autom
    php artisan key:generate
    ```
 
-4. **Setup Database**
+4. **Configure Database**
+   - Create MySQL database: `smart_garden`
+   - Update database credentials in `.env` file
+
+5. **Run Migrations**
    ```bash
    php artisan migrate
    ```
 
-5. **Run Server**
+6. **Run Server**
    ```bash
    php artisan serve
    ```
 
-6. **Access Dashboard**
+7. **Access Dashboard**
    ```
    http://localhost:8000
    ```
@@ -132,7 +135,7 @@ Base URL: `/api/monitoring`
 
 - **Backend**: Laravel 10.x
 - **Frontend**: Vanilla JavaScript, Tailwind CSS
-- **Database**: SQLite
+- **Database**: MySQL
 - **Hardware**: Raspberry Pi Pico W
 - **Sensors**: DHT22, Capacitive Soil Sensor
 - **Charts**: Chart.js
