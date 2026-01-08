@@ -32,7 +32,7 @@
 // ===========================
 const char* ssid = "YOUR_WIFI_SSID";        // Ganti dengan WiFi Anda
 const char* password = "YOUR_WIFI_PASSWORD"; // Ganti dengan Password WiFi
-const char* serverUrl = "http://192.168.1.100:8000/api/monitoring/insert"; // Ganti dengan IP Server Laravel
+const char* serverUrl = "http://10.16.4.222:8000/api/monitoring/insert"; // IP Server Laravel
 
 // ===========================
 // KONFIGURASI HARDWARE
