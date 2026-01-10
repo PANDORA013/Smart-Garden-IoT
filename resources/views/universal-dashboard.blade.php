@@ -736,11 +736,15 @@
                 if (response.data.success) {
                     const data = response.data.data;
                     
-                    // Update sensor cards
+                    // Update sensor cards dengan deteksi "No Sensor"
                     document.getElementById('sensor-temp').textContent = 
-                        data.temperature ? `${data.temperature.toFixed(1)}°C` : '--°C';
+                        data.temperature > 0 ? `${data.temperature.toFixed(1)}°C` : 
+                        data.temperature === 0 ? '🚫 No Sensor' : '--°C';
+                    
                     document.getElementById('sensor-soil').textContent = 
-                        data.soil_moisture ? `${data.soil_moisture.toFixed(0)}%` : '--%';
+                        data.soil_moisture > 0 ? `${data.soil_moisture.toFixed(0)}%` : 
+                        data.soil_moisture === 0 ? '🚫 No Sensor' : '--%';
+                    
                     document.getElementById('relay-status').textContent = 
                         data.relay_status ? 'ON' : 'OFF';
                     
@@ -880,20 +884,38 @@
                 if (devices && devices.length > 0) {
                     container.innerHTML = devices.map(device => {
                         
-                        // 1. Cek Status Online/Offline (Hitung selisih waktu data terakhir)
-                        let isOnline = false;
-                        if(device.created_at) {
-                            const lastSeen = new Date(device.created_at);
+                        // 1. Cek Status Online/Offline berdasarkan status dari API
+                        const statusMap = {
+                            'online': { badge: 'bg-green-100 text-green-700 border-green-300', text: 'ONLINE', icon: 'fa-circle-check' },
+                            'idle': { badge: 'bg-yellow-100 text-yellow-700 border-yellow-300', text: 'IDLE', icon: 'fa-circle-pause' },
+                            'offline': { badge: 'bg-red-100 text-red-700 border-red-300', text: 'OFFLINE', icon: 'fa-circle-xmark' },
+                            'never_connected': { badge: 'bg-slate-100 text-slate-700 border-slate-300', text: 'NEVER', icon: 'fa-circle-question' }
+                        };
+                        
+                        const statusInfo = statusMap[device.status] || statusMap['offline'];
+                        const statusBadge = `<span class="px-3 py-1 ${statusInfo.badge} text-xs font-bold rounded-full border shadow-sm">
+                            <i class="fa-solid ${statusInfo.icon} text-[8px] mr-1"></i> ${statusInfo.text}
+                        </span>`;
+
+                        // 2. Tampilkan last_seen time
+                        let lastSeenText = 'Never';
+                        if (device.last_seen) {
+                            const lastSeen = new Date(device.last_seen);
                             const now = new Date();
-                            const diffSeconds = (now - lastSeen) / 1000;
-                            isOnline = diffSeconds < 60; // Online jika ada data masuk < 60 detik lalu
+                            const diffSeconds = Math.floor((now - lastSeen) / 1000);
+                            
+                            if (diffSeconds < 60) {
+                                lastSeenText = `${diffSeconds}s ago`;
+                            } else if (diffSeconds < 3600) {
+                                lastSeenText = `${Math.floor(diffSeconds / 60)}m ago`;
+                            } else if (diffSeconds < 86400) {
+                                lastSeenText = `${Math.floor(diffSeconds / 3600)}h ago`;
+                            } else {
+                                lastSeenText = lastSeen.toLocaleDateString('id-ID');
+                            }
                         }
 
-                        const statusBadge = isOnline 
-                            ? '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full border border-green-300 shadow-sm"><i class="fa-solid fa-circle text-[8px] mr-1"></i> ONLINE</span>'
-                            : '<span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full border border-red-300 shadow-sm"><i class="fa-solid fa-circle text-[8px] mr-1"></i> OFFLINE</span>';
-
-                        // 2. Tampilkan Sensor yang Terdeteksi
+                        // 3. Tampilkan Sensor yang Terdeteksi
                         let sensorListHtml = '';
                         if (device.connected_devices) {
                             const sensors = device.connected_devices.split(',');
@@ -965,8 +987,8 @@
                                 </div>
 
                                 <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-                                    <span><i class="fa-regular fa-clock mr-1"></i> Update: ${device.created_at ? new Date(device.created_at).toLocaleTimeString('id-ID') : '-'}</span>
-                                    <span>IP: ${device.ip_address || '-'}</span>
+                                    <span><i class="fa-regular fa-clock mr-1"></i> Last Seen: ${lastSeenText}</span>
+                                    <span><i class="fa-solid fa-network-wired mr-1"></i> IP: ${device.ip_address || '-'}</span>
                                 </div>
                             </div>
                         `;
@@ -1596,6 +1618,11 @@
         // Override switchPage to load settings and control auto-refresh
         const originalSwitchPage = switchPage;
         switchPage = function(pageId) {
+            // Panggil fungsi switchPage asli DULU (untuk switch halaman)
+            originalSwitchPage(pageId);
+            
+            // Kemudian jalankan logic tambahan setelah halaman switch
+            
             // Load settings jika pindah ke halaman settings
             if (pageId === 'settings') {
                 loadMinimalSettings();
@@ -1607,9 +1634,6 @@
             } else {
                 stopDashboardAutoRefresh();
             }
-            
-            // Panggil fungsi switchPage asli
-            originalSwitchPage(pageId);
         };
 
         // Quick Actions Functions

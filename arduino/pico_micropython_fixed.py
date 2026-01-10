@@ -11,7 +11,7 @@ import time
 import ujson
 import urequests
 import ntptime
-from machine import Pin, ADC, RTC
+from machine import Pin, ADC, RTC, reset
 import dht
 
 # =============================================================================
@@ -99,26 +99,37 @@ def read_sensors():
     try:
         dht_sensor.measure()
         temperature = dht_sensor.temperature()
+        # Cek jika DHT22 tidak terpasang (return 0 atau nilai aneh)
+        if temperature <= 0 or temperature > 60:
+            temperature = 0  # 0 = No sensor
     except:
-        temperature = 0 # Error value
+        temperature = 0  # 0 = No sensor
 
     # Baca Tanah (Konversi 16-bit ke 12-bit)
     raw_16bit = soil_adc.read_u16()
     raw_adc_12bit = raw_16bit >> 4 
     
-    # Hitung Persen (Makin besar nilai ADC = Makin Kering)
-    try:
-        soil_moisture = int(map_value(raw_adc_12bit, ADC_MIN, ADC_MAX, 0, 100))
-    except:
-        soil_moisture = 0
-        
-    # Batasi 0-100%
-    if soil_moisture < 0: soil_moisture = 0
-    if soil_moisture > 100: soil_moisture = 100
+    # DETECTION: Floating pin (sensor tidak terpasang)
+    # ADC normal range: 1500-4095
+    # Jika < 500 atau > 4000 = floating pin (noise)
+    if raw_adc_12bit < 500 or raw_adc_12bit > 4000:
+        print("⚠️  SOIL SENSOR: Not connected (floating pin detected)")
+        soil_moisture = 0  # 0 = No sensor
+        raw_adc_12bit = 0
+    else:
+        # Hitung Persen (Makin besar nilai ADC = Makin Kering)
+        try:
+            soil_moisture = int(map_value(raw_adc_12bit, ADC_MIN, ADC_MAX, 0, 100))
+        except:
+            soil_moisture = 0
+            
+        # Batasi 0-100%
+        if soil_moisture < 0: soil_moisture = 0
+        if soil_moisture > 100: soil_moisture = 100
 
     print("\n📊 DATA SENSOR:")
-    print(f"   Temp: {temperature}°C")
-    print(f"   Tanah: {soil_moisture}% (ADC: {raw_adc_12bit})")
+    print(f"   Temp: {temperature}°C {'(No sensor)' if temperature == 0 else ''}")
+    print(f"   Tanah: {soil_moisture}% {'(No sensor)' if raw_adc_12bit == 0 else f'(ADC: {raw_adc_12bit})'}")
     print(f"   Pompa: {'NYALA 🟢' if pump_status else 'MATI 🔴'}")
 
 def control_pump():
@@ -187,7 +198,7 @@ print("="*60 + "\n")
 if not connect_wifi():
     print("❌ Restarting karena gagal konek WiFi...")
     time.sleep(3)
-    machine.reset()
+    reset()
 
 print("\n✅ SISTEM SIAP! Mulai monitoring...\n")
 
