@@ -83,21 +83,28 @@ class MonitoringController extends Controller
 
         $monitoring = Monitoring::create($data);
 
-        // 2. AMBIL/BUAT KONFIGURASI (Auto-Provisioning)
-        $setting = \App\Models\DeviceSetting::firstOrCreate(
-            ['device_id' => $request->device_id],
-            [
-                'device_name' => $request->device_name ?? $request->device_id,
-                'mode' => 1, // Default: Basic Threshold
-                'sensor_min' => 4095, // Default: Sensor kering di udara
-                'sensor_max' => 1500, // Default: Sensor basah di air
-                'batas_siram' => 40,
-                'batas_stop' => 70,
-            ]
-        );
+        // 2. AMBIL/BUAT KONFIGURASI (Auto-Provisioning) - OPTIMIZED dengan Cache
+        $cacheKey = 'device_setting_' . $request->device_id;
+        
+        $setting = cache()->remember($cacheKey, 60, function() use ($request) {
+            return \App\Models\DeviceSetting::firstOrCreate(
+                ['device_id' => $request->device_id],
+                [
+                    'device_name' => $request->device_name ?? $request->device_id,
+                    'mode' => 1,
+                    'sensor_min' => 4095,
+                    'sensor_max' => 1500,
+                    'batas_siram' => 40,
+                    'batas_stop' => 70,
+                ]
+            );
+        });
 
-        // Update last_seen
-        $setting->update(['last_seen' => now()]);
+        // Update last_seen hanya setiap 30 detik (skip jika baru saja update)
+        if (!$setting->last_seen || $setting->last_seen->diffInSeconds(now()) > 30) {
+            $setting->update(['last_seen' => now()]);
+            cache()->forget($cacheKey); // Refresh cache setelah update
+        }
 
         // 3. KIRIM KONFIGURASI BALIK KE PICO (2-Way Communication)
         return response()->json([
