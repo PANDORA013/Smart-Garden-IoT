@@ -40,7 +40,7 @@
 // =============================================================================
 const char* WIFI_SSID = "CCTV_UISI";
 const char* WIFI_PASSWORD = "08121191";
-const char* SERVER_URL = "http://10.134.42.169:8000/api/monitoring/insert";  // IP Server di jaringan kampus
+const char* SERVER_URL = "http://192.168.0.102:8000/api/monitoring/insert";  // IP Server via Ethernet
 const char* DEVICE_ID = "PICO_CABAI_01";
 
 // =============================================================================
