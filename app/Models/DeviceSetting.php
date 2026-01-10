@@ -53,6 +53,14 @@ class DeviceSetting extends Model
     ];
 
     /**
+     * Serialize last_seen in Asia/Jakarta timezone without Z suffix
+     */
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
+
+    /**
      * Get monitoring data for this device
      */
     public function monitorings()
@@ -94,5 +102,15 @@ class DeviceSetting extends Model
     public function updateLastSeen()
     {
         $this->update(['last_seen' => now()]);
+    }
+
+    /**
+     * Append formatted last_seen for API response
+     */
+    protected $appends = ['last_seen_formatted'];
+
+    public function getLastSeenFormattedAttribute()
+    {
+        return $this->last_seen ? $this->last_seen->format('Y-m-d H:i:s') : null;
     }
 }

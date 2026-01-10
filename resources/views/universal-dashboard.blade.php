@@ -1593,13 +1593,23 @@
             }
         }
 
-        // Override switchPage to load minimal settings when switching to settings page
+        // Override switchPage to load settings and control auto-refresh
         const originalSwitchPage = switchPage;
         switchPage = function(pageId) {
-            originalSwitchPage(pageId);
+            // Load settings jika pindah ke halaman settings
             if (pageId === 'settings') {
                 loadMinimalSettings();
             }
+            
+            // Control auto-refresh: hanya aktif di dashboard
+            if (pageId === 'dashboard') {
+                startDashboardAutoRefresh();
+            } else {
+                stopDashboardAutoRefresh();
+            }
+            
+            // Panggil fungsi switchPage asli
+            originalSwitchPage(pageId);
         };
 
         // Quick Actions Functions
@@ -1631,9 +1641,42 @@
             alert('✅ Pengaturan berhasil dimuat ulang!');
         }
 
-        // ...existing code...
+        // =============================================================================
+        // AUTO-REFRESH DASHBOARD - Refresh data setiap 3 detik
+        // =============================================================================
+        let dashboardRefreshInterval = null;
 
-        // ...existing code...
+        function startDashboardAutoRefresh() {
+            // Clear existing interval if any
+            if (dashboardRefreshInterval) {
+                clearInterval(dashboardRefreshInterval);
+            }
+            
+            // Initial load
+            fetchStats();
+            updateChart();
+            
+            // Auto-refresh every 3 seconds
+            dashboardRefreshInterval = setInterval(() => {
+                fetchStats();
+                updateChart();
+            }, 3000);
+            
+            console.log('✅ Dashboard auto-refresh started (every 3 seconds)');
+        }
+
+        function stopDashboardAutoRefresh() {
+            if (dashboardRefreshInterval) {
+                clearInterval(dashboardRefreshInterval);
+                dashboardRefreshInterval = null;
+                console.log('⏸️ Dashboard auto-refresh stopped');
+            }
+        }
+
+        // Start auto-refresh when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            startDashboardAutoRefresh();
+        });
     </script>
 </body>
 </html>
