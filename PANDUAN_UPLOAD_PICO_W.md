@@ -1,12 +1,34 @@
 # 🚀 PANDUAN LENGKAP UPLOAD CODE KE RASPBERRY PI PICO W
 
-## ✅ STATUS SYSTEM SAAT INI:
+# 🚀 PANDUAN LENGKAP UPLOAD CODE KE RASPBERRY PI PICO W
 
-- ✅ **Server Laravel**: RUNNING di http://0.0.0.0:8000
-- ✅ **WiFi**: "Bocil" / "kesayanganku"
-- ✅ **Server URL**: http://192.168.18.35:8000/api/monitoring/insert
-- ✅ **Pico W**: Terdeteksi di COM8
-- ✅ **Code**: Sudah dikonfigurasi di `arduino/pico_smart_gateway.ino`
+## ⚠️ PENTING - KONFIGURASI DIPERLUKAN!
+
+Sebelum melanjutkan, Anda HARUS mengkonfigurasi WiFi dan server:
+
+**LANGKAH PENTING:**
+1. Buka folder `arduino/`
+2. Copy file `config.example.h` → buat file baru bernama `config.h`
+3. Edit `config.h` dengan detail Anda:
+   - WiFi SSID (nama WiFi)
+   - WiFi Password
+   - Server URL (IP komputer Anda)
+   - Device ID (nama unik untuk Pico W)
+
+**Cari IP Address Anda:**
+- Windows: Buka PowerShell, ketik `ipconfig`
+- Cari "IPv4 Address" contoh: 192.168.1.100
+
+Panduan lengkap: **CONFIGURATION_GUIDE.md**
+
+---
+
+## ✅ SYSTEM REQUIREMENTS:
+
+- ✅ **Server Laravel**: Harus RUNNING di http://0.0.0.0:8000
+- ✅ **WiFi**: 2.4GHz network (bukan 5GHz)
+- ✅ **Pico W**: Terdeteksi di port USB
+- ✅ **Config File**: `config.h` sudah dibuat dan diisi
 
 ---
 
@@ -45,18 +67,22 @@ Klik tombol **Close** setelah semua library terinstall
 ## 📂 LANGKAH 2: BUKA FILE ARDUINO
 
 1. **Klik menu:** File → Open
-2. **Browse ke folder:** 
+2. **Browse ke folder arduino:**
    ```
-   C:\xampp\htdocs\Smart Garden IoT\arduino\
+   [Lokasi project Anda]/arduino/
    ```
 3. **Pilih file:** `pico_smart_gateway.ino`
 4. **Klik:** Open
 
-File akan terbuka dengan konfigurasi yang sudah benar:
+⚠️ **PASTIKAN file `config.h` sudah ada di folder yang sama!**
+File ini berisi konfigurasi WiFi dan server Anda.
+
+Jika belum, copy dari `config.example.h` dan edit dengan detail Anda:
 ```cpp
-const char* ssid = "Bocil";
-const char* password = "kesayanganku";
-const char* serverUrl = "http://192.168.18.35:8000/api/monitoring/insert";
+const char* WIFI_SSID = "NamaWiFiAnda";
+const char* WIFI_PASSWORD = "PasswordWiFiAnda";
+const char* SERVER_URL = "http://192.168.1.100:8000/api/monitoring/insert";
+const char* DEVICE_ID = "PICO_GARDEN_01";
 ```
 
 ---
@@ -75,7 +101,7 @@ const char* serverUrl = "http://192.168.18.35:8000/api/monitoring/insert";
 ### C. Verifikasi
 Cek di bagian bawah Arduino IDE harus muncul:
 ```
-Raspberry Pi Pico W on COM8
+Raspberry Pi Pico W on COM# (your port number)
 ```
 
 ---
@@ -98,8 +124,9 @@ Global variables use XXXXX bytes (X%) of dynamic memory.
 - **Error: ArduinoJson.h not found** → Library belum terinstall
 - **Error: DHT.h not found** → DHT library belum terinstall
 - **Error: NTPClient.h not found** → NTPClient library belum terinstall
+- **Error: config.h not found** → File config.h belum dibuat dari config.example.h
 
-Jika ada error, screenshot dan laporkan error nya.
+Jika ada error, screenshot dan cek panduan troubleshooting.
 
 ---
 
@@ -167,14 +194,14 @@ Anda akan melihat output seperti ini:
 ### D. Troubleshooting Serial Monitor:
 
 **❌ Jika muncul: "WiFi Connection Failed!"**
-- Password WiFi "Bocil" salah
-- WiFi "Bocil" tidak aktif
+- Password atau SSID WiFi salah (cek di config.h)
+- WiFi tidak aktif
 - Jarak terlalu jauh dari router
 - WiFi 5GHz (Pico W hanya support 2.4GHz)
 
 **❌ Jika muncul: "HTTP Error: -1"**
-- Server Laravel tidak running (cek VS Code terminal)
-- IP address salah (cek dengan: ipconfig di PowerShell)
+- Server Laravel tidak running (jalankan: php artisan serve --host=0.0.0.0)
+- IP address salah (cek dengan: ipconfig di PowerShell, update config.h)
 - Firewall memblokir port 8000
 
 **❌ Jika muncul: "DHT22 Error!"**
@@ -218,15 +245,17 @@ Buka salah satu URL ini di browser:
 ✅ Arduino IDE installed
 ✅ Board "Raspberry Pi Pico/RP2040" installed
 ✅ 3 Libraries installed (ArduinoJson, DHT, NTPClient)
+✅ File config.h created from config.example.h
+✅ Config.h berisi WiFi dan Server details yang benar
 ✅ File pico_smart_gateway.ino opened
 ✅ Board selected: Raspberry Pi Pico W
-✅ Port selected: COM8
+✅ Port selected: COM# (your port)
 ✅ Code compiled successfully (Verify ✓)
 ✅ Code uploaded successfully (Upload →)
 ✅ Serial Monitor opened (115200 baud)
-✅ WiFi connected to "Bocil"
+✅ WiFi connected (check SSID in serial output)
 ✅ Data sent to server (Response Code: 201)
-✅ Dashboard showing device "PICO_CABAI_01"
+✅ Dashboard showing your device
 ✅ Real-time data updating every 10 seconds
 ```
 
@@ -234,8 +263,10 @@ Buka salah satu URL ini di browser:
 
 ## 🆘 TROUBLESHOOTING UMUM
 
-### Problem 1: "Missing FQBN"
-**Solusi:** Board belum dipilih. Tools → Board → Raspberry Pi Pico W
+### Problem 1: "Missing FQBN" or "config.h not found"
+**Solusi:** 
+- Board belum dipilih: Tools → Board → Raspberry Pi Pico W
+- File config.h belum dibuat: Copy config.example.h → config.h
 
 ### Problem 2: "WiFi.h not found"
 **Solusi:** Board Pico W belum dipilih dengan benar, atau package RP2040 belum terinstall
@@ -245,15 +276,17 @@ Buka salah satu URL ini di browser:
 
 ### Problem 4: WiFi tidak connect
 **Solusi:** 
-- Cek password WiFi
+- Cek SSID dan password di config.h (case-sensitive!)
 - Pastikan WiFi 2.4GHz (bukan 5GHz)
 - Dekatkan Pico W ke router
+- Pastikan router tidak membatasi koneksi perangkat baru
 
 ### Problem 5: HTTP Error -1
 **Solusi:**
 - Restart server Laravel: `php artisan serve --host=0.0.0.0 --port=8000`
 - Cek IP dengan: `ipconfig` di PowerShell
-- Update IP di code jika berubah
+- Update IP di config.h jika IP berubah
+- Test server di browser: http://YOUR_IP:8000
 
 ### Problem 6: Server tidak muncul data
 **Solusi:**
@@ -263,12 +296,13 @@ Buka salah satu URL ini di browser:
 
 ---
 
-## 📞 BANTUAN LEBIH LANJUT
+## 📞 PANDUAN TAMBAHAN
 
-Jika mengalami masalah:
-1. **Screenshot** error message dari Arduino IDE
-2. **Copy** output dari Serial Monitor
-3. Laporkan error yang muncul
+Untuk panduan lebih detail:
+- **CONFIGURATION_GUIDE.md** - Panduan konfigurasi lengkap (English)
+- **PICO_CONFIGURATION_CHECKLIST.md** - Checklist step-by-step
+- **arduino/README.md** - Quick reference Arduino
+- **micropython/README.md** - Quick reference MicroPython
 
 ---
 
