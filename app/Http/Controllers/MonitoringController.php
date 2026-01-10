@@ -107,7 +107,7 @@ class MonitoringController extends Controller
         }
 
         // 3. KIRIM KONFIGURASI BALIK KE PICO (2-Way Communication)
-        return response()->json([
+        $response = [
             'success' => true,
             'message' => 'Data berhasil disimpan',
             'data' => $monitoring,
@@ -129,7 +129,18 @@ class MonitoringController extends Controller
                 'jam_sore' => substr($setting->jam_sore, 0, 5), // "17:00"
                 'durasi_siram' => $setting->durasi_siram,
             ]
-        ], 201);
+        ];
+        
+        // 4. CEK ADA RELAY COMMAND DARI WEB (2-Way Control)
+        if ($setting->relay_command !== null) {
+            $response['relay_command'] = $setting->relay_command;
+            
+            // Reset command setelah dikirim (one-time command)
+            $setting->update(['relay_command' => null]);
+            cache()->forget($cacheKey);
+        }
+        
+        return response()->json($response, 201);
     }
 
     /**
@@ -208,6 +219,7 @@ class MonitoringController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'status' => 'required|boolean',
+            'device_id' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -218,18 +230,27 @@ class MonitoringController extends Controller
             ], 422);
         }
 
-        // Simpan status baru
-        $monitoring = Monitoring::create([
-            'relay_status' => $request->status,
-            'status_pompa' => $request->status ? 'Hidup' : 'Mati',
-            'device_name' => 'Manual Control',
-        ]);
-
+        // Ambil device_id (default ke PICO_CABAI_01)
+        $deviceId = $request->device_id ?? 'PICO_CABAI_01';
+        
+        // Set relay command di device_settings
+        $setting = \App\Models\DeviceSetting::where('device_id', $deviceId)->first();
+        
+        if ($setting) {
+            $setting->update(['relay_command' => $request->status]);
+            cache()->forget('device_setting_' . $deviceId);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Relay command sent',
+                'relay_command' => $request->status
+            ], 200);
+        }
+        
         return response()->json([
-            'success' => true,
-            'message' => 'Relay status updated',
-            'data' => $monitoring
-        ], 200);
+            'success' => false,
+            'message' => 'Device not found'
+        ], 404);
     }
 
     /**
