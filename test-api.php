@@ -7,12 +7,12 @@ $serverUrl = "http://127.0.0.1:8000/api/monitoring/insert";
 
 // Simulasi data dari Pico W
 $data = [
-    'device_id' => 'PICO_CABAI_01',
+    'device_id' => 'PICO_GARDEN_01',  // Updated to match new default device ID
     'temperature' => 28.5,
     'soil_moisture' => 45.2,
     'raw_adc' => 2800,
     'relay_status' => false,
-    'ip_address' => '192.168.18.100'
+    'ip_address' => '192.168.1.100'  // Generic IP address
 ];
 
 echo "🧪 Testing API Endpoint...\n";

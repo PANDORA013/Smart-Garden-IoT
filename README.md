@@ -152,6 +152,16 @@ Base URL: `/api/monitoring`
 
 ## 📖 Documentation
 
+### Setup & Configuration
+- [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md) - Comprehensive setup guide for Pico W
+- [PICO_CONFIGURATION_CHECKLIST.md](./PICO_CONFIGURATION_CHECKLIST.md) - Interactive setup checklist
+- [QUICK_START_PICO.md](./QUICK_START_PICO.md) - 5-minute quick start guide
+- [PANDUAN_UPLOAD_PICO_W.md](./PANDUAN_UPLOAD_PICO_W.md) - Detailed Indonesian guide
+
+### Testing & Validation
+- [TESTING.md](./TESTING.md) - Testing tools and validation scripts
+
+### Project Information
 - [CHANGELOG.md](./CHANGELOG.md) - Version history and release notes
 
 ---
