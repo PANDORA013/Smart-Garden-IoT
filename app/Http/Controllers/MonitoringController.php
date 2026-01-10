@@ -47,15 +47,13 @@ class MonitoringController extends Controller
      */
     public function insert(Request $request)
     {
-        // Validasi input (flexible untuk backward compatibility)
+        // Validasi input
         $validator = Validator::make($request->all(), [
             'device_id' => 'required|string|max:100',
-            'connected_devices' => 'nullable|string',
             'temperature' => 'nullable|numeric|min:-50|max:100',
             'soil_moisture' => 'nullable|numeric|min:0|max:100',
             'raw_adc' => 'nullable|integer|min:0|max:4095',
             'relay_status' => 'nullable|boolean',
-            'status_pompa' => 'nullable|string|in:Hidup,Mati',
             'device_name' => 'nullable|string|max:100',
             'ip_address' => 'nullable|ip',
         ]);
@@ -71,13 +69,12 @@ class MonitoringController extends Controller
         // 1. SIMPAN DATA SENSOR
         $data = [
             'device_id' => $request->device_id,
-            'connected_devices' => $request->connected_devices,
             'device_name' => $request->device_name ?? $request->device_id,
             'temperature' => $request->temperature,
             'soil_moisture' => $request->soil_moisture,
             'raw_adc' => $request->raw_adc,
-            'relay_status' => $request->relay_status ?? ($request->status_pompa === 'Hidup'),
-            'status_pompa' => $request->status_pompa ?? ($request->relay_status ? 'Hidup' : 'Mati'),
+            'relay_status' => $request->relay_status ?? false,
+            'status_pompa' => $request->relay_status ? 'Hidup' : 'Mati',
             'ip_address' => $request->ip_address,
         ];
 

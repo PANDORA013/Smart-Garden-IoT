@@ -86,7 +86,7 @@ class DeviceController extends Controller
             'success' => true,
             'count' => $devices->count(),
             'data' => $devices->map(function ($device) {
-                // Ambil IP address dan connected_devices dari monitoring terakhir
+                // Ambil IP address dari monitoring terakhir
                 $latestMonitoring = \App\Models\Monitoring::where('device_id', $device->device_id)
                     ->latest()
                     ->first();
@@ -108,7 +108,6 @@ class DeviceController extends Controller
                     'is_active' => $device->is_active,
                     'last_seen' => $device->last_seen,
                     'ip_address' => $latestMonitoring->ip_address ?? null,
-                    'connected_devices' => $latestMonitoring->connected_devices ?? null,
                     'status' => $this->getDeviceStatus($device),
                 ];
             })

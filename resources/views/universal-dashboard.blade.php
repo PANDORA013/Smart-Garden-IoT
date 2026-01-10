@@ -736,14 +736,16 @@
                 if (response.data.success) {
                     const data = response.data.data;
                     
-                    // Update sensor cards dengan deteksi "No Sensor"
+                    // Update sensor cards (tampilkan nilai apa adanya)
                     document.getElementById('sensor-temp').textContent = 
-                        data.temperature > 0 ? `${data.temperature.toFixed(1)}°C` : 
-                        data.temperature === 0 ? '🚫 No Sensor' : '--°C';
+                        data.temperature !== null && data.temperature !== undefined 
+                            ? `${data.temperature.toFixed(1)}°C` 
+                            : '--°C';
                     
                     document.getElementById('sensor-soil').textContent = 
-                        data.soil_moisture > 0 ? `${data.soil_moisture.toFixed(0)}%` : 
-                        data.soil_moisture === 0 ? '🚫 No Sensor' : '--%';
+                        data.soil_moisture !== null && data.soil_moisture !== undefined 
+                            ? `${data.soil_moisture.toFixed(0)}%` 
+                            : '--%';
                     
                     document.getElementById('relay-status').textContent = 
                         data.relay_status ? 'ON' : 'OFF';
@@ -771,31 +773,23 @@
                     document.getElementById('last-update-display').textContent = 
                         new Date().toLocaleTimeString('id-ID');
                     
-                    // Update detected devices list
+                    // Update detected devices list (Fixed Hardware: DHT22, Soil, Relay)
                     const deviceListContainer = document.getElementById('detected-devices-list');
-                    if (data.connected_devices) {
-                        const devices = data.connected_devices.split(',');
-                        let html = '';
-                        devices.forEach(dev => {
-                            dev = dev.trim();
-                            if(dev) {
-                                // Icon mapping
-                                let icon = 'fa-microchip';
-                                if(dev.includes('DHT')) icon = 'fa-temperature-high';
-                                if(dev.includes('LCD')) icon = 'fa-tv';
-                                if(dev.includes('Servo')) icon = 'fa-gears';
-                                if(dev.includes('Soil')) icon = 'fa-droplet';
-                                if(dev.includes('Relay')) icon = 'fa-toggle-on';
-                                
-                                html += `<span class="flex items-center gap-1 px-2 py-1 bg-white text-blue-600 text-xs font-bold rounded-lg shadow-sm">
-                                    <i class="fa-solid ${icon}"></i> ${dev}
-                                </span>`;
-                            }
-                        });
-                        deviceListContainer.innerHTML = html || '<span class="text-xs bg-white/20 px-2 py-1 rounded">Tidak ada data</span>';
-                    } else {
-                        deviceListContainer.innerHTML = '<span class="text-xs bg-white/20 px-2 py-1 rounded">Menunggu data...</span>';
-                    }
+                    const fixedHardware = [
+                        { name: 'DHT22', icon: 'fa-temperature-high', status: data.temperature > 0 },
+                        { name: 'Soil Sensor', icon: 'fa-droplet', status: data.soil_moisture > 0 },
+                        { name: 'Relay Module', icon: 'fa-toggle-on', status: true }
+                    ];
+                    
+                    let html = '';
+                    fixedHardware.forEach(hw => {
+                        const statusColor = hw.status ? 'text-green-600' : 'text-slate-400';
+                        const statusText = hw.status ? 'Connected' : 'Not detected';
+                        html += `<span class="flex items-center gap-1 px-2 py-1 bg-white ${statusColor} text-xs font-bold rounded-lg shadow-sm">
+                            <i class="fa-solid ${hw.icon}"></i> ${hw.name}
+                        </span>`;
+                    });
+                    deviceListContainer.innerHTML = html;
                     
                     // Update settings page info
                     if (document.getElementById('settings-device-name')) {
@@ -915,53 +909,34 @@
                             }
                         }
 
-                        // 3. Tampilkan Sensor yang Terdeteksi
-                        let sensorListHtml = '';
-                        if (device.connected_devices) {
-                            const sensors = device.connected_devices.split(',');
-                            
-                            sensors.forEach(s => {
-                                s = s.trim();
-                                // Filter "Pico W" agar tidak muncul dua kali, dan pastikan string tidak kosong
-                                if(s && s !== "Pico W") { 
-                                    // Tentukan Icon & Warna tiap sensor
-                                    let icon = 'fa-microchip';
-                                    let color = 'text-slate-600 bg-slate-50 border-slate-200';
-                                    
-                                    if(s.includes('DHT')) { icon = 'fa-temperature-high'; color = 'text-orange-600 bg-orange-50 border-orange-200'; }
-                                    else if(s.includes('Soil')) { icon = 'fa-water'; color = 'text-blue-600 bg-blue-50 border-blue-200'; }
-                                    else if(s.includes('LCD') || s.includes('OLED')) { icon = 'fa-tv'; color = 'text-cyan-600 bg-cyan-50 border-cyan-200'; }
-                                    else if(s.includes('Relay')) { icon = 'fa-bolt'; color = 'text-yellow-600 bg-yellow-50 border-yellow-200'; }
-                                    else if(s.includes('Servo')) { icon = 'fa-gears'; color = 'text-purple-600 bg-purple-50 border-purple-200'; }
-
-                                    // Render Baris Sensor
-                                    sensorListHtml += `
-                                        <div class="flex items-center justify-between p-3 rounded-lg border ${color} mb-2">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                                    <i class="fa-solid ${icon}"></i>
-                                                </div>
-                                                <span class="font-semibold text-sm">${s}</span>
-                                            </div>
-                                            <div class="flex items-center gap-1 text-green-600 text-xs font-bold bg-white px-2 py-1 rounded-md shadow-sm">
-                                                <i class="fa-solid fa-check"></i> OK
-                                            </div>
-                                        </div>
-                                    `;
-                                }
-                            });
-                        } 
+                        // 3. Fixed Hardware
+                        const fixedHardware = [
+                            { name: 'DHT22 Sensor', icon: 'fa-temperature-high', color: 'text-orange-600 bg-orange-50 border-orange-200', pin: 'GP2' },
+                            { name: 'Soil Moisture', icon: 'fa-droplet', color: 'text-blue-600 bg-blue-50 border-blue-200', pin: 'GP26' },
+                            { name: 'Relay Module', icon: 'fa-bolt', color: 'text-yellow-600 bg-yellow-50 border-yellow-200', pin: 'GP5' }
+                        ];
                         
-                        if (sensorListHtml === '') {
-                            sensorListHtml = `
-                                <div class="text-center p-4 border-2 border-dashed border-slate-200 rounded-xl text-slate-400">
-                                    <i class="fa-solid fa-plug-circle-xmark text-xl mb-1"></i>
-                                    <p class="text-xs">Tidak ada sensor terdeteksi</p>
+                        let sensorListHtml = '';
+                        fixedHardware.forEach(hw => {
+                            sensorListHtml += `
+                                <div class="flex items-center justify-between p-3 rounded-lg border ${hw.color} mb-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                            <i class="fa-solid ${hw.icon}"></i>
+                                        </div>
+                                        <div>
+                                            <span class="font-semibold text-sm block">${hw.name}</span>
+                                            <span class="text-xs opacity-60">Pin: ${hw.pin}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1 text-green-600 text-xs font-bold bg-white px-2 py-1 rounded-md shadow-sm">
+                                        <i class="fa-solid fa-circle text-[6px]"></i> Ready
+                                    </div>
                                 </div>
                             `;
-                        }
+                        });
 
-                        // 3. Render Card Utama
+                        // 4. Render Card Utama
                         return `
                             <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-100 relative overflow-hidden group">
                                 <div class="flex justify-between items-start mb-6 relative z-10">
