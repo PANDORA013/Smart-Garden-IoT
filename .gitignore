@@ -25,3 +25,7 @@ Thumbs.db
 
 # Backup folders
 backup_*/
+
+# Pico W configuration files with credentials
+arduino/config.h
+micropython/config.py
