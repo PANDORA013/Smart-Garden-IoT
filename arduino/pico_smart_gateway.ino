@@ -7,7 +7,7 @@
 // 
 // FITUR LENGKAP:
 // ✅ WiFi Connection dengan Auto-Reconnect
-// ✅ DHT22 Temperature & Humidity Sensor
+// ✅ DHT22 Temperature Sensor (Humidity removed)
 // ✅ Capacitive Soil Moisture Sensor (ADC)
 // ✅ Relay Control untuk Pompa Air
 // ✅ HTTP POST ke Laravel Server (2-Way Communication)
@@ -82,7 +82,7 @@ unsigned long lastSendTime = 0;
 const unsigned long SEND_INTERVAL = 10000;  // Kirim data tiap 10 detik
 bool pumpStatus = false;
 float temperature = 0;
-float humidity = 0;
+// float humidity = 0;  // REMOVED: Tidak digunakan di backend
 int soilMoisture = 0;
 int rawADC = 0;
 
@@ -208,16 +208,15 @@ void connectWiFi() {
 // FUNGSI: Baca Semua Sensor
 // =============================================================================
 void readSensors() {
-  // Baca DHT22 (Temperature & Humidity)
+  // Baca DHT22 (Temperature only - Humidity tidak digunakan)
   temperature = dht.readTemperature();
-  humidity = dht.readHumidity();
+  // humidity = dht.readHumidity();  // REMOVED: Tidak digunakan di backend
   
   // Fallback jika DHT22 error
-  if (isnan(temperature) || isnan(humidity)) {
+  if (isnan(temperature)) {
     Serial.println("⚠️  DHT22 ERROR: Timeout reading sensor!");
     temperature = 28.0;  // Default fallback
-    humidity = 60.0;
-    Serial.println("   Using fallback values: 28°C, 60%");
+    Serial.println("   Using fallback value: 28°C");
   }
   
   // Baca Soil Moisture Sensor (ADC)
@@ -235,9 +234,9 @@ void readSensors() {
   Serial.print(temperature);
   Serial.println("°C");
   
-  Serial.print("   💧 Humidity: ");
-  Serial.print(humidity);
-  Serial.println("%");
+  // Serial.print("   💧 Humidity: ");  // REMOVED: Tidak digunakan
+  // Serial.print(humidity);
+  // Serial.println("%");
   
   Serial.print("   🌱 Soil Moisture: ");
   Serial.print(soilMoisture);
@@ -336,7 +335,7 @@ void sendDataToServer() {
   StaticJsonDocument<512> doc;
   doc["device_id"] = DEVICE_ID;
   doc["temperature"] = temperature;
-  doc["humidity"] = humidity;
+  // doc["humidity"] = humidity;  // REMOVED: Backend tidak memproses data ini
   doc["soil_moisture"] = soilMoisture;
   doc["raw_adc"] = rawADC;
   doc["relay_status"] = pumpStatus;
