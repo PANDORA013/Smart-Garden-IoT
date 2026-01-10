@@ -107,13 +107,21 @@ Smart Garden IoT is a complete web-based monitoring and control system for autom
 - Water Pump
 - Jumper Wires
 
-### Arduino Code
-Upload the Arduino sketch from `arduino/pico_smart_gateway.ino` to your Pico W.
+### Pico W Configuration
 
-**Configuration:**
-- Update WiFi credentials in the code
-- Set server IP address
-- Upload to Pico W via Arduino IDE
+**Quick Setup:**
+1. Choose implementation: **Arduino** (recommended) or **MicroPython**
+2. Copy configuration template and set your WiFi credentials
+3. Update server IP address
+4. Upload to Pico W
+
+**Detailed Guide:**
+See [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md) for complete setup instructions.
+
+**Quick Reference:**
+- Arduino code: `arduino/pico_smart_gateway.ino`
+- MicroPython code: `micropython/main.py`
+- Configuration examples: `config.example.h` and `config.example.py`
 
 ---
 

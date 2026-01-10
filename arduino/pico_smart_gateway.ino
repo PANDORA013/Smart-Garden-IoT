@@ -3,6 +3,22 @@
  * RASPBERRY PI PICO W - SMART GARDEN GATEWAY (2-Way Communication)
  * =============================================================================
  * 
+ * ⚠️ IMPORTANT - CONFIGURATION REQUIRED:
+ * Before uploading, you MUST configure your WiFi credentials and server URL.
+ * 
+ * RECOMMENDED METHOD (Secure):
+ * 1. Copy "config.example.h" to "config.h" 
+ * 2. Edit config.h with your credentials
+ * 3. config.h is automatically ignored by git (your credentials stay private)
+ * 
+ * ALTERNATIVE METHOD (Quick Test):
+ * Update the credentials directly in lines 40-42 below
+ * ⚠️ WARNING: Don't commit credentials to git!
+ * 
+ * For complete setup guide, see: CONFIGURATION_GUIDE.md
+ * 
+ * =============================================================================
+ * 
  * FITUR UTAMA:
  * ✅ 2-Way Communication (Kirim Data + Terima Config dari Server)
  * ✅ Auto-Provisioning (Server otomatis buat device_settings)
@@ -30,9 +46,12 @@
 // ===========================
 // KONFIGURASI WiFi & SERVER
 // ===========================
-const char* ssid = "Bocil";                  // WiFi SSID
-const char* password = "kesayanganku";       // WiFi Password
-const char* serverUrl = "http://192.168.18.35:8000/api/monitoring/insert"; // IP Server Laravel
+// ⚠️ CHANGE THESE VALUES BEFORE UPLOADING!
+// For better security, use config.h file instead (copy from config.example.h)
+const char* ssid = "YOUR_WIFI_SSID";                  // WiFi SSID - CHANGE THIS!
+const char* password = "YOUR_WIFI_PASSWORD";          // WiFi Password - CHANGE THIS!
+const char* serverUrl = "http://192.168.1.100:8000/api/monitoring/insert"; // Server URL - CHANGE THIS!
+// Find your server IP with: ipconfig (Windows) or ifconfig (Mac/Linux)
 
 // ===========================
 // KONFIGURASI HARDWARE
@@ -47,7 +66,9 @@ DHT dht(DHT_PIN, DHT_TYPE);
 // ===========================
 // DEVICE IDENTITY
 // ===========================
-String deviceId = "PICO_CABAI_01"; // ID Unik Alat (Ganti sesuai kebutuhan)
+// ⚠️ CHANGE THIS to a unique name for your device
+String deviceId = "PICO_GARDEN_01"; // ID Unik Alat (Ganti sesuai kebutuhan)
+// Examples: "PICO_TOMATO_01", "PICO_GREENHOUSE_A", "PICO_GARDEN_BACKYARD"
 
 // ===========================
 // VARIABEL KONFIGURASI (Dari Server)

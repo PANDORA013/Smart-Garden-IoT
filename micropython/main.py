@@ -1,3 +1,26 @@
+"""
+=============================================================================
+RASPBERRY PI PICO W - SMART GARDEN GATEWAY (MicroPython)
+=============================================================================
+
+⚠️ IMPORTANT - CONFIGURATION REQUIRED:
+Before uploading, you MUST configure your WiFi credentials and server URL.
+
+RECOMMENDED METHOD (Secure):
+1. Copy "config.example.py" to "config.py"
+2. Edit config.py with your credentials
+3. Upload both config.py and main.py to Pico W
+4. config.py is automatically ignored by git (your credentials stay private)
+
+ALTERNATIVE METHOD (Quick Test):
+Update the credentials directly in lines 25-28 below
+⚠️ WARNING: Don't commit credentials to git!
+
+For complete setup guide, see: CONFIGURATION_GUIDE.md
+
+=============================================================================
+"""
+
 import network
 import urequests as requests
 import ujson
@@ -6,12 +29,13 @@ from machine import Pin, ADC, RTC
 from dht import DHT22
 
 # ===========================
-# ✅ SUDAH DIKONFIGURASI UNTUK ANDA
+# ✅ CONFIGURATION - CHANGE THESE VALUES!
 # ===========================
-SSID = "Bocil"              # WiFi Anda
-PASSWORD = "kesayanganku"   # Password WiFi Anda
-# IP Server Laravel Anda
-SERVER_URL = "http://192.168.18.35:8000/api/monitoring/insert"
+# ⚠️ For better security, use config.py file instead (copy from config.example.py)
+SSID = "YOUR_WIFI_SSID"              # WiFi SSID - CHANGE THIS!
+PASSWORD = "YOUR_WIFI_PASSWORD"      # WiFi Password - CHANGE THIS!
+# Find your server IP with: ipconfig (Windows) or ifconfig (Mac/Linux)
+SERVER_URL = "http://192.168.1.100:8000/api/monitoring/insert"  # Server URL - CHANGE THIS!
 
 # ===========================
 # KONFIGURASI HARDWARE
@@ -24,7 +48,8 @@ relay = Pin(5, Pin.OUT)
 # ===========================
 # VARIABEL GLOBAL & DEFAULT
 # ===========================
-DEVICE_ID = "PICO_CABAI_01"
+# ⚠️ CHANGE THIS to a unique name for your device
+DEVICE_ID = "PICO_GARDEN_01"  # Examples: "PICO_TOMATO_01", "PICO_GREENHOUSE_A"
 
 # Config Defaults (Sesuai source asli)
 config = {
