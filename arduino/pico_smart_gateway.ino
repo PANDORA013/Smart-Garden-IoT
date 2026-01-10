@@ -36,17 +36,12 @@
 #include <WiFiUdp.h>
 
 // =============================================================================
-// KONFIGURASI JARINGAN - WiFi CCTV_UISI
+// KONFIGURASI JARINGAN - WiFi Network
 // =============================================================================
 const char* WIFI_SSID = "CCTV_UISI";
 const char* WIFI_PASSWORD = "08121191";
-const char* SERVER_URL = "http://10.134.42.169:8000/api/monitoring/insert";
+const char* SERVER_URL = "http://192.168.0.102:8000/api/monitoring/insert";
 const char* DEVICE_ID = "PICO_CABAI_01";
-
-// Backup WiFi (jika CCTV_UISI tidak tersedia, uncomment untuk pakai Bocil)
-// const char* WIFI_SSID = "Bocil";
-// const char* WIFI_PASSWORD = "kesayanganku";
-// const char* SERVER_URL = "http://192.168.18.35:8000/api/monitoring/insert";
 
 // =============================================================================
 // KONFIGURASI HARDWARE
