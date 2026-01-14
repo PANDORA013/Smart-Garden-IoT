@@ -216,12 +216,12 @@
                     <!-- Header -->
                     <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                         <h3 class="text-lg font-bold text-slate-800">Konfigurasi Perangkat</h3>
-                        <div class="flex items-center gap-2">
+                        <div id="settings-device-status" class="flex items-center gap-2">
                             <span class="relative flex h-2 w-2">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
                             </span>
-                            <span class="text-xs font-medium text-green-600">Aktif</span>
+                            <span id="settings-status-text" class="text-xs font-medium text-slate-600">Checking...</span>
                         </div>
                     </div>
                     
@@ -358,6 +358,15 @@
                     <select id="config-device-id" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-red-500 font-medium">
                         <option value="">Loading devices...</option>
                     </select>
+                    
+                    <!-- Device Status Indicator -->
+                    <div id="config-device-status" class="mt-3 hidden">
+                        <span id="config-status-badge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold">
+                            <i class="fa-solid fa-circle text-[8px]"></i>
+                            <span id="config-status-text">Checking...</span>
+                        </span>
+                        <span id="config-status-message" class="ml-2 text-xs text-slate-600"></span>
+                    </div>
                 </div>
 
                 <!-- Mode Selection Cards -->
@@ -546,131 +555,6 @@
         </div>
     </div>
 
-    <!-- ================= MODAL: MODE SELECTION (OLD - Keep for device management page) ================= -->
-    <div id="modeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="if(event.target.id === 'modeModal') closeModeModal()">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <!-- Modal Header -->
-            <div class="flex justify-between items-center p-6 border-b border-slate-200">
-                <div>
-                    <h3 class="text-xl font-bold text-slate-800">🎮 Pilih Strategi Penyiraman</h3>
-                    <p class="text-sm text-slate-500 mt-1">Ubah mode operasi tanpa upload ulang Arduino</p>
-                </div>
-                <button onclick="closeModeModal()" class="text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <!-- Modal Body -->
-            <div class="p-6">
-                <input type="hidden" id="modal-device-id">
-                
-                <!-- Mode Selection -->
-                <label class="block text-sm font-bold text-slate-700 mb-3">Mode Operasi:</label>
-                <select id="select-mode" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 mb-6 font-medium" onchange="showModeOptions()">
-                    <option value="1">🟢 Mode 1: Basic Threshold (Sederhana)</option>
-                    <option value="2">🔵 Mode 2: Fuzzy Logic AI (Cerdas)</option>
-                    <option value="3">🔴 Mode 3: Schedule Timer (Terjadwal)</option>
-                </select>
-
-                <!-- Mode 1: Basic Options -->
-                <div id="opt-mode-1" class="mode-opt space-y-4">
-                    <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-                        <div class="flex items-start gap-3">
-                            <i class="fa-solid fa-lightbulb text-green-600 text-xl mt-1"></i>
-                            <div>
-                                <p class="font-semibold text-green-800 mb-1">Mode Basic Threshold</p>
-                                <p class="text-sm text-green-700">Pompa menyala jika kelembapan tanah di bawah batas, dan mati jika sudah mencukupi. Cocok untuk greenhouse dengan kondisi stabil.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Batas Kering - Pompa ON (%):</label>
-                        <input type="number" id="input-batas-siram" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="40" min="0" max="100">
-                        <p class="text-xs text-slate-500 mt-1">Pompa akan hidup jika kelembapan < nilai ini</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Batas Basah - Pompa OFF (%):</label>
-                        <input type="number" id="input-batas-stop" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="70" min="0" max="100">
-                        <p class="text-xs text-slate-500 mt-1">Pompa akan mati jika kelembapan >= nilai ini</p>
-                    </div>
-                </div>
-
-                <!-- Mode 2: Fuzzy Logic Options -->
-                <div id="opt-mode-2" class="mode-opt hidden">
-                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                        <div class="flex items-start gap-3">
-                            <i class="fa-solid fa-robot text-blue-600 text-xl mt-1"></i>
-                            <div>
-                                <p class="font-semibold text-blue-800 mb-2">🤖 Fuzzy Logic AI - Fully Automatic</p>
-                                <p class="text-sm text-blue-700 mb-3">Sistem AI menghitung durasi siram secara otomatis berdasarkan <strong>Suhu Udara</strong> dan <strong>Kelembapan Tanah</strong>. Tidak ada pengaturan manual!</p>
-                                
-                                <div class="bg-white rounded-lg p-3 space-y-2 text-sm">
-                                    <p class="font-semibold text-slate-700">Logika Fuzzy:</p>
-                                    <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-fire text-red-500"></i>
-                                        <span class="text-slate-600">Kering + Panas (>30°C) = Siram <strong class="text-slate-800">8 detik</strong></span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-sun text-yellow-500"></i>
-                                        <span class="text-slate-600">Kering + Sedang (25-30°C) = Siram <strong class="text-slate-800">5 detik</strong></span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-snowflake text-blue-500"></i>
-                                        <span class="text-slate-600">Kering + Dingin (<25°C) = Siram <strong class="text-slate-800">3 detik</strong></span>
-                                    </div>
-                                </div>
-
-                                <div class="mt-3 text-xs text-blue-600">
-                                    <i class="fa-solid fa-check-circle"></i> Hemat air hingga 30% | Adaptif cuaca | Zero configuration
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mode 3: Schedule Options -->
-                <div id="opt-mode-3" class="mode-opt hidden space-y-4">
-                    <div class="bg-red-50 border border-red-200 rounded-xl p-4">
-                        <div class="flex items-start gap-3">
-                            <i class="fa-solid fa-clock text-red-600 text-xl mt-1"></i>
-                            <div>
-                                <p class="font-semibold text-red-800 mb-1">Mode Schedule Timer</p>
-                                <p class="text-sm text-red-700">Siram otomatis pada jam yang ditentukan, tidak bergantung pada sensor. Cocok untuk tanaman dengan rutinitas tetap.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">⏰ Jadwal Pagi:</label>
-                            <input type="time" id="input-jam-pagi" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="07:00">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">🌅 Jadwal Sore:</label>
-                            <input type="time" id="input-jam-sore" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="17:00">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">⏱️ Durasi Siram (detik):</label>
-                        <input type="number" id="input-durasi" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="5" min="1" max="60">
-                        <p class="text-xs text-slate-500 mt-1">Lama pompa menyala setiap jadwal</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="flex justify-between items-center p-6 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
-                <button onclick="closeModeModal()" class="px-6 py-2 text-slate-600 hover:text-slate-800 font-medium">Batal</button>
-                <button onclick="saveMode()" class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold shadow-lg shadow-blue-500/30 transition-all">
-                    <i class="fa-solid fa-save mr-2"></i> Simpan Perubahan
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // --- CONFIGURATION ---
         const API_BASE_URL = '/api/monitoring';
@@ -695,6 +579,8 @@
                 loadLogs();
             } else if (pageId === 'devices') {
                 loadDevices();
+            } else if (pageId === 'settings') {
+                updateSettingsDeviceStatus();
             }
         }
 
@@ -732,28 +618,71 @@
         // --- API FUNCTIONS ---
         async function fetchStats() {
             try {
-                const response = await axios.get(`${API_BASE_URL}/stats`);
+                const response = await axios.get(`${API_BASE_URL}/stats`, {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
                 if (response.data.success) {
                     const data = response.data.data;
+                    const isOnline = data.is_online;
                     
-                    // Update sensor cards (tampilkan nilai apa adanya)
-                    document.getElementById('sensor-temp').textContent = 
-                        data.temperature !== null && data.temperature !== undefined 
-                            ? `${data.temperature.toFixed(1)}°C` 
-                            : '--°C';
+                    // Jika offline, tampilkan data sebagai tidak tersedia
+                    if (!isOnline) {
+                        document.getElementById('sensor-temp').textContent = '--°C';
+                        document.getElementById('sensor-soil').textContent = '--%';
+                        document.getElementById('relay-status').textContent = 'OFF';
+                        document.getElementById('toggleSwitch').checked = false;
+                        document.getElementById('toggleSwitch').disabled = true;
+                        
+                        // Tampilkan peringatan offline di dashboard
+                        const deviceListContainer = document.getElementById('detected-devices-list');
+                        deviceListContainer.innerHTML = '<span class="text-red-500 text-xs font-bold">⚠️ Device Offline - Tidak ada data sensor</span>';
+                    } else {
+                        // Online: tampilkan data normal
+                        document.getElementById('sensor-temp').textContent = 
+                            data.temperature !== null && data.temperature !== undefined 
+                                ? `${data.temperature.toFixed(1)}°C` 
+                                : '--°C';
+                        
+                        document.getElementById('sensor-soil').textContent = 
+                            data.soil_moisture !== null && data.soil_moisture !== undefined 
+                                ? `${data.soil_moisture.toFixed(0)}%` 
+                                : '--%';
+                        
+                        document.getElementById('relay-status').textContent = 
+                            data.relay_status ? 'ON' : 'OFF';
+                        
+                        // Update toggle switch dan enable control
+                        document.getElementById('toggleSwitch').checked = data.relay_status;
+                        document.getElementById('toggleSwitch').disabled = false;
+                        
+                        // Update detected devices list dengan data hardware_status dari Pico
+                        const deviceListContainer = document.getElementById('detected-devices-list');
+                        const hwStatus = data.hardware_status || {};
+                        
+                        const hardwareList = [
+                            { name: 'DHT22', icon: 'fa-temperature-high', status: hwStatus.dht22 || false },
+                            { name: 'Soil Sensor', icon: 'fa-droplet', status: hwStatus.soil_sensor || false },
+                            { name: 'Relay', icon: 'fa-toggle-on', status: hwStatus.relay !== false },
+                            { name: 'Servo', icon: 'fa-gear', status: hwStatus.servo !== false },
+                            { name: 'LCD', icon: 'fa-display', status: hwStatus.lcd || false }
+                        ];
+                        
+                        let html = '';
+                        hardwareList.forEach(hw => {
+                            const statusColor = hw.status ? 'text-green-600' : 'text-red-500';
+                            const statusIcon = hw.status ? 'fa-check-circle' : 'fa-times-circle';
+                            html += `<span class="flex items-center gap-1 px-2 py-1 bg-white ${statusColor} text-xs font-bold rounded-lg shadow-sm">
+                                <i class="fa-solid ${hw.icon}"></i> ${hw.name}
+                                <i class="fa-solid ${statusIcon} text-[10px]"></i>
+                            </span>`;
+                        });
+                        deviceListContainer.innerHTML = html;
+                    }
                     
-                    document.getElementById('sensor-soil').textContent = 
-                        data.soil_moisture !== null && data.soil_moisture !== undefined 
-                            ? `${data.soil_moisture.toFixed(0)}%` 
-                            : '--%';
-                    
-                    document.getElementById('relay-status').textContent = 
-                        data.relay_status ? 'ON' : 'OFF';
-                    
-                    // Update toggle switch
-                    document.getElementById('toggleSwitch').checked = data.relay_status;
-                    
-                    // Update device info card (Dashboard)
+                    // Update device info card (Dashboard) - selalu tampilkan
                     document.getElementById('device-name-display').textContent = 
                         data.device_name || 'Smart Garden Device';
                     document.getElementById('plant-type-display').textContent = 
@@ -773,24 +702,6 @@
                     document.getElementById('last-update-display').textContent = 
                         new Date().toLocaleTimeString('id-ID');
                     
-                    // Update detected devices list (Fixed Hardware: DHT22, Soil, Relay)
-                    const deviceListContainer = document.getElementById('detected-devices-list');
-                    const fixedHardware = [
-                        { name: 'DHT22', icon: 'fa-temperature-high', status: data.temperature > 0 },
-                        { name: 'Soil Sensor', icon: 'fa-droplet', status: data.soil_moisture > 0 },
-                        { name: 'Relay Module', icon: 'fa-toggle-on', status: true }
-                    ];
-                    
-                    let html = '';
-                    fixedHardware.forEach(hw => {
-                        const statusColor = hw.status ? 'text-green-600' : 'text-slate-400';
-                        const statusText = hw.status ? 'Connected' : 'Not detected';
-                        html += `<span class="flex items-center gap-1 px-2 py-1 bg-white ${statusColor} text-xs font-bold rounded-lg shadow-sm">
-                            <i class="fa-solid ${hw.icon}"></i> ${hw.name}
-                        </span>`;
-                    });
-                    deviceListContainer.innerHTML = html;
-                    
                     // Update settings page info
                     if (document.getElementById('settings-device-name')) {
                         document.getElementById('settings-device-name').textContent = 
@@ -805,9 +716,10 @@
                             data.plant_type || '-';
                     }
                     
-                    // Update status
-                    updateConnectionStatus(true);
+                    // Update status Admin di sidebar
+                    updateConnectionStatus(isOnline);
                 }
+                
             } catch (error) {
                 console.error('Error fetching stats:', error);
                 updateConnectionStatus(false);
@@ -835,7 +747,12 @@
 
         async function loadLogs() {
             try {
-                const response = await axios.get(`${API_BASE_URL}/logs?limit=20`);
+                const response = await axios.get(`${API_BASE_URL}/logs?limit=20`, {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
                 const tbody = document.getElementById('logs-tbody');
                 
                 if (response.data.success && response.data.data.length > 0) {
@@ -872,13 +789,17 @@
             const container = document.getElementById('devices-container');
             
             try {
-                const response = await axios.get('/api/devices'); 
+                const response = await axios.get('/api/devices', {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                }); 
                 const devices = response.data.data;
                 
                 if (devices && devices.length > 0) {
                     container.innerHTML = devices.map(device => {
                         
-                        // 1. Cek Status Online/Offline berdasarkan status dari API
                         const statusMap = {
                             'online': { badge: 'bg-green-100 text-green-700 border-green-300', text: 'ONLINE', icon: 'fa-circle-check' },
                             'idle': { badge: 'bg-yellow-100 text-yellow-700 border-yellow-300', text: 'IDLE', icon: 'fa-circle-pause' },
@@ -891,7 +812,6 @@
                             <i class="fa-solid ${statusInfo.icon} text-[8px] mr-1"></i> ${statusInfo.text}
                         </span>`;
 
-                        // 2. Tampilkan last_seen time
                         let lastSeenText = 'Never';
                         if (device.last_seen) {
                             const lastSeen = new Date(device.last_seen);
@@ -909,34 +829,6 @@
                             }
                         }
 
-                        // 3. Fixed Hardware
-                        const fixedHardware = [
-                            { name: 'DHT22 Sensor', icon: 'fa-temperature-high', color: 'text-orange-600 bg-orange-50 border-orange-200', pin: 'GP2' },
-                            { name: 'Soil Moisture', icon: 'fa-droplet', color: 'text-blue-600 bg-blue-50 border-blue-200', pin: 'GP26' },
-                            { name: 'Relay Module', icon: 'fa-bolt', color: 'text-yellow-600 bg-yellow-50 border-yellow-200', pin: 'GP5' }
-                        ];
-                        
-                        let sensorListHtml = '';
-                        fixedHardware.forEach(hw => {
-                            sensorListHtml += `
-                                <div class="flex items-center justify-between p-3 rounded-lg border ${hw.color} mb-2">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                            <i class="fa-solid ${hw.icon}"></i>
-                                        </div>
-                                        <div>
-                                            <span class="font-semibold text-sm block">${hw.name}</span>
-                                            <span class="text-xs opacity-60">Pin: ${hw.pin}</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-1 text-green-600 text-xs font-bold bg-white px-2 py-1 rounded-md shadow-sm">
-                                        <i class="fa-solid fa-circle text-[6px]"></i> Ready
-                                    </div>
-                                </div>
-                            `;
-                        });
-
-                        // 4. Render Card Utama
                         return `
                             <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-100 relative overflow-hidden group">
                                 <div class="flex justify-between items-start mb-6 relative z-10">
@@ -952,15 +844,6 @@
                                     ${statusBadge}
                                 </div>
                                 
-                                <div class="relative z-10">
-                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-                                        Hardware Terhubung
-                                    </h4>
-                                    <div class="space-y-1">
-                                        ${sensorListHtml}
-                                    </div>
-                                </div>
-
                                 <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
                                     <span><i class="fa-regular fa-clock mr-1"></i> Last Seen: ${lastSeenText}</span>
                                     <span><i class="fa-solid fa-network-wired mr-1"></i> IP: ${device.ip_address || '-'}</span>
@@ -992,7 +875,15 @@
         }
 
         async function toggleRelay() {
-            const isChecked = document.getElementById('toggleSwitch').checked;
+            const toggleSwitch = document.getElementById('toggleSwitch');
+            const isChecked = toggleSwitch.checked;
+            
+            // Cek apakah device offline
+            if (toggleSwitch.disabled) {
+                alert('⚠️ Tidak dapat mengontrol pompa! Device sedang OFFLINE.\n\nSilakan cek koneksi Pico W dan tunggu hingga status Online.');
+                toggleSwitch.checked = false;
+                return;
+            }
             
             try {
                 const response = await axios.post(`${API_BASE_URL}/relay/toggle`, {
@@ -1011,8 +902,9 @@
                 }
             } catch (error) {
                 console.error('Error toggling relay:', error);
+                alert('❌ Gagal mengontrol pompa. Pastikan device terhubung.');
                 // Revert switch on error
-                document.getElementById('toggleSwitch').checked = !isChecked;
+                toggleSwitch.checked = !isChecked;
             }
         }
 
@@ -1023,6 +915,7 @@
             const connectionStatus = document.getElementById('connection-status');
             
             if (isOnline) {
+                // Update status di dashboard header
                 statusText.textContent = 'Online';
                 statusText.classList.remove('text-red-600');
                 statusText.classList.add('text-green-600');
@@ -1030,10 +923,13 @@
                 statusDot.classList.add('bg-green-500');
                 statusPing.classList.remove('bg-red-400');
                 statusPing.classList.add('bg-green-400');
-                connectionStatus.textContent = 'Online';
+                
+                // Update status Admin di sidebar
+                connectionStatus.textContent = 'Device Online';
                 connectionStatus.classList.remove('text-red-500');
-                connectionStatus.classList.add('text-slate-500');
+                connectionStatus.classList.add('text-green-500');
             } else {
+                // Update status di dashboard header
                 statusText.textContent = 'Offline';
                 statusText.classList.remove('text-green-600');
                 statusText.classList.add('text-red-600');
@@ -1041,14 +937,61 @@
                 statusDot.classList.add('bg-red-500');
                 statusPing.classList.remove('bg-green-400');
                 statusPing.classList.add('bg-red-400');
-                connectionStatus.textContent = 'Offline';
-                connectionStatus.classList.remove('text-slate-500');
+                
+                // Update status Admin di sidebar
+                connectionStatus.textContent = 'Device Offline';
+                connectionStatus.classList.remove('text-green-500', 'text-slate-500');
                 connectionStatus.classList.add('text-red-500');
             }
         }
 
         function refreshLogs() {
             loadLogs();
+        }
+
+        async function updateSettingsDeviceStatus() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/stats`, {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (response.data.success) {
+                    const data = response.data.data;
+                    const isOnline = data.is_online;
+                    
+                    const statusContainer = document.getElementById('settings-device-status');
+                    const statusText = document.getElementById('settings-status-text');
+                    
+                    // Update ping animation dan status
+                    const pingSpan = statusContainer.querySelector('.animate-ping');
+                    const dotSpan = statusContainer.querySelector('.relative.inline-flex');
+                    
+                    if (isOnline) {
+                        // Online: hijau
+                        pingSpan.classList.remove('bg-slate-400', 'bg-red-400', 'bg-yellow-400');
+                        pingSpan.classList.add('bg-green-400');
+                        dotSpan.classList.remove('bg-slate-500', 'bg-red-500', 'bg-yellow-500');
+                        dotSpan.classList.add('bg-green-500');
+                        statusText.textContent = 'Online';
+                        statusText.classList.remove('text-slate-600', 'text-red-600', 'text-yellow-600');
+                        statusText.classList.add('text-green-600');
+                    } else {
+                        // Offline: merah
+                        pingSpan.classList.remove('bg-slate-400', 'bg-green-400', 'bg-yellow-400');
+                        pingSpan.classList.add('bg-red-400');
+                        dotSpan.classList.remove('bg-slate-500', 'bg-green-500', 'bg-yellow-500');
+                        dotSpan.classList.add('bg-red-500');
+                        statusText.textContent = 'Offline';
+                        statusText.classList.remove('text-slate-600', 'text-green-600', 'text-yellow-600');
+                        statusText.classList.add('text-red-600');
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating settings device status:', error);
+            }
         }
 
         function toggleMobileMenu() {
@@ -1081,7 +1024,12 @@
 
         async function loadDevicesForConfig() {
             try {
-                const response = await axios.get('/api/devices');
+                const response = await axios.get('/api/devices', {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
                 const devices = response.data.data;
                 const select = document.getElementById('config-device-id');
                 
@@ -1095,12 +1043,16 @@
                     document.getElementById('input-adc-min').value = firstDevice.sensor_min || 4095;
                     document.getElementById('input-adc-max').value = firstDevice.sensor_max || 1500;
                     
-                    // Add event listener untuk update ADC saat device berubah
+                    // Update status device pertama
+                    updateDeviceStatusInModal(firstDevice);
+                    
+                    // Add event listener untuk update ADC dan status saat device berubah
                     select.addEventListener('change', async (e) => {
                         const selectedDevice = devices.find(d => d.id == e.target.value);
                         if (selectedDevice) {
                             document.getElementById('input-adc-min').value = selectedDevice.sensor_min || 4095;
                             document.getElementById('input-adc-max').value = selectedDevice.sensor_max || 1500;
+                            updateDeviceStatusInModal(selectedDevice);
                         }
                     });
                 } else {
@@ -1110,6 +1062,52 @@
                 console.error('Error loading devices for config:', error);
                 document.getElementById('config-device-id').innerHTML = '<option value="">Error loading devices</option>';
             }
+        }
+
+        function updateDeviceStatusInModal(device) {
+            const statusContainer = document.getElementById('config-device-status');
+            const statusBadge = document.getElementById('config-status-badge');
+            const statusText = document.getElementById('config-status-text');
+            const statusMessage = document.getElementById('config-status-message');
+            
+            statusContainer.classList.remove('hidden');
+            
+            const statusMap = {
+                'online': {
+                    badge: 'bg-green-100 text-green-700',
+                    text: 'ONLINE',
+                    icon: 'fa-check-circle',
+                    message: 'Device terhubung dan mengirim data'
+                },
+                'idle': {
+                    badge: 'bg-yellow-100 text-yellow-700',
+                    text: 'IDLE',
+                    icon: 'fa-clock',
+                    message: 'Device tidak mengirim data dalam 2 menit terakhir'
+                },
+                'offline': {
+                    badge: 'bg-red-100 text-red-700',
+                    text: 'OFFLINE',
+                    icon: 'fa-times-circle',
+                    message: 'Device tidak terhubung, cek koneksi WiFi dan power'
+                },
+                'never_connected': {
+                    badge: 'bg-slate-100 text-slate-700',
+                    text: 'NEVER CONNECTED',
+                    icon: 'fa-question-circle',
+                    message: 'Device belum pernah mengirim data'
+                }
+            };
+            
+            const status = statusMap[device.status] || statusMap['offline'];
+            
+            statusBadge.className = `inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${status.badge}`;
+            statusText.textContent = status.text;
+            statusMessage.textContent = status.message;
+            
+            // Update icon
+            const icon = statusBadge.querySelector('i');
+            icon.className = `fa-solid ${status.icon} text-[8px]`;
         }
 
         function selectSmartMode(mode) {
@@ -1158,6 +1156,8 @@
             const deviceId = document.getElementById('config-device-id').value;
             const mode = parseInt(document.getElementById('selected-mode').value);
             
+            console.log('Saving config - Device ID:', deviceId, 'Mode:', mode);
+            
             if (!deviceId) {
                 alert('⚠️ Silakan pilih perangkat terlebih dahulu!');
                 return;
@@ -1169,6 +1169,8 @@
             // === KALIBRASI ADC (ALWAYS SEND) ===
             const adcMin = parseInt(document.getElementById('input-adc-min').value);
             const adcMax = parseInt(document.getElementById('input-adc-max').value);
+            
+            console.log('ADC Values - Min:', adcMin, 'Max:', adcMax);
             
             // Validation: ADC Min must be greater than ADC Max
             if (adcMin <= adcMax) {
@@ -1203,8 +1205,12 @@
                 }
             }
             
+            console.log('Request data:', requestData);
+            
             try {
                 const response = await axios.post(`/api/devices/${deviceId}/mode`, requestData);
+                
+                console.log('Response:', response.data);
                 
                 if (response.data.success) {
                     // Show success message with mode name
@@ -1232,89 +1238,12 @@
                 }
             } catch (error) {
                 console.error('Error saving smart configuration:', error);
-                alert('❌ Error: ' + (error.response?.data?.message || 'Network error'));
+                console.error('Error response:', error.response);
+                alert('❌ Error: ' + (error.response?.data?.message || error.message || 'Network error'));
             }
         }
 
-        // --- MODAL FUNCTIONS (OLD - for device management page) ---
-        function openModeModal(deviceId, currentMode, deviceData) {
-            document.getElementById('modeModal').classList.remove('hidden');
-            document.getElementById('modeModal').classList.add('flex');
-            document.getElementById('modal-device-id').value = deviceId;
-            document.getElementById('select-mode').value = currentMode;
-            
-            // Parse device data if passed as string
-            if (typeof deviceData === 'string') {
-                try {
-                    deviceData = JSON.parse(deviceData.replace(/&quot;/g, '"'));
-                } catch (e) {
-                    console.error('Error parsing device data:', e);
-                }
-            }
-            
-            // Populate form with current values
-            if (deviceData) {
-                document.getElementById('input-batas-siram').value = deviceData.batas_siram || 40;
-                document.getElementById('input-batas-stop').value = deviceData.batas_stop || 70;
-                document.getElementById('input-jam-pagi').value = deviceData.jam_pagi ? deviceData.jam_pagi.substring(0, 5) : '07:00';
-                document.getElementById('input-jam-sore').value = deviceData.jam_sore ? deviceData.jam_sore.substring(0, 5) : '17:00';
-                document.getElementById('input-durasi').value = deviceData.durasi_siram || 5;
-            }
-            
-            showModeOptions();
-        }
 
-        function closeModeModal() {
-            document.getElementById('modeModal').classList.add('hidden');
-            document.getElementById('modeModal').classList.remove('flex');
-        }
-
-        function showModeOptions() {
-            const mode = document.getElementById('select-mode').value;
-            
-            // Hide all mode options
-            document.querySelectorAll('.mode-opt').forEach(opt => {
-                opt.classList.add('hidden');
-            });
-            
-            // Show selected mode options
-            document.getElementById(`opt-mode-${mode}`).classList.remove('hidden');
-        }
-
-        async function saveMode() {
-            const deviceId = document.getElementById('modal-device-id').value;
-            const mode = parseInt(document.getElementById('select-mode').value);
-            
-            const requestData = { mode };
-            
-            // Add mode-specific parameters
-            if (mode === 1) {
-                requestData.batas_siram = parseInt(document.getElementById('input-batas-siram').value);
-                requestData.batas_stop = parseInt(document.getElementById('input-batas-stop').value);
-            } else if (mode === 3) {
-                requestData.jam_pagi = document.getElementById('input-jam-pagi').value;
-                requestData.jam_sore = document.getElementById('input-jam-sore').value;
-                requestData.durasi_siram = parseInt(document.getElementById('input-durasi').value);
-            }
-            
-            try {
-                const response = await axios.post(`/api/devices/${deviceId}/mode`, requestData);
-                
-                if (response.data.success) {
-                    // Show success message
-                    alert('✅ Mode berhasil diubah! Arduino akan update dalam 1 menit.');
-                    
-                    // Close modal and reload devices
-                    closeModeModal();
-                    loadDevices();
-                } else {
-                    alert('❌ Gagal mengubah mode: ' + (response.data.message || 'Unknown error'));
-                }
-            } catch (error) {
-                console.error('Error saving mode:', error);
-                alert('❌ Error: ' + (error.response?.data?.message || 'Network error'));
-            }
-        }
 
         // ==================== MINIMALIST SETTINGS FUNCTIONS ====================
         let minimalCurrentMode = 1;
@@ -1561,13 +1490,17 @@
                 }
                 // Mode 2 (Fuzzy AI): No additional settings needed
                 
+                console.log('Saving settings:', { device_id: minimalDeviceId, data });
+                
                 // Save mode settings
-                await axios.post(`/api/devices/${minimalDeviceId}/mode`, data);
+                const modeResponse = await axios.post(`/api/devices/${minimalDeviceId}/mode`, data);
+                console.log('Mode saved successfully:', modeResponse.data);
                 
                 // Save device name if changed
                 const deviceName = document.getElementById('minimal-device-name').value;
                 if (deviceName) {
-                    await axios.put(`/api/devices/${minimalDeviceId}`, { device_name: deviceName });
+                    const nameResponse = await axios.put(`/api/devices/${minimalDeviceId}`, { device_name: deviceName });
+                    console.log('Device name saved successfully:', nameResponse.data);
                 }
                 
                 // Show success notification
@@ -1581,7 +1514,21 @@
                 
             } catch (error) {
                 console.error('Error saving minimal settings:', error);
-                notif.textContent = '❌ Gagal menyimpan.';
+                console.error('Response data:', error.response?.data);
+                console.error('Device ID:', minimalDeviceId);
+                console.error('Request data:', data);
+                
+                let errorMsg = '❌ Gagal menyimpan.';
+                if (error.response?.data?.message) {
+                    errorMsg += ' ' + error.response.data.message;
+                } else if (error.response?.data?.errors) {
+                    const errors = Object.values(error.response.data.errors).flat();
+                    errorMsg += ' ' + errors.join(', ');
+                } else if (error.message) {
+                    errorMsg += ' ' + error.message;
+                }
+                
+                notif.textContent = errorMsg;
                 notif.className = 'text-center text-sm font-medium py-2 rounded-lg bg-red-50 text-red-700 border border-red-200';
                 notif.classList.remove('hidden');
             } finally {
@@ -1603,6 +1550,16 @@
                 loadMinimalSettings();
             }
             
+            // Load devices jika pindah ke halaman devices
+            if (pageId === 'devices') {
+                loadDevices();
+            }
+            
+            // Load logs jika pindah ke halaman logs
+            if (pageId === 'logs') {
+                loadLogs();
+            }
+            
             // Control auto-refresh: hanya aktif di dashboard
             if (pageId === 'dashboard') {
                 startDashboardAutoRefresh();
@@ -1610,6 +1567,11 @@
                 stopDashboardAutoRefresh();
             }
         };
+
+        // Fungsi refresh untuk masing-masing halaman
+        function refreshDevices() {
+            loadDevices();
+        }
 
         // Quick Actions Functions
         async function testPump() {
@@ -1646,29 +1608,27 @@
         let dashboardRefreshInterval = null;
 
         function startDashboardAutoRefresh() {
-            // Clear existing interval if any
             if (dashboardRefreshInterval) {
                 clearInterval(dashboardRefreshInterval);
             }
             
-            // Initial load
             fetchStats();
             updateChart();
             
-            // Auto-refresh every 3 seconds
+            // Real-time refresh setiap 1 detik
             dashboardRefreshInterval = setInterval(() => {
                 fetchStats();
                 updateChart();
-            }, 3000);
+            }, 1000);
             
-            console.log('✅ Dashboard auto-refresh started (every 3 seconds)');
+            console.log('✅ Real-time monitoring started (every 1 second)');
         }
 
         function stopDashboardAutoRefresh() {
             if (dashboardRefreshInterval) {
                 clearInterval(dashboardRefreshInterval);
                 dashboardRefreshInterval = null;
-                console.log('⏸️ Dashboard auto-refresh stopped');
+                console.log('⏸️ Real-time monitoring stopped');
             }
         }
 

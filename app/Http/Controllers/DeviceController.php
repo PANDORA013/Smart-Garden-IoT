@@ -111,7 +111,9 @@ class DeviceController extends Controller
                     'status' => $this->getDeviceStatus($device),
                 ];
             })
-        ], 200);
+        ], 200)->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                 ->header('Pragma', 'no-cache')
+                 ->header('Expires', '0');
     }
 
     /**
@@ -120,7 +122,10 @@ class DeviceController extends Controller
      */
     public function show($id)
     {
-        $device = DeviceSetting::findOrFail($id);
+        // Support both integer ID and string device_id
+        $device = is_numeric($id) 
+            ? DeviceSetting::findOrFail($id)
+            : DeviceSetting::where('device_id', $id)->firstOrFail();
 
         return response()->json([
             'success' => true,
@@ -134,7 +139,10 @@ class DeviceController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $device = DeviceSetting::findOrFail($id);
+        // Support both integer ID and string device_id
+        $device = is_numeric($id) 
+            ? DeviceSetting::findOrFail($id)
+            : DeviceSetting::where('device_id', $id)->firstOrFail();
 
         $validator = Validator::make($request->all(), [
             'device_name' => 'nullable|string|max:100',
@@ -179,7 +187,10 @@ class DeviceController extends Controller
      */
     public function destroy($id)
     {
-        $device = DeviceSetting::findOrFail($id);
+        // Support both integer ID and string device_id
+        $device = is_numeric($id) 
+            ? DeviceSetting::findOrFail($id)
+            : DeviceSetting::where('device_id', $id)->firstOrFail();
         $device->delete();
 
         return response()->json([
@@ -194,7 +205,10 @@ class DeviceController extends Controller
      */
     public function applyPreset(Request $request, $id)
     {
-        $device = DeviceSetting::findOrFail($id);
+        // Support both integer ID and string device_id
+        $device = is_numeric($id) 
+            ? DeviceSetting::findOrFail($id)
+            : DeviceSetting::where('device_id', $id)->firstOrFail();
 
         $validator = Validator::make($request->all(), [
             'preset' => 'required|string|in:cabai,tomat',
@@ -227,7 +241,10 @@ class DeviceController extends Controller
      */
     public function updateMode(Request $request, $id)
     {
-        $device = DeviceSetting::findOrFail($id);
+        // Support both integer ID and string device_id
+        $device = is_numeric($id) 
+            ? DeviceSetting::findOrFail($id)
+            : DeviceSetting::where('device_id', $id)->firstOrFail();
 
         $validator = Validator::make($request->all(), [
             'mode' => 'required|integer|in:1,2,3,4',
@@ -321,15 +338,21 @@ class DeviceController extends Controller
      */
     private function getDeviceStatus(DeviceSetting $device): string
     {
-        if (!$device->last_seen) {
+        // Cek dari monitoring terbaru, bukan dari last_seen di DeviceSetting
+        $latestMonitoring = \App\Models\Monitoring::where('device_id', $device->device_id)
+            ->latest()
+            ->first();
+        
+        if (!$latestMonitoring) {
             return 'never_connected';
         }
 
-        $minutesAgo = $device->last_seen->diffInMinutes(now());
+        $secondsAgo = $latestMonitoring->updated_at->diffInSeconds(now());
 
-        if ($minutesAgo < 2) {
+        // Online jika data < 30 detik (sinkron dengan MonitoringController)
+        if ($secondsAgo < 30) {
             return 'online';
-        } elseif ($minutesAgo < 10) {
+        } elseif ($secondsAgo < 120) {
             return 'idle';
         } else {
             return 'offline';

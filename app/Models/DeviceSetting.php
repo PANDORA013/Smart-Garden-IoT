@@ -105,12 +105,30 @@ class DeviceSetting extends Model
     }
 
     /**
-     * Append formatted last_seen for API response
+     * Cek apakah device online (last_seen dalam 60 detik terakhir)
      */
-    protected $appends = ['last_seen_formatted'];
+    public function isOnline(): bool
+    {
+        if (!$this->last_seen) {
+            return false;
+        }
+        
+        // Device dianggap online jika last_seen kurang dari 60 detik yang lalu
+        return $this->last_seen->diffInSeconds(now()) <= 60;
+    }
+
+    /**
+     * Append formatted last_seen dan is_online untuk API response
+     */
+    protected $appends = ['last_seen_formatted', 'is_online'];
 
     public function getLastSeenFormattedAttribute()
     {
         return $this->last_seen ? $this->last_seen->format('Y-m-d H:i:s') : null;
+    }
+
+    public function getIsOnlineAttribute(): bool
+    {
+        return $this->isOnline();
     }
 }

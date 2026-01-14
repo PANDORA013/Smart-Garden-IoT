@@ -1,179 +1,253 @@
 # =============================================================================
-# RASPBERRY PI PICO W - SMART GARDEN (2-Way Communication)
-# =============================================================================
-# WiFi: AAB / 081211915711
-# Server: 192.168.0.102:8000
+# RASPBERRY PI PICO W - SMART GARDEN (FINAL)
 # =============================================================================
 
 import network
 import time
-import ujson
 import urequests
-from machine import Pin, ADC, reset
+from machine import Pin, ADC, PWM, I2C, reset
 import dht
 
 # =============================================================================
 # KONFIGURASI
 # =============================================================================
-WIFI_SSID = "AAB"
-WIFI_PASSWORD = "081211915711"
-SERVER_URL = "http://192.168.0.102:8000/api/monitoring/insert"
+WIFI_SSID = "CCTV_UISI"
+WIFI_PASSWORD = "08121191"
+SERVER_URL = "http://10.71.22.84:8000/api/monitoring/insert"
 DEVICE_ID = "PICO_CABAI_01"
-SEND_INTERVAL = 10
+SEND_INTERVAL = 10  # detik
 
 # =============================================================================
-# HARDWARE SETUP
+# HARDWARE
 # =============================================================================
+# DHT22 Temperature & Humidity
 dht_sensor = dht.DHT22(Pin(2))
-relay = Pin(5, Pin.OUT)
+
+# Relay (GP16)
+relay = Pin(16, Pin.OUT)
 relay.value(0)
+
+# Soil Moisture Sensor (ADC0 / GP26)
 soil_adc = ADC(26)
+
+# Servo Motor (GP9)
+servo_pin = PWM(Pin(9))
+servo_pin.freq(50)  # 50Hz untuk servo
+
+# LCD I2C (GP0=SDA, GP1=SCL)
+try:
+    i2c = I2C(0, scl=Pin(1), sda=Pin(0), freq=400000)
+    lcd_addr = i2c.scan()
+    has_lcd = len(lcd_addr) > 0
+    if has_lcd:
+        print("LCD Found at:", hex(lcd_addr[0]))
+except:
+    has_lcd = False
+    print("LCD not detected")
+
+# =============================================================================
+# KALIBRASI SOIL MOISTURE (WAJIB SESUAIKAN JIKA PERLU)
+# =============================================================================
+ADC_KERING = 3900   # sensor di udara
+ADC_BASAH  = 1400   # sensor di air / tanah basah
 
 # =============================================================================
 # VARIABEL
 # =============================================================================
-ADC_MIN = 4095
-ADC_MAX = 1500
-pump_status = False
 temperature = 0
 soil_moisture = 0
 raw_adc = 0
+pump_status = False
+
+# Buffer untuk deteksi sensor disconnect (variability check)
+adc_readings = []
+ADC_BUFFER_SIZE = 3
+
+# Status koneksi hardware
+hardware_status = {
+    "dht22": False,
+    "soil_sensor": False,
+    "relay": False,
+    "servo": False,
+    "lcd": False
+}
 
 # =============================================================================
-# FUNGSI
+# WIFI
 # =============================================================================
-
 def connect_wifi():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     wlan.connect(WIFI_SSID, WIFI_PASSWORD)
-    
-    print("Connecting to WiFi...")
-    for i in range(15):
-        if wlan.status() == 3:
-            break
-        time.sleep(1)
-    
-    if wlan.status() == 3:
-        ip = wlan.ifconfig()[0]
-        print("WiFi Connected! IP:", ip)
-        return True
-    else:
-        print("WiFi Failed!")
-        return False
 
+    print("Connecting WiFi...")
+    for _ in range(15):
+        if wlan.status() == 3:
+            print("WiFi Connected:", wlan.ifconfig()[0])
+            return True
+        time.sleep(1)
+
+    print("WiFi Failed!")
+    return False
+
+# =============================================================================
+# SENSOR
+# =============================================================================
 def read_sensors():
-    global temperature, soil_moisture, raw_adc
-    
-    # DHT22
+    global temperature, soil_moisture, raw_adc, hardware_status, adc_readings
+
+    # ---- DHT22 ----
     try:
         dht_sensor.measure()
         temperature = dht_sensor.temperature()
-        if temperature <= 0 or temperature > 60:
+        if temperature < 0 or temperature > 60:
             temperature = 0
+            hardware_status["dht22"] = False
+        else:
+            hardware_status["dht22"] = True
     except:
         temperature = 0
+        hardware_status["dht22"] = False
+
+    # ---- SOIL MOISTURE ----
+    raw_16 = soil_adc.read_u16()
+    raw_adc = raw_16 >> 4
+
+    # Tambahkan ke buffer untuk deteksi variability
+    adc_readings.append(raw_adc)
+    if len(adc_readings) > ADC_BUFFER_SIZE:
+        adc_readings.pop(0)
+
+    # Deteksi sensor disconnect dengan multiple checks:
+    # 1. ADC > 4050 (sangat tinggi = floating/tidak tercolok)
+    # 2. ADC < 50 (sangat rendah = short circuit)
+    # 3. High variability (fluktuasi > 500 = unstable/floating)
+    is_disconnected = False
     
-    # Soil Sensor
-    raw_16bit = soil_adc.read_u16()
-    raw_adc = raw_16bit >> 4
+    if raw_adc > 4050 or raw_adc < 50:
+        is_disconnected = True
+    elif len(adc_readings) >= ADC_BUFFER_SIZE:
+        adc_min = min(adc_readings)
+        adc_max = max(adc_readings)
+        variability = adc_max - adc_min
+        if variability > 500:  # Fluktuasi terlalu besar = sensor tidak stabil
+            is_disconnected = True
     
-    # Floating pin detection
-    if raw_adc < 500 or raw_adc > 4000:
+    if is_disconnected:
         soil_moisture = 0
-        raw_adc = 0
+        hardware_status["soil_sensor"] = False
     else:
-        # Map 4095-1500 to 0-100%
-        soil_moisture = int((raw_adc - ADC_MIN) * (100 - 0) / (ADC_MAX - ADC_MIN) + 0)
+        soil_moisture = int(
+            (ADC_KERING - raw_adc) * 100 / (ADC_KERING - ADC_BASAH)
+        )
+
         if soil_moisture < 0:
             soil_moisture = 0
         if soil_moisture > 100:
             soil_moisture = 100
-    
-    print("\nSensors:")
-    print("  Temp:", temperature, "C")
-    print("  Soil:", soil_moisture, "%")
-    print("  ADC:", raw_adc)
+        
+        hardware_status["soil_sensor"] = True
 
+    # Relay dan Servo tetap False (hanya True jika ada command dari server)
+    hardware_status["relay"] = False
+    hardware_status["servo"] = False
+
+    print("\n" + "="*40)
+    print("SENSOR DATA")
+    print("="*40)
+    print("DHT22      :", temperature, "°C", "[OK]" if hardware_status["dht22"] else "[FAIL]")
+    print("Soil Sensor:", soil_moisture, "%", "[OK]" if hardware_status["soil_sensor"] else "[FAIL]")
+    print("ADC Value  :", raw_adc)
+    if is_disconnected:
+        print("⚠️  SOIL SENSOR DISCONNECTED!")
+    print("="*40)
+
+# =============================================================================
+# SERVO CONTROL
+# =============================================================================
+def set_servo_angle(angle):
+    if not hardware_status["servo"]:
+        return
+    duty = int(1000 + (angle / 180) * 8000)
+    servo_pin.duty_u16(duty)
+
+# =============================================================================
+# LCD DISPLAY
+# =============================================================================
+def update_lcd(temp, soil):
+    global hardware_status
+    if not has_lcd:
+        hardware_status["lcd"] = False
+        return
+    try:
+        hardware_status["lcd"] = True
+    except:
+        hardware_status["lcd"] = False
+
+# =============================================================================
+# KIRIM & TERIMA DATA (2-WAY)
+# =============================================================================
 def send_and_receive():
     global pump_status
-    
-    if not network.WLAN(network.STA_IF).isconnected():
-        print("WiFi disconnected!")
+
+    wlan = network.WLAN(network.STA_IF)
+    if not wlan.isconnected():
+        print("❌ WiFi disconnected!")
         return
-    
+
     try:
-        ip_addr = network.WLAN(network.STA_IF).ifconfig()[0]
-        
-        # Kirim data ke server
         payload = {
             "device_id": DEVICE_ID,
             "temperature": temperature,
             "soil_moisture": soil_moisture,
             "raw_adc": raw_adc,
             "relay_status": pump_status,
-            "ip_address": ip_addr
+            "ip_address": wlan.ifconfig()[0],
+            "hardware_status": hardware_status
         }
+
+        print("\n📤 Sending data to server...")
+        print("  Soil:", soil_moisture, "% | Sensor:", "OK" if hardware_status["soil_sensor"] else "FAIL")
         
-        print("\nSending data...")
         res = urequests.post(
-            SERVER_URL, 
-            json=payload, 
+            SERVER_URL,
+            json=payload,
             headers={"Content-Type": "application/json"},
             timeout=5
         )
-        
-        if res.status_code in [200, 201]:
-            print("Server OK:", res.status_code)
-            
-            # Terima perintah dari server (2-way communication)
+
+        print("✅ Server response:", res.status_code)
+
+        if res.status_code in (200, 201):
             try:
-                response_data = res.json()
-                
-                # Cek apakah ada perintah relay dari server
-                if "relay_command" in response_data:
-                    new_relay = response_data["relay_command"]
-                    if new_relay != pump_status:
-                        pump_status = new_relay
-                        relay.value(1 if pump_status else 0)
-                        print("RELAY CHANGED BY SERVER:", "ON" if pump_status else "OFF")
-                
-                # Cek apakah ada update config
-                if "config" in response_data:
-                    config = response_data["config"]
-                    print("Config received:", config.get("mode", "N/A"))
-                    
+                data = res.json()
+
+                if "relay_command" in data:
+                    pump_status = bool(data["relay_command"])
+                    relay.value(1 if pump_status else 0)
+                    hardware_status["relay"] = True
+                    print("🔌 RELAY:", "ON" if pump_status else "OFF")
+
             except:
-                pass  # Response tidak ada JSON, skip
-        else:
-            print("Server Error:", res.status_code)
-        
+                pass
+
         res.close()
-        
+
     except Exception as e:
-        print("Send failed:", str(e))
+        print("❌ Send error:", e)
 
 # =============================================================================
-# MAIN LOOP
+# MAIN
 # =============================================================================
-print("\n" + "="*50)
-print("PICO W SMART GARDEN")
-print("="*50)
-print("Device ID:", DEVICE_ID)
-print("Server:", SERVER_URL)
-print("="*50 + "\n")
+print("\nSMART GARDEN PICO W")
+print("Device:", DEVICE_ID)
 
-# Connect WiFi
 if not connect_wifi():
-    print("Restarting...")
     time.sleep(3)
     reset()
 
-print("\nSystem Ready!\n")
-
-# Main Loop
 while True:
     read_sensors()
     send_and_receive()
-    print("\nSleep", SEND_INTERVAL, "seconds...\n")
+    update_lcd(temperature, soil_moisture)
     time.sleep(SEND_INTERVAL)

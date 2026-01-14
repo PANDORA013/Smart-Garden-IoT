@@ -56,6 +56,7 @@ class MonitoringController extends Controller
             'relay_status' => 'nullable|boolean',
             'device_name' => 'nullable|string|max:100',
             'ip_address' => 'nullable|ip',
+            'hardware_status' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -76,6 +77,7 @@ class MonitoringController extends Controller
             'relay_status' => $request->relay_status ?? false,
             'status_pompa' => $request->relay_status ? 'Hidup' : 'Mati',
             'ip_address' => $request->ip_address,
+            'hardware_status' => $request->hardware_status ?? null,
         ];
 
         $monitoring = Monitoring::create($data);
@@ -287,6 +289,21 @@ class MonitoringController extends Controller
             $deviceInfo = \App\Models\DeviceSetting::where('device_id', $latest->device_id)->first();
         }
 
+        // Cek apakah device online (data < 30 detik)
+        $isOnline = $latest && $latest->updated_at->diffInSeconds(now()) < 30;
+        
+        // Jika device offline, set semua hardware_status menjadi false
+        $hardwareStatus = $latest->hardware_status ?? null;
+        if (!$isOnline && $hardwareStatus) {
+            $hardwareStatus = [
+                'dht22' => false,
+                'soil_sensor' => false,
+                'relay' => false,
+                'servo' => false,
+                'lcd' => false
+            ];
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -298,12 +315,17 @@ class MonitoringController extends Controller
                 'temperature' => $latest->temperature ?? 0,
                 'soil_moisture' => $latest->soil_moisture ?? 0,
                 'relay_status' => $latest->relay_status ?? false,
+                'hardware_status' => $hardwareStatus,
+                'raw_adc' => $latest->raw_adc ?? 0,
                 'uptime_hours' => $uptimeHours,
                 'uptime_minutes' => $uptimeMinutes,
                 'total_records' => $count,
                 'avg_temperature_24h' => round($avgTemp ?? 0, 1),
+                'is_online' => $isOnline,
             ]
-        ], 200);
+        ], 200)->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                 ->header('Pragma', 'no-cache')
+                 ->header('Expires', '0');
     }
 
     /**
@@ -314,29 +336,80 @@ class MonitoringController extends Controller
     {
         $limit = $request->input('limit', 20);
         
+        // Cek apakah ada data terbaru dalam 30 detik terakhir
+        $latestData = Monitoring::latest()->first();
+        $isDeviceOnline = $latestData && $latestData->updated_at->diffInSeconds(now()) < 30;
+        
+        // Jika device offline, tambahkan log warning di awal
+        $offlineLog = null;
+        if (!$isDeviceOnline && $latestData) {
+            $offlineLog = [
+                'id' => 'offline',
+                'time' => now()->format('H:i:s'),
+                'date' => now()->format('Y-m-d'),
+                'level' => 'ERROR',
+                'device' => $latestData->device_name ?? 'Pico W',
+                'message' => '🔴 PICO W OFFLINE',
+                'temperature' => null,
+            ];
+        }
+        
         $logs = Monitoring::latest()
             ->take($limit)
             ->get()
             ->map(function ($item) {
-                // Generate log message berdasarkan data
                 $message = '';
                 $level = 'INFO';
                 
-                if ($item->relay_status) {
-                    $message = 'Relay/Pompa diaktifkan';
-                    $level = 'SUCCESS';
+                // Cek hardware_status dari Pico W
+                $hwStatus = $item->hardware_status ?? null;
+                $allOffline = false;
+                
+                if ($hwStatus && is_array($hwStatus)) {
+                    // Cek apakah semua sensor offline
+                    $allOffline = !$hwStatus['dht22'] && !$hwStatus['soil_sensor'];
+                }
+                
+                // Jika semua sensor offline
+                if ($allOffline) {
+                    $message = '⚠️ Semua sensor tidak terdeteksi';
+                    $level = 'ERROR';
                 } else {
-                    $message = 'Relay/Pompa dimatikan';
-                }
-                
-                if ($item->temperature && $item->temperature > 33) {
-                    $message .= " | Suhu tinggi terdeteksi ({$item->temperature}°C)";
-                    $level = 'WARN';
-                }
-                
-                if ($item->soil_moisture && $item->soil_moisture < 30) {
-                    $message .= " | Kelembaban tanah rendah ({$item->soil_moisture}%)";
-                    $level = 'WARN';
+                    // Log normal berdasarkan aktivitas
+                    if ($item->relay_status) {
+                        $message = '✓ Relay/Pompa diaktifkan';
+                        $level = 'SUCCESS';
+                    } else {
+                        $message = 'Relay/Pompa dalam kondisi mati';
+                        $level = 'INFO';
+                    }
+                    
+                    // Warning untuk kondisi sensor
+                    if ($hwStatus && is_array($hwStatus)) {
+                        $sensorWarnings = [];
+                        
+                        if (!$hwStatus['dht22']) {
+                            $sensorWarnings[] = 'DHT22 tidak terdeteksi';
+                        }
+                        if (!$hwStatus['soil_sensor']) {
+                            $sensorWarnings[] = 'Soil sensor tidak terdeteksi';
+                        }
+                        
+                        if (!empty($sensorWarnings)) {
+                            $message .= ' | ⚠️ ' . implode(', ', $sensorWarnings);
+                            $level = 'WARN';
+                        }
+                    }
+                    
+                    if ($item->temperature && $item->temperature > 33) {
+                        $message .= " | 🌡️ Suhu tinggi ({$item->temperature}°C)";
+                        $level = 'WARN';
+                    }
+                    
+                    if ($item->soil_moisture && $item->soil_moisture < 30) {
+                        $message .= " | 💧 Kelembaban rendah ({$item->soil_moisture}%)";
+                        $level = 'WARN';
+                    }
                 }
 
                 return [
@@ -349,12 +422,19 @@ class MonitoringController extends Controller
                     'temperature' => $item->temperature,
                 ];
             });
+        
+        // Tambahkan log offline di awal jika device offline
+        if ($offlineLog) {
+            $logs = collect([$offlineLog])->merge($logs);
+        }
 
         return response()->json([
             'success' => true,
             'count' => $logs->count(),
             'data' => $logs
-        ], 200);
+        ], 200)->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                 ->header('Pragma', 'no-cache')
+                 ->header('Expires', '0');
     }
 
     /**
@@ -362,7 +442,7 @@ class MonitoringController extends Controller
      * Endpoint: GET /api/monitoring
      * 
      * Mengembalikan data terakhir dari SETIAP device_id unik
-     * dengan join ke tabel device_settings
+     * dengan join ke tabel device_settings dan status online/offline
      */
     public function api_show()
     {
@@ -382,14 +462,21 @@ class MonitoringController extends Controller
                 's.sensor_min as min_kering',
                 's.sensor_max as max_basah',
                 's.plant_type',
-                's.firmware_version'
+                's.firmware_version',
+                's.last_seen'
             )
             ->whereIn('m.id', function($query) {
                 $query->select(DB::raw('MAX(id)'))
                       ->from('monitorings')
                       ->groupBy('device_id');
             })
-            ->get();
+            ->get()
+            ->map(function($item) {
+                // Status online berdasarkan updated_at dari tabel monitorings
+                $updatedAt = $item->updated_at ? \Carbon\Carbon::parse($item->updated_at) : null;
+                $item->is_online = $updatedAt ? $updatedAt->diffInSeconds(now()) < 30 : false;
+                return $item;
+            });
 
         return response()->json([
             'success' => true,

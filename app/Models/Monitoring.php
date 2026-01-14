@@ -21,6 +21,7 @@ class Monitoring extends Model
         'status_pompa',
         'relay_status',
         'raw_adc',
+        'hardware_status',
     ];
 
     /**
@@ -33,5 +34,14 @@ class Monitoring extends Model
         'soil_moisture' => 'float',
         'relay_status' => 'boolean',
         'raw_adc' => 'integer',
+        'hardware_status' => 'array',
     ];
+
+    public function isOnline()
+    {
+        if (!$this->updated_at) {
+            return false;
+        }
+        return $this->updated_at->diffInSeconds(now()) < 30;
+    }
 }
