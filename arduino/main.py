@@ -47,7 +47,9 @@ lcd = I2cLcd(i2c, 0x27, 2, 16)
 # 5. Update nilai di bawah ini, lalu upload ulang
 
 # CATATAN: Nilai ADC dalam format 12-bit (0-4095)
-# CATATAN: Sensor kapasitif - Tanah KERING = ADC tinggi, Tanah BASAH = ADC rendah
+# CATATAN: Sistem otomatis deteksi jenis sensor:
+#   - CAPACITIVE: Tanah KERING = ADC tinggi (3000-4000), Tanah BASAH = ADC rendah (500-1500)
+#   - RESISTIVE: Tanah KERING = ADC rendah (0-100), Tanah BASAH = ADC tinggi (1500-2000)
 ADC_KERING = 3800   # Nilai saat tanah kering (UPDATE SESUAI TEST)
 ADC_BASAH  = 1500   # Nilai saat tanah basah (UPDATE SESUAI TEST)
 
@@ -179,19 +181,11 @@ def calibrate_sensor():
     print(f"   ADC_BASAH (Tanah basah):   {ADC_BASAH}")
     print(f"   Range ADC: {ADC_KERING - ADC_BASAH}")
     
-    # Validasi range
-    if ADC_KERING <= ADC_BASAH:
-        print("\n   ⚠️  WARNING: ADC_KERING harus LEBIH BESAR dari ADC_BASAH!")
-        print("   ⚠️  Sensor kapasitif: Tanah kering = ADC tinggi")
-        print("   ⚠️  Sepertinya tanah masih basah saat STEP 1.")
-        lcd.clear()
-        lcd.putstr("ERROR: Tanah")
-        lcd.move_to(0, 1)
-        lcd.putstr("basah di STEP 1")
-        time.sleep(3)
-        return False
+    # Validasi range dan deteksi jenis sensor
+    range_adc = abs(ADC_KERING - ADC_BASAH)
     
-    if (ADC_KERING - ADC_BASAH) < 100:
+    # Cek apakah range cukup besar
+    if range_adc < 100:
         print("\n   ⚠️  WARNING: Range terlalu kecil (< 100)!")
         print("   ⚠️  Pastikan tanah benar-benar KERING di STEP 1")
         print("   ⚠️  dan benar-benar BASAH di STEP 2.")
@@ -202,14 +196,26 @@ def calibrate_sensor():
         time.sleep(3)
         return False
     
+    # Deteksi jenis sensor berdasarkan nilai ADC
+    if ADC_KERING > ADC_BASAH:
+        sensor_type = "CAPACITIVE"
+        print("\n   📡 Jenis sensor: CAPACITIVE (Kering=Tinggi, Basah=Rendah)")
+    else:
+        sensor_type = "RESISTIVE"
+        print("\n   📡 Jenis sensor: RESISTIVE (Kering=Rendah, Basah=Tinggi)")
+        # Untuk resistive sensor, tukar nilai agar formula tetap konsisten
+        ADC_KERING, ADC_BASAH = ADC_BASAH, ADC_KERING
+        print(f"   🔄 Nilai ditukar: ADC_KERING={ADC_KERING}, ADC_BASAH={ADC_BASAH}")
+    
     print("\n   ✅ Kalibrasi BERHASIL!")
     print("   ✅ Sensor siap digunakan!")
+    print(f"   ✅ Sensor type: {sensor_type}")
     print("=" * 50)
     
     lcd.clear()
     lcd.putstr("Kalibrasi OK!")
     lcd.move_to(0, 1)
-    lcd.putstr(f"Range: {ADC_KERING - ADC_BASAH}")
+    lcd.putstr(f"{sensor_type[:3]}: {range_adc}")
     time.sleep(2)
     
     return True
