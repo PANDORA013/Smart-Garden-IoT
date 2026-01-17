@@ -25,8 +25,8 @@ return new class extends Migration
             $table->integer('sensor_max')->default(1500)->comment('ADC value sensor basah (di air)');
             
             // === PARAMETER MODE 1: BASIC THRESHOLD ===
-            $table->integer('batas_siram')->default(40)->comment('Pompa ON jika kelembaban < nilai ini (%)');
-            $table->integer('batas_stop')->default(70)->comment('Pompa OFF jika kelembaban >= nilai ini (%)');
+            $table->integer('batas_siram')->default(20)->comment('Pompa ON jika kelembaban < nilai ini (%) - Default 20%');
+            $table->integer('batas_stop')->default(30)->comment('Pompa OFF jika kelembaban >= nilai ini (%) - Default 30%');
             
             // === PARAMETER MODE 2: FUZZY LOGIC ===
             // Tidak ada parameter - fully automatic based on sensor readings

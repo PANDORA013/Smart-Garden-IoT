@@ -1,0 +1,14 @@
+{
+  "device_id": "PICO_CABAI_01",
+  "temperature": 0,
+  "soil_moisture": 0,
+  "raw_adc": 60500,
+  "relay_status": 0,
+  "ip_address": "192.168.18.100",
+  "hardware_status": {
+    "dht11": false,
+    "soil_sensor": false,
+    "relay": false,
+    "lcd": false
+  }
+}

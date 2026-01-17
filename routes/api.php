@@ -15,7 +15,11 @@ Route::prefix('devices')->group(function () {
     Route::put('/{id}', [DeviceController::class, 'update']);
     Route::delete('/{id}', [DeviceController::class, 'destroy']);
     Route::post('/{id}/preset', [DeviceController::class, 'applyPreset']);
-    Route::post('/{id}/mode', [DeviceController::class, 'updateMode']); // NEW: Update mode operasi
+    Route::post('/{id}/mode', [DeviceController::class, 'updateMode']); // Update mode operasi
+    
+    // NEW: Calibration endpoints
+    Route::post('/{id}/calibrate', [MonitoringController::class, 'calibrateSensor']); // Manual calibration
+    Route::post('/{id}/calibrate/reset', [MonitoringController::class, 'resetCalibration']); // Reset to auto-calibration
 });
 
 // ===== MONITORING API (DATA SENSOR) =====

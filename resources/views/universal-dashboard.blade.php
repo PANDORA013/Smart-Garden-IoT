@@ -153,8 +153,46 @@
 
                 <!-- Chart -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
-                    <h3 class="font-bold text-lg text-slate-800 mb-4">Grafik Real-time</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">Grafik Real-time</h3>
+                            <p class="text-xs text-slate-500 mt-1">Monitoring suhu & nilai ADC sensor tanah untuk deteksi kondisi basah/kering</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-lg font-semibold">
+                                <i class="fa-solid fa-temperature-half"></i> Suhu
+                            </span>
+                            <span class="px-2 py-1 bg-green-50 text-green-700 rounded-lg font-semibold">
+                                <i class="fa-solid fa-droplet"></i> RAW ADC
+                            </span>
+                        </div>
+                    </div>
                     <div class="relative h-72 w-full"><canvas id="mainChart"></canvas></div>
+                    <div class="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                        <p class="text-xs font-bold text-slate-600 mb-2">📊 Panduan Nilai ADC (12-bit: 0-4095):</p>
+                        <div class="grid grid-cols-5 gap-2 text-[10px]">
+                            <div class="text-center">
+                                <div class="w-full h-2 bg-gradient-to-r from-blue-500 to-blue-400 rounded mb-1"></div>
+                                <span class="text-slate-600 font-semibold">0-1000<br>🌊 Sangat Basah</span>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-full h-2 bg-gradient-to-r from-green-500 to-green-400 rounded mb-1"></div>
+                                <span class="text-slate-600 font-semibold">1000-2000<br>💦 Basah</span>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-full h-2 bg-gradient-to-r from-yellow-500 to-yellow-400 rounded mb-1"></div>
+                                <span class="text-slate-600 font-semibold">2000-3000<br>💧 Lembab</span>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-full h-2 bg-gradient-to-r from-orange-500 to-orange-400 rounded mb-1"></div>
+                                <span class="text-slate-600 font-semibold">3000-3500<br>⚠️ Kering</span>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-full h-2 bg-gradient-to-r from-red-500 to-red-400 rounded mb-1"></div>
+                                <span class="text-slate-600 font-semibold">>3500<br>🌵 Sangat Kering</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -174,9 +212,12 @@
             <!-- ================= PAGE 3: RIWAYAT LOG (LOGS) ================= -->
             <div id="page-logs" class="page-content hidden-page">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-slate-900">Riwayat Aktivitas</h2>
-                    <button class="text-sm text-blue-600 font-semibold hover:underline" onclick="refreshLogs()">
-                        <i class="fa-solid fa-refresh mr-1"></i> Refresh
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">📋 Riwayat Aktivitas & Log</h2>
+                        <p class="text-slate-500 text-sm mt-1">Pantau semua perubahan status relay, sensor, dan kondisi sistem</p>
+                    </div>
+                    <button class="text-sm text-blue-600 font-semibold hover:underline flex items-center gap-2" onclick="refreshLogs()">
+                        <i class="fa-solid fa-refresh"></i> Refresh
                     </button>
                 </div>
 
@@ -187,12 +228,13 @@
                                 <th class="p-4">Waktu</th>
                                 <th class="p-4">Level</th>
                                 <th class="p-4">Perangkat</th>
-                                <th class="p-4">Pesan</th>
+                                <th class="p-4">Aktivitas</th>
+                                <th class="p-4">Detail Sensor</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm divide-y divide-slate-100" id="logs-tbody">
                             <tr>
-                                <td colspan="4" class="p-8 text-center text-slate-400">
+                                <td colspan="5" class="p-8 text-center text-slate-400">
                                     <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
                                     <p>Loading logs...</p>
                                 </td>
@@ -594,22 +636,91 @@
             type: 'line',
             data: {
                 labels: [],
-                datasets: [{
-                    label: 'Suhu (°C)',
-                    data: [],
-                    borderColor: '#3b82f6',
-                    backgroundColor: gradient,
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: true
-                }]
+                datasets: [
+                    {
+                        label: 'Suhu (°C)',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'RAW ADC Tanah',
+                        data: [],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y1'
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    legend: { 
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: { size: 12, weight: 'bold' }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(context) {
+                                if (context.datasetIndex === 1) {
+                                    const rawAdc = context.parsed.y;
+                                    if (rawAdc > 3500) return '🌵 Sangat Kering';
+                                    if (rawAdc > 3000) return '⚠️ Kering';
+                                    if (rawAdc > 2000) return '💧 Lembab';
+                                    if (rawAdc > 1000) return '💦 Basah';
+                                    return '🌊 Sangat Basah';
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    y: { beginAtZero: false, grid: { borderDash: [5, 5], color: '#f1f5f9' } },
+                    y: { 
+                        type: 'linear',
+                        position: 'left',
+                        beginAtZero: false,
+                        grid: { borderDash: [5, 5], color: '#f1f5f9' },
+                        title: {
+                            display: true,
+                            text: 'Suhu (°C)',
+                            color: '#3b82f6',
+                            font: { size: 12, weight: 'bold' }
+                        },
+                        ticks: { color: '#3b82f6' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        beginAtZero: true,
+                        grid: { display: false },
+                        title: {
+                            display: true,
+                            text: 'RAW ADC (0-4095)',
+                            color: '#10b981',
+                            font: { size: 12, weight: 'bold' }
+                        },
+                        ticks: { 
+                            color: '#10b981',
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        },
+                        max: 4095
+                    },
                     x: { grid: { display: false } }
                 }
             }
@@ -663,10 +774,9 @@
                         const hwStatus = data.hardware_status || {};
                         
                         const hardwareList = [
-                            { name: 'DHT22', icon: 'fa-temperature-high', status: hwStatus.dht22 || false },
+                            { name: 'DHT Sensor', icon: 'fa-temperature-high', status: hwStatus.dht11 || hwStatus.dht22 || false },
                             { name: 'Soil Sensor', icon: 'fa-droplet', status: hwStatus.soil_sensor || false },
                             { name: 'Relay', icon: 'fa-toggle-on', status: hwStatus.relay !== false },
-                            { name: 'Servo', icon: 'fa-gear', status: hwStatus.servo !== false },
                             { name: 'LCD', icon: 'fa-display', status: hwStatus.lcd || false }
                         ];
                         
@@ -738,6 +848,7 @@
                         return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                     });
                     mainChart.data.datasets[0].data = data.map(item => item.temperature || 0);
+                    mainChart.data.datasets[1].data = data.map(item => item.raw_adc || 0);
                     mainChart.update();
                 }
             } catch (error) {
@@ -766,22 +877,46 @@
                         };
                         const levelClass = levelColors[log.level] || 'bg-slate-100 text-slate-700';
                         
+                        // Format details dengan badge kecil
+                        const detailsHtml = log.details ? 
+                            `<div class="text-xs text-slate-500 mt-1">${log.details}</div>` : '';
+                        
                         return `
                             <tr class="hover:bg-slate-50 transition">
-                                <td class="p-4 font-mono text-slate-500">${log.time}</td>
-                                <td class="p-4"><span class="px-2 py-1 ${levelClass} rounded text-xs font-bold">${log.level}</span></td>
-                                <td class="p-4 text-slate-700">${log.device}</td>
-                                <td class="p-4 text-slate-600">${log.message}</td>
+                                <td class="p-4 font-mono text-slate-500 text-xs">
+                                    <div class="font-bold">${log.time}</div>
+                                    <div class="text-[10px] text-slate-400">${log.date}</div>
+                                </td>
+                                <td class="p-4">
+                                    <span class="px-3 py-1 ${levelClass} rounded-full text-xs font-bold whitespace-nowrap">
+                                        ${log.level}
+                                    </span>
+                                </td>
+                                <td class="p-4 text-slate-700 font-medium">${log.device}</td>
+                                <td class="p-4">
+                                    <div class="font-semibold text-slate-800">${log.message}</div>
+                                    ${detailsHtml}
+                                </td>
+                                <td class="p-4">
+                                    <div class="flex flex-col gap-1 text-xs">
+                                        ${log.soil_moisture ? `<span class="text-blue-600">💧 ${log.soil_moisture}%</span>` : ''}
+                                        ${log.temperature ? `<span class="text-orange-600">🌡️ ${log.temperature}°C</span>` : ''}
+                                        ${log.relay_status !== undefined ? 
+                                            `<span class="${log.relay_status ? 'text-green-600' : 'text-slate-400'}">
+                                                ${log.relay_status ? '🟢 Relay ON' : '⚫ Relay OFF'}
+                                            </span>` : ''}
+                                    </div>
+                                </td>
                             </tr>
                         `;
                     }).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400">Belum ada log</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400">Belum ada log</td></tr>';
                 }
             } catch (error) {
                 console.error('Error loading logs:', error);
                 document.getElementById('logs-tbody').innerHTML = 
-                    '<tr><td colspan="4" class="p-8 text-center text-red-400">Error loading logs</td></tr>';
+                    '<tr><td colspan="5" class="p-8 text-center text-red-400"><i class="fa-solid fa-exclamation-triangle mr-2"></i>Error loading logs</td></tr>';
             }
         }
 
@@ -1182,9 +1317,9 @@
             requestData.sensor_max = adcMax;
             
             if (mode === 1) {
-                // Mode Pemula: Force to standard (40% ON, 70% OFF)
-                requestData.batas_siram = 40;
-                requestData.batas_stop = 70;
+                // Mode Pemula: Force to standard (20% ON, 30% OFF)
+                requestData.batas_siram = 20;    // Update: Pompa ON di 20%
+                requestData.batas_stop = 30;     // Update: Pompa OFF di 30%
             } else if (mode === 2) {
                 // Mode AI Fuzzy: No additional parameters (fully automatic)
                 // Backend will handle fuzzy logic
@@ -1251,10 +1386,11 @@
         let minimalSettings = {
             device_name: '',
             mode: 1,
-            batas_siram: 40,
-            batas_stop: 70,
+            batas_siram: 20,    // Update: Pompa ON saat kelembaban < 20%
+            batas_stop: 30,     // Update: Pompa OFF saat kelembaban >= 30%
             jam_pagi: '07:00',
-            jam_sore: '17:00'
+            jam_sore: '17:00',
+            durasi_siram: 5
         };
 
         // Load settings when switching to settings page
@@ -1278,8 +1414,8 @@
                     minimalSettings = {
                         device_name: data.device_name || '',
                         mode: data.mode || 1,
-                        batas_siram: data.batas_siram || 40,
-                        batas_stop: data.batas_stop || 70,
+                        batas_siram: data.batas_siram || 20,    // Default 20%
+                        batas_stop: data.batas_stop || 30,      // Default 30%
                         jam_pagi: data.jam_pagi ? data.jam_pagi.substring(0, 5) : '07:00',
                         jam_sore: data.jam_sore ? data.jam_sore.substring(0, 5) : '17:00',
                         durasi_siram: data.durasi_siram || 5

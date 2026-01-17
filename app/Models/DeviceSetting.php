@@ -34,6 +34,7 @@ class DeviceSetting extends Model
         'last_seen',
         'firmware_version',
         'notes',
+        'relay_command',  // ← TAMBAHKAN INI!
     ];
 
     /**
@@ -49,6 +50,7 @@ class DeviceSetting extends Model
         'batas_stop' => 'integer',
         'durasi_siram' => 'integer',
         'is_active' => 'boolean',
+        'relay_command' => 'boolean',  // ← TAMBAHKAN INI!
         'last_seen' => 'datetime',
     ];
 
