@@ -22,6 +22,7 @@ Route::prefix('devices')->group(function () {
 // Monitoring API
 Route::prefix('monitoring')->group(function () {
     Route::post('/insert', [MonitoringController::class, 'insert']);
+    Route::get('/check-command', [MonitoringController::class, 'checkCommand']); // NEW: Fast command check
     Route::get('/latest', [MonitoringController::class, 'latest']);
     Route::get('/history', [MonitoringController::class, 'history']);
     Route::get('/stats', [MonitoringController::class, 'stats']);

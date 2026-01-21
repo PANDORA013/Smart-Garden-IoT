@@ -59,6 +59,8 @@ class MonitoringController extends Controller
             'device_name' => 'nullable|string|max:100',
             'ip_address' => 'nullable|ip',
             'hardware_status' => 'nullable|array',
+            'command_executing' => 'nullable|boolean',  // Status eksekusi command
+            'last_command' => 'nullable|string|max:10',  // Command terakhir (ON/OFF)
         ]);
 
         if ($validator->fails()) {
@@ -125,6 +127,15 @@ class MonitoringController extends Controller
         ];
 
         $monitoring = Monitoring::create($data);
+        
+        // LOG STATUS EKSEKUSI COMMAND (untuk debugging)
+        if ($request->has('command_executing')) {
+            if ($request->command_executing) {
+                Log::info("⚙️ COMMAND EXECUTING - Device: {$request->device_id}, Command: {$request->last_command}");
+            } else if ($request->last_command) {
+                Log::info("✅ COMMAND EXECUTED - Device: {$request->device_id}, Command: {$request->last_command}");
+            }
+        }
         
         // ===== AUTO CALIBRATION SYSTEM =====
         // Sistem otomatis mendeteksi jenis sensor (capacitive/resistive) dan kalibrasi range
@@ -224,7 +235,7 @@ class MonitoringController extends Controller
         
         if ($setting->relay_command !== null) {
             $response['relay_command'] = $setting->relay_command;
-            Log::info("✅ MANUAL COMMAND - relay_command: {$setting->relay_command}");
+            Log::info("📤 SENDING COMMAND TO PICO - Device: {$request->device_id}, Command: " . ($setting->relay_command ? 'ON' : 'OFF'));
             
             // Reset HANYA jika relay_status dari Pico W MATCH dengan command
             $currentRelayStatus = (int)$request->relay_status;
@@ -234,9 +245,9 @@ class MonitoringController extends Controller
                 // Command sudah dijalankan - reset ke null
                 $setting->update(['relay_command' => null]);
                 cache()->forget($cacheKey);
-                Log::info("✅ Manual command executed and reset - Device: {$request->device_id}");
+                Log::info("✅ COMMAND COMPLETED - Device: {$request->device_id}, Relay now: " . ($currentRelayStatus ? 'ON' : 'OFF'));
             } else {
-                Log::info("⏳ Waiting for manual command execution - Command: {$commandValue}, Current: {$currentRelayStatus}");
+                Log::info("⏳ WAITING FOR EXECUTION - Device: {$request->device_id}, Expected: {$commandValue}, Current: {$currentRelayStatus}");
             }
         } 
         // 5. JIKA TIDAK ADA MANUAL COMMAND, JALANKAN LOGIKA AUTO BERDASARKAN MODE
@@ -936,5 +947,49 @@ class MonitoringController extends Controller
             'success' => true,
             'message' => 'Kalibrasi direset, sistem akan auto-kalibrasi dalam 20 sample berikutnya'
         ], 200);
+    }
+
+    /**
+     * Check relay command (Fast polling endpoint untuk Pico W)
+     * Endpoint: GET /api/monitoring/check-command?device_id=PICO_CABAI_01&relay_status=0
+     * Response ringan, hanya return relay_command jika ada
+     */
+    public function checkCommand(Request $request)
+    {
+        $deviceId = $request->device_id ?? 'PICO_CABAI_01';
+        $currentRelayStatus = (int)$request->relay_status;
+        
+        // Ambil device settings
+        $setting = \App\Models\DeviceSetting::where('device_id', $deviceId)->first();
+        
+        if (!$setting) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Device not found'
+            ], 404);
+        }
+        
+        $response = [
+            'success' => true,
+            'device_id' => $deviceId
+        ];
+        
+        // Cek apakah ada manual command (mode 0 atau relay_command tidak null)
+        if ($setting->relay_command !== null) {
+            $commandValue = (int)$setting->relay_command;
+            
+            // Hanya kirim command jika berbeda dengan status sekarang
+            if ($commandValue !== $currentRelayStatus) {
+                $response['relay_command'] = $setting->relay_command;
+                Log::info("⚡ FAST CHECK - Command found: {$commandValue} for {$deviceId}");
+            } else {
+                // Command sudah dijalankan - reset ke null
+                $setting->update(['relay_command' => null]);
+                cache()->forget('device_setting_' . $deviceId);
+                Log::info("✅ FAST CHECK - Command executed, reset to null for {$deviceId}");
+            }
+        }
+        
+        return response()->json($response, 200);
     }
 }

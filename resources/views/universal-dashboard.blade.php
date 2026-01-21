@@ -90,7 +90,7 @@
                 </div>
 
                 <!-- Stats Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <!-- Card 1: Suhu -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
                         <div class="flex justify-between items-start mb-4">
@@ -98,7 +98,7 @@
                         </div>
                         <p class="text-slate-500 text-sm font-medium">Sensor Suhu</p>
                         <h3 class="text-3xl font-bold text-slate-800 mt-1" id="sensor-temp">--°C</h3>
-                        <p class="text-xs text-slate-400 mt-2">Update setiap 3 detik</p>
+                        <p class="text-xs text-slate-400 mt-2" id="temp-status">Menunggu data...</p>
                     </div>
                     
                     <!-- Card 2: Kelembaban Tanah -->
@@ -111,7 +111,17 @@
                         <p class="text-xs text-slate-400 mt-2">Soil Moisture Level</p>
                     </div>
                     
-                    <!-- Card 3: Status Relay -->
+                    <!-- Card 3: Status Tanah (Real-time berdasarkan ADC) -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-purple-50 rounded-xl text-purple-600"><i class="fa-solid fa-chart-line text-xl"></i></div>
+                        </div>
+                        <p class="text-slate-500 text-sm font-medium">Kondisi Tanah</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="soil-condition">--</h3>
+                        <p class="text-xs mt-2" id="soil-adc-value">ADC: --</p>
+                    </div>
+                    
+                    <!-- Card 4: Status Relay -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-amber-50 rounded-xl text-amber-600"><i class="fa-solid fa-lightbulb text-xl"></i></div>
@@ -168,29 +178,75 @@
                         </div>
                     </div>
                     <div class="relative h-72 w-full"><canvas id="mainChart"></canvas></div>
-                    <div class="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                        <p class="text-xs font-bold text-slate-600 mb-2">📊 Panduan Nilai ADC (12-bit: 0-4095):</p>
-                        <div class="grid grid-cols-5 gap-2 text-[10px]">
-                            <div class="text-center">
-                                <div class="w-full h-2 bg-gradient-to-r from-blue-500 to-blue-400 rounded mb-1"></div>
-                                <span class="text-slate-600 font-semibold">0-1000<br>🌊 Sangat Basah</span>
-                            </div>
-                            <div class="text-center">
-                                <div class="w-full h-2 bg-gradient-to-r from-green-500 to-green-400 rounded mb-1"></div>
-                                <span class="text-slate-600 font-semibold">1000-2000<br>💦 Basah</span>
-                            </div>
-                            <div class="text-center">
-                                <div class="w-full h-2 bg-gradient-to-r from-yellow-500 to-yellow-400 rounded mb-1"></div>
-                                <span class="text-slate-600 font-semibold">2000-3000<br>💧 Lembab</span>
-                            </div>
-                            <div class="text-center">
-                                <div class="w-full h-2 bg-gradient-to-r from-orange-500 to-orange-400 rounded mb-1"></div>
-                                <span class="text-slate-600 font-semibold">3000-3500<br>⚠️ Kering</span>
-                            </div>
-                            <div class="text-center">
-                                <div class="w-full h-2 bg-gradient-to-r from-red-500 to-red-400 rounded mb-1"></div>
-                                <span class="text-slate-600 font-semibold">>3500<br>🌵 Sangat Kering</span>
-                            </div>
+                    
+                    <!-- Panduan Nilai ADC - Tabel Detail -->
+                    <div class="mt-4 p-4 bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class="fa-solid fa-info-circle text-blue-600 text-lg"></i>
+                            <p class="text-sm font-bold text-slate-700">📊 Panduan Nilai ADC (12-bit: 0-4095) - Sensor Kelembaban Tanah</p>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs border-collapse bg-white rounded-lg overflow-hidden shadow-sm">
+                                <thead class="bg-gradient-to-r from-slate-700 to-slate-600 text-white">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left font-bold">Kondisi Tanah</th>
+                                        <th class="px-4 py-3 text-center font-bold">Nilai ADC (Raw)</th>
+                                        <th class="px-4 py-3 text-left font-bold">Penjelasan</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-4 py-3 font-semibold text-slate-700">
+                                            <i class="fa-solid fa-wind text-slate-500 mr-2"></i>
+                                            Kering (Di udara)
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 font-bold rounded-full">
+                                                0 – 500
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-slate-600">
+                                            Tidak ada konduktivitas/kapasitansi yang terbaca.
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-green-50 transition-colors">
+                                        <td class="px-4 py-3 font-semibold text-green-700">
+                                            <i class="fa-solid fa-seedling text-green-500 mr-2"></i>
+                                            Lembab (Ideal)
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="inline-block px-3 py-1 bg-green-100 text-green-700 font-bold rounded-full">
+                                                1200 – 2500
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-slate-600">
+                                            <span class="font-semibold text-green-700">✅ Tanah memiliki kandungan air yang cukup.</span> Kondisi optimal untuk tanaman cabai.
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-blue-50 transition-colors">
+                                        <td class="px-4 py-3 font-semibold text-blue-700">
+                                            <i class="fa-solid fa-droplet text-blue-500 mr-2"></i>
+                                            Basah (Air)
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-full">
+                                                &gt; 3000
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-slate-600">
+                                            Sensor mendeteksi kadar air tinggi (basah kuyup).
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <p class="text-xs text-yellow-800 flex items-start gap-2">
+                                <i class="fa-solid fa-lightbulb text-yellow-600 mt-0.5"></i>
+                                <span><strong>Tips:</strong> Untuk tanaman cabai, pertahankan nilai ADC antara <strong>1200-2500</strong> untuk pertumbuhan optimal. Sistem akan otomatis menyiram jika nilai ADC < 1200 (kering).</span>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -752,16 +808,81 @@
                         deviceListContainer.innerHTML = '<span class="text-red-500 text-xs font-bold">⚠️ Device Offline - Tidak ada data sensor</span>';
                     } else {
                         // Online: tampilkan data normal
+                        const temp = data.temperature;
+                        const soil = data.soil_moisture;
+                        const rawAdc = data.raw_adc || 0;
+                        
+                        // Update Suhu
                         document.getElementById('sensor-temp').textContent = 
-                            data.temperature !== null && data.temperature !== undefined 
-                                ? `${data.temperature.toFixed(1)}°C` 
+                            temp !== null && temp !== undefined 
+                                ? `${temp.toFixed(1)}°C` 
                                 : '--°C';
                         
+                        // Update status suhu
+                        const tempStatusEl = document.getElementById('temp-status');
+                        if (temp !== null && temp !== undefined) {
+                            if (temp < 20) {
+                                tempStatusEl.textContent = '❄️ Dingin';
+                                tempStatusEl.className = 'text-xs text-blue-600 mt-2 font-semibold';
+                            } else if (temp >= 20 && temp <= 32) {
+                                tempStatusEl.textContent = '✅ Normal';
+                                tempStatusEl.className = 'text-xs text-green-600 mt-2 font-semibold';
+                            } else {
+                                tempStatusEl.textContent = '🔥 Panas';
+                                tempStatusEl.className = 'text-xs text-red-600 mt-2 font-semibold';
+                            }
+                        } else {
+                            tempStatusEl.textContent = 'Menunggu data...';
+                            tempStatusEl.className = 'text-xs text-slate-400 mt-2';
+                        }
+                        
+                        // Update Kelembaban Tanah
                         document.getElementById('sensor-soil').textContent = 
-                            data.soil_moisture !== null && data.soil_moisture !== undefined 
-                                ? `${data.soil_moisture.toFixed(0)}%` 
+                            soil !== null && soil !== undefined 
+                                ? `${soil.toFixed(0)}%` 
                                 : '--%';
                         
+                        // Update Kondisi Tanah berdasarkan RAW ADC (Real-time dari Pico W)
+                        const soilConditionEl = document.getElementById('soil-condition');
+                        const soilAdcEl = document.getElementById('soil-adc-value');
+                        
+                        if (rawAdc > 0) {
+                            soilAdcEl.textContent = `ADC: ${rawAdc}`;
+                            
+                            if (rawAdc >= 0 && rawAdc <= 500) {
+                                // Kering (Di udara)
+                                soilConditionEl.textContent = '�️ Kering (Udara)';
+                                soilConditionEl.className = 'text-2xl font-bold text-slate-600 mt-1';
+                                soilAdcEl.className = 'text-xs text-slate-500 mt-2 font-semibold';
+                            } else if (rawAdc >= 1200 && rawAdc <= 2500) {
+                                // Lembab (Ideal)
+                                soilConditionEl.textContent = '✅ Lembab (Ideal)';
+                                soilConditionEl.className = 'text-2xl font-bold text-green-600 mt-1';
+                                soilAdcEl.className = 'text-xs text-green-500 mt-2 font-semibold';
+                            } else if (rawAdc > 3000) {
+                                // Basah (Air)
+                                soilConditionEl.textContent = '💧 Basah (Air)';
+                                soilConditionEl.className = 'text-2xl font-bold text-blue-600 mt-1';
+                                soilAdcEl.className = 'text-xs text-blue-500 mt-2 font-semibold';
+                            } else if (rawAdc > 500 && rawAdc < 1200) {
+                                // Transisi: Agak Kering
+                                soilConditionEl.textContent = '⚠️ Agak Kering';
+                                soilConditionEl.className = 'text-2xl font-bold text-orange-600 mt-1';
+                                soilAdcEl.className = 'text-xs text-orange-500 mt-2 font-semibold';
+                            } else {
+                                // Transisi: Cukup Basah (2500-3000)
+                                soilConditionEl.textContent = '💦 Cukup Basah';
+                                soilConditionEl.className = 'text-2xl font-bold text-cyan-600 mt-1';
+                                soilAdcEl.className = 'text-xs text-cyan-500 mt-2 font-semibold';
+                            }
+                        } else {
+                            soilConditionEl.textContent = '--';
+                            soilConditionEl.className = 'text-2xl font-bold text-slate-800 mt-1';
+                            soilAdcEl.textContent = 'ADC: --';
+                            soilAdcEl.className = 'text-xs text-slate-400 mt-2';
+                        }
+                        
+                        // Update Status Relay
                         document.getElementById('relay-status').textContent = 
                             data.relay_status ? 'ON' : 'OFF';
                         
@@ -1749,12 +1870,12 @@
             }
             
             fetchStats();
-            updateChart();
+            fetchHistory();
             
             // Real-time refresh setiap 1 detik
             dashboardRefreshInterval = setInterval(() => {
                 fetchStats();
-                updateChart();
+                fetchHistory();
             }, 1000);
             
             console.log('✅ Real-time monitoring started (every 1 second)');
