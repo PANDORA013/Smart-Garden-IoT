@@ -83,11 +83,22 @@ class ModeAIService
             $reason = "WET: Moisture {$soilMoisture}% > {$thresholdOff}%";
 
         } else {
-            // Tanah NORMAL (antara threshold_on dan threshold_off)
-            // Pertahankan kondisi sebelumnya (Hysteresis)
+            // Tanah NORMAL/LEMBAB (antara threshold_on dan threshold_off)
+            // LOGIKA PENTING: Saat NORMAL, pompa harus OFF (tidak ON-OFF terus)
+            // Hysteresis hanya berlaku jika pompa ON sebelumnya, tapi pompa tidak boleh nyala saat normal
             $lastStatus = (bool) $device->pump_status;
-            $shouldPumpOn = $lastStatus;
-            $reason = "NORMAL (Hysteresis): Pump " . ($lastStatus ? "ON" : "OFF");
+            
+            // PERBAIKAN: Jika tanah normal/lembab, pompa harus OFF
+            // Hysteresis tidak berarti tetap ON saat lembab, tapi "stable" - yaitu OFF
+            if ($lastStatus && $soilMoisture >= 50) {
+                // Pompa sedang ON tetapi tanah sudah lembab (>50%) → Matikan
+                $shouldPumpOn = false;
+                $reason = "NORMAL/LEMBAB: Pump OFF (was ON, now moist at {$soilMoisture}%)";
+            } else {
+                // Tetap sebelumnya hanya jika belum cukup lembab (35-50%)
+                $shouldPumpOn = $lastStatus;
+                $reason = "NORMAL (Hysteresis): Pump " . ($lastStatus ? "ON" : "OFF") . " at {$soilMoisture}%";
+            }
         }
 
         // ===== PROTEKSI 3: Watchdog Timer =====
@@ -106,7 +117,16 @@ class ModeAIService
             }
         }
 
-        // ===== Log Activity =====
+        // ===== Update device state & Log Activity =====
+        // Update pump status di database jika berbeda
+        if ($device->pump_status !== $shouldPumpOn) {
+            $device->update([
+                'pump_status' => $shouldPumpOn,
+                'pump_on_at' => $shouldPumpOn ? now() : null
+            ]);
+        }
+
+        // Log activity
         $this->logActivity($device, $currentAdc, $soilMoisture, $thresholdOn, $thresholdOff, $shouldPumpOn, $reason);
 
         return [
@@ -181,19 +201,31 @@ class ModeAIService
     }
 
     /**
-     * Log activity untuk monitoring
+     * Log activity untuk monitoring dengan detail state change
      */
     private function logActivity(Device $device, int $adc, int $moisture, int $thresholdOn, int $thresholdOff, bool $shouldPumpOn, string $reason)
     {
-        Log::info("[MODE_AI] Processing", [
+        $pumpOnTime = $this->getPumpOnTime($device);
+        
+        // Detect if pump state changed
+        $pumpWasOn = (bool) ($device->fresh()->pump_status ?? false);
+        $pumpChanged = $pumpWasOn !== $shouldPumpOn;
+        
+        $logLevel = $pumpChanged ? 'info' : 'debug';
+        $stateChangeMarker = $pumpChanged ? "📋 STATE CHANGE: " : "";
+
+        Log::info("[MODE_AI] {$stateChangeMarker}Processing", [
             'device_id' => $device->device_id,
             'adc_value' => $adc,
             'soil_moisture_percent' => $moisture,
             'threshold_on' => $thresholdOn,
             'threshold_off' => $thresholdOff,
-            'should_pump_on' => $shouldPumpOn,
-            'reason' => $reason,
-            'pump_on_time_seconds' => $this->getPumpOnTime($device)
+            'pump_previous_state' => $pumpWasOn ? 'ON' : 'OFF',
+            'pump_new_state' => $shouldPumpOn ? 'ON' : 'OFF',
+            'pump_state_changed' => $pumpChanged ? 'YES' : 'NO',
+            'pump_on_time_seconds' => $pumpOnTime,
+            'decision_reason' => $reason,
+            'timestamp' => now()->toIso8601String()
         ]);
     }
 
