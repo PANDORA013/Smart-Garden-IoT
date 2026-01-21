@@ -4,49 +4,32 @@ use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\DeviceController;
 use Illuminate\Support\Facades\Route;
 
-// ===== DEVICE AUTO-PROVISIONING =====
-// Arduino check-in untuk mendapatkan konfigurasi otomatis
+// Device auto-provisioning
 Route::get('/device/check-in', [DeviceController::class, 'checkIn']);
 
-// ===== DEVICE MANAGEMENT (CRUD) =====
+// Device management
 Route::prefix('devices')->group(function () {
     Route::get('/', [DeviceController::class, 'index']);
     Route::get('/{id}', [DeviceController::class, 'show']);
     Route::put('/{id}', [DeviceController::class, 'update']);
     Route::delete('/{id}', [DeviceController::class, 'destroy']);
     Route::post('/{id}/preset', [DeviceController::class, 'applyPreset']);
-    Route::post('/{id}/mode', [DeviceController::class, 'updateMode']); // Update mode operasi
-    
-    // NEW: Calibration endpoints
-    Route::post('/{id}/calibrate', [MonitoringController::class, 'calibrateSensor']); // Manual calibration
-    Route::post('/{id}/calibrate/reset', [MonitoringController::class, 'resetCalibration']); // Reset to auto-calibration
+    Route::post('/{id}/mode', [DeviceController::class, 'updateMode']);
+    Route::post('/{id}/calibrate', [MonitoringController::class, 'calibrateSensor']);
+    Route::post('/{id}/calibrate/reset', [MonitoringController::class, 'resetCalibration']);
 });
 
-// ===== MONITORING API (DATA SENSOR) =====
+// Monitoring API
 Route::prefix('monitoring')->group(function () {
-    // Insert data dari mikrokontroler
     Route::post('/insert', [MonitoringController::class, 'insert']);
-    
-    // Ambil data terbaru
     Route::get('/latest', [MonitoringController::class, 'latest']);
-    
-    // Ambil history data (untuk chart)
     Route::get('/history', [MonitoringController::class, 'history']);
-    
-    // Statistics untuk dashboard
     Route::get('/stats', [MonitoringController::class, 'stats']);
-    
-    // Logs untuk activity log
     Route::get('/logs', [MonitoringController::class, 'logs']);
-    
-    // Toggle relay (kontrol manual)
     Route::post('/relay/toggle', [MonitoringController::class, 'toggleRelay']);
-    
-    // Cleanup data lama
     Route::delete('/cleanup', [MonitoringController::class, 'cleanup']);
 });
 
-// ===== BACKWARD COMPATIBILITY ROUTES =====
-// Untuk kompatibilitas dengan frontend yang menggunakan endpoint lama
-Route::get('/monitoring', [MonitoringController::class, 'api_show']); // Multi-device data dengan settings
-Route::post('/settings/update', [MonitoringController::class, 'updateSettings']); // Update settings dari modal
+// Backward compatibility
+Route::get('/monitoring', [MonitoringController::class, 'api_show']);
+Route::post('/settings/update', [MonitoringController::class, 'updateSettings']);
