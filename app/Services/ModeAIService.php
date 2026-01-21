@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\Device;
+use App\Models\DeviceSetting;
 use App\Models\Monitoring;
 use Illuminate\Support\Facades\Log;
 
@@ -30,11 +32,11 @@ class ModeAIService
     /**
      * Proses Mode AI dengan semua proteksi keamanan
      * 
-     * @param Device $device
+     * @param \App\Models\DeviceSetting $device
      * @param int $currentAdc - ADC value dari sensor
      * @return array
      */
-    public function processAI(Device $device, int $currentAdc): array
+    public function processAI(DeviceSetting $device, int $currentAdc): array
     {
         // ===== PROTEKSI 1: Validasi Sensor =====
         if (!$this->validateSensorReading($currentAdc)) {
@@ -188,10 +190,10 @@ class ModeAIService
     /**
      * Hitung berapa lama pompa sudah ON (seconds)
      * 
-     * @param Device $device
+     * @param \App\Models\DeviceSetting $device
      * @return int
      */
-    private function getPumpOnTime(Device $device): int
+    private function getPumpOnTime(DeviceSetting $device): int
     {
         if (!$device->pump_status || !$device->pump_on_at) {
             return 0;
@@ -202,8 +204,17 @@ class ModeAIService
 
     /**
      * Log activity untuk monitoring dengan detail state change
+     * 
+     * @param \App\Models\DeviceSetting $device
+     * @param int $adc
+     * @param int $moisture
+     * @param int $thresholdOn
+     * @param int $thresholdOff
+     * @param bool $shouldPumpOn
+     * @param string $reason
+     * @return void
      */
-    private function logActivity(Device $device, int $adc, int $moisture, int $thresholdOn, int $thresholdOff, bool $shouldPumpOn, string $reason)
+    private function logActivity(DeviceSetting $device, int $adc, int $moisture, int $thresholdOn, int $thresholdOff, bool $shouldPumpOn, string $reason)
     {
         $pumpOnTime = $this->getPumpOnTime($device);
         
@@ -245,11 +256,11 @@ class ModeAIService
     /**
      * Validasi mode switch dengan safety check
      * 
-     * @param Device $device
+     * @param \App\Models\DeviceSetting $device
      * @param int $newMode
      * @return array
      */
-    public function validateModeSwitch(Device $device, int $newMode): array
+    public function validateModeSwitch(DeviceSetting $device, int $newMode): array
     {
         // Jika mode sama → skip check
         if ($device->mode === $newMode) {
@@ -324,7 +335,7 @@ class ModeAIService
      * @param int|null $moisture
      * @return array
      */
-    public function generateCommand(bool $shouldPumpOn, string $reason, int $moisture = null): array
+    public function generateCommand(bool $shouldPumpOn, string $reason, ?int $moisture = null): array
     {
         return [
             'action' => 'pump',
@@ -338,11 +349,11 @@ class ModeAIService
     /**
      * Process manual mode (weekly loop)
      * 
-     * @param Device $device
+     * @param \App\Models\DeviceSetting $device
      * @param int $currentAdc
      * @return array
      */
-    public function processManual(Device $device, int $currentAdc): array
+    public function processManual(DeviceSetting $device, int $currentAdc): array
     {
         if (!$device->weekly_schedule) {
             return [
@@ -429,10 +440,10 @@ class ModeAIService
     /**
      * Force pump OFF untuk emergency
      * 
-     * @param Device $device
+     * @param \App\Models\DeviceSetting $device
      * @return bool
      */
-    public function emergencyStop(Device $device): bool
+    public function emergencyStop(DeviceSetting $device): bool
     {
         return $device->update([
             'pump_status' => false,
@@ -442,8 +453,11 @@ class ModeAIService
 
     /**
      * Get device status untuk UI
+     * 
+     * @param \App\Models\DeviceSetting $device
+     * @return array
      */
-    public function getDeviceStatus(Device $device): array
+    public function getDeviceStatus(DeviceSetting $device): array
     {
         return [
             'device_id' => $device->device_id,
