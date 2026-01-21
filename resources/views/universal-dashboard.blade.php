@@ -1308,7 +1308,8 @@
         }
         
         /**
-         * Sync device status ke sidebar (connection indicator)
+         * Sync device status ke sidebar - konsisten dengan syncAndUpdateConnectionStatus
+         * Check both 'online' AND 'idle' status untuk akurasi maksimal
          */
         async function syncDeviceStatusToSidebar() {
             try {
@@ -1322,57 +1323,8 @@
                 if (response.data.data && response.data.data.length > 0) {
                     const firstDevice = response.data.data[0];
                     const deviceStatus = firstDevice.status || 'offline';
+                    // CONSISTENT: sama seperti syncAndUpdateConnectionStatus
                     const isOnline = deviceStatus === 'online' || deviceStatus === 'idle';
-                    updateConnectionStatus(isOnline);
-                } else {
-                    updateConnectionStatus(false);
-                }
-            } catch (error) {
-                console.error('Error syncing device status:', error);
-                updateConnectionStatus(false);
-            }
-        }
-        
-        /**
-         * Sync device status ke sidebar (connection indicator)
-         */
-        async function syncDeviceStatusToSidebar() {
-            try {
-                const response = await axios.get('/api/devices', {
-                    headers: {
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache'
-                    }
-                });
-                
-                if (response.data.data && response.data.data.length > 0) {
-                    const firstDevice = response.data.data[0];
-                    const isOnline = firstDevice.status === 'online';
-                    updateConnectionStatus(isOnline);
-                } else {
-                    updateConnectionStatus(false);
-                }
-            } catch (error) {
-                console.error('Error syncing device status:', error);
-                updateConnectionStatus(false);
-            }
-        }
-        
-        /**
-         * Sync device status ke sidebar (connection indicator)
-         */
-        async function syncDeviceStatusToSidebar() {
-            try {
-                const response = await axios.get('/api/devices', {
-                    headers: {
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache'
-                    }
-                });
-                
-                if (response.data.data && response.data.data.length > 0) {
-                    const firstDevice = response.data.data[0];
-                    const isOnline = firstDevice.status === 'online';
                     updateConnectionStatus(isOnline);
                 } else {
                     updateConnectionStatus(false);
@@ -2486,6 +2438,7 @@
         // AUTO-REFRESH DASHBOARD - Refresh data setiap 3 detik
         // =============================================================================
         let dashboardRefreshInterval = null;
+        let statusSyncInterval = null;  // BARU: Sync status di semua halaman
 
         function startDashboardAutoRefresh() {
             if (dashboardRefreshInterval) {
@@ -2512,9 +2465,35 @@
             }
         }
 
+        // BARU: Sync status di SEMUA halaman terpisah dari dashboard refresh
+        function startStatusSync() {
+            if (statusSyncInterval) {
+                clearInterval(statusSyncInterval);
+            }
+            
+            // Initial sync
+            syncDeviceStatusToSidebar();
+            
+            // Sync setiap 3 detik di semua halaman (perlu koneksi cek)
+            statusSyncInterval = setInterval(() => {
+                syncDeviceStatusToSidebar();
+            }, 3000);
+            
+            console.log('✅ Status sync started (every 3 seconds on all pages)');
+        }
+
+        function stopStatusSync() {
+            if (statusSyncInterval) {
+                clearInterval(statusSyncInterval);
+                statusSyncInterval = null;
+                console.log('⏸️ Status sync stopped');
+            }
+        }
+
         // Start auto-refresh when page loads
         window.addEventListener('DOMContentLoaded', () => {
             startDashboardAutoRefresh();
+            startStatusSync();  // BARU: Status sync always active
         });
     </script>
 </body>
