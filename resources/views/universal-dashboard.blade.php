@@ -1172,7 +1172,27 @@
                         }
 
                         // Build hardware status list
-                        const hwStatus = device.hardware_status || {};
+                        // Fix: hardware_status might be a string like "@{key=value}" from C#
+                        let hwStatus = device.hardware_status || {};
+                        if (typeof hwStatus === 'string') {
+                            try {
+                                // Try to parse if it looks like PowerShell object
+                                if (hwStatus.startsWith('@{') && hwStatus.endsWith('}')) {
+                                    hwStatus = {};
+                                    const content = hwStatus.slice(2, -1);
+                                    const pairs = content.split(';');
+                                    pairs.forEach(pair => {
+                                        const [k, v] = pair.trim().split('=');
+                                        if (k && v) {
+                                            hwStatus[k.trim()] = v.trim() === 'True' || v.trim() === 'true';
+                                        }
+                                    });
+                                }
+                            } catch (e) {
+                                hwStatus = {};
+                            }
+                        }
+                        
                         const hardwareList = [
                             { name: 'DHT Sensor', icon: 'fa-temperature-high', status: hwStatus.dht11 || hwStatus.dht22 || false },
                             { name: 'Soil Sensor', icon: 'fa-droplet', status: hwStatus.soil_sensor || false },
