@@ -903,10 +903,11 @@
                 });
                 if (response.data.success) {
                     const data = response.data.data;
-                    const isOnline = data.is_online;
                     
-                    // Sync status: selalu perbarui dari /api/devices untuk consistency
-                    await syncAndUpdateConnectionStatus(isOnline);
+                    // SINGLE SOURCE OF TRUTH: Status dari /api/devices, bukan /api/stats
+                    // /api/stats hanya untuk data sensor, status dari /api/devices lebih akurat
+                    const devicesResponse = await syncAndUpdateConnectionStatus(null);
+                    const isOnline = devicesResponse;
                     
                     // Jika offline, tampilkan data sebagai tidak tersedia
                     if (!isOnline) {
@@ -915,12 +916,6 @@
                         document.getElementById('relay-status').textContent = 'OFF';
                         document.getElementById('toggleSwitch').checked = false;
                         document.getElementById('toggleSwitch').disabled = true;
-                        
-                        // Tampilkan peringatan offline di dashboard (jika elemen masih ada)
-                        const deviceListContainer = document.getElementById('detected-devices-list');
-                        if (deviceListContainer) {
-                            deviceListContainer.innerHTML = '<span class="text-red-500 text-xs font-bold">⚠️ Device Offline - Tidak ada data sensor</span>';
-                        }
                     } else {
                         // Online: tampilkan data normal
                         const temp = data.temperature;
@@ -1005,31 +1000,7 @@
                         document.getElementById('toggleSwitch').checked = data.relay_status;
                         document.getElementById('toggleSwitch').disabled = false;
                         
-                        // Update detected devices list dengan data hardware_status dari Pico (jika elemen masih ada)
-                        const deviceListContainer = document.getElementById('detected-devices-list');
-                        if (deviceListContainer) {
-                            const hwStatus = data.hardware_status || {};
-                            const hardwareList = [
-                                { name: 'DHT Sensor', icon: 'fa-temperature-high', status: hwStatus.dht11 || hwStatus.dht22 || false },
-                                { name: 'Soil Sensor', icon: 'fa-droplet', status: hwStatus.soil_sensor || false },
-                            ];
-                            let html = '';
-                            hardwareList.forEach(hw => {
-                                const statusColor = hw.status ? 'text-green-600' : 'text-red-500';
-                                const statusIcon = hw.status ? 'fa-check-circle' : 'fa-times-circle';
-                                html += `<span class="flex items-center gap-1 px-2 py-1 bg-white ${statusColor} text-xs font-bold rounded-lg shadow-sm">
-                                    <i class="fa-solid ${hw.icon}"></i> ${hw.name}
-                                    <i class="fa-solid ${statusIcon} text-[10px]"></i>
-                                </span>`;
-                            });
-                            deviceListContainer.innerHTML = html;
-                        }
-                        
-                        // Update device info card (Dashboard) - selalu tampilkan
-                        // updateConnectionStatus sudah dipanggil di awal fetchStats
-                    }
-                    
-                    // Update chart
+                        // Update chart
                     mainChart.data.labels = data.map(item => {
                         const date = new Date(item.created_at);
                         return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -1273,8 +1244,9 @@
         }
         
         /**
-         * Sync device status dari /api/devices dan update connection indicator
-         * Ini adalah single source of truth untuk status online/offline
+         * SINGLE SOURCE OF TRUTH untuk device status
+         * Mengambil status dari /api/devices (paling akurat)
+         * Return: boolean (true=online/idle, false=offline)
          */
         async function syncAndUpdateConnectionStatus(fallbackStatus = null) {
             try {
@@ -1287,23 +1259,21 @@
                 
                 if (response.data.data && response.data.data.length > 0) {
                     const firstDevice = response.data.data[0];
-                    // Determine status: prefer device status, fallback to parameter
                     const deviceStatus = firstDevice.status || 'offline';
-                    const isOnline = deviceStatus === 'online' || 
-                                   deviceStatus === 'idle' ||
-                                   (fallbackStatus !== null ? fallbackStatus : false);
+                    const isOnline = deviceStatus === 'online' || deviceStatus === 'idle';
                     
                     console.log(`[SYNC] Device status from /api/devices: ${deviceStatus} → isOnline: ${isOnline}`);
                     updateConnectionStatus(isOnline);
+                    return isOnline;  // RETURN STATUS
                 } else {
-                    // No devices found
                     console.log('[SYNC] No devices found, setting status to offline');
                     updateConnectionStatus(false);
+                    return false;  // RETURN STATUS
                 }
             } catch (error) {
                 console.error('[SYNC] Error syncing device status:', error);
-                // Fallback to parameter or offline
-                updateConnectionStatus(fallbackStatus !== null ? fallbackStatus : false);
+                updateConnectionStatus(false);
+                return false;  // RETURN STATUS
             }
         }
         
