@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -1930,6 +1930,10 @@
                 const response = await axios.get(`/api/devices/${minimalDeviceId}`);
                 if (response.data.success) {
                     const data = response.data.data;
+                    
+                    // Store current device data for use in updateMinimalSettingsArea
+                    window.currentDevice = data;
+                    
                     minimalSettings = {
                         device_name: data.device_name || '',
                         mode: data.mode || 2,
@@ -1991,13 +1995,6 @@
             
             // Update dynamic settings area
             updateMinimalSettingsArea();
-            
-            // AUTO-OPEN MODAL untuk Mode Manual (Mode 4) - langsung ke konfigurasi
-            if (mode === 4) {
-                setTimeout(() => {
-                    openSmartConfigModal(4);  // Pass mode=4 to skip mode selection step
-                }, 300);
-            }
         }
 
         function updateMinimalSettingsArea() {
@@ -2037,48 +2034,206 @@
                     </div>
                 `;
             } else if (minimalCurrentMode === 4) {
-                // Manual: Weekly Loop System - Direct user to modal
+                // Manual: Weekly Loop System - Tampilkan langsung di settings
                 area.innerHTML = `
                     <div class="space-y-6">
-                        <div class="text-center py-6">
-                            <div class="inline-block p-4 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl mb-3 border-2 border-purple-200">
-                                <i class="fa-solid fa-calendar-week text-5xl text-purple-600"></i>
+                        <!-- Info Weekly Loop -->
+                        <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-calendar-week text-purple-600 text-xl mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-bold text-purple-800 mb-1">📅 Sistem Penjadwalan Mingguan (Weekly Loop)</p>
+                                    <p class="text-xs text-purple-700">
+                                        Pilih hari aktif dan atur threshold + jam penyiraman per hari. Sistem akan berjalan otomatis sesuai siklus mingguan yang tersimpan.
+                                    </p>
+                                </div>
                             </div>
-                            <h4 class="font-bold text-slate-800 mb-2">� Mode Manual - Weekly Loop System</h4>
-                            <p class="text-sm text-slate-600 mb-4">
-                                Sistem penjadwalan mingguan dengan threshold & jam yang dapat dikustomisasi per hari.
+                        </div>
+
+                        <!-- Day Selector -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-3">
+                                <i class="fa-solid fa-calendar-days mr-2"></i>
+                                Pilih Hari Aktif untuk Dikonfigurasi:
+                            </label>
+                            <div class="grid grid-cols-7 gap-2">
+                                <button type="button" onclick="selectDay('senin')" id="btn-day-senin" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Sen</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Senin</div>
+                                </button>
+                                <button type="button" onclick="selectDay('selasa')" id="btn-day-selasa" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Sel</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Selasa</div>
+                                </button>
+                                <button type="button" onclick="selectDay('rabu')" id="btn-day-rabu" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Rab</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Rabu</div>
+                                </button>
+                                <button type="button" onclick="selectDay('kamis')" id="btn-day-kamis" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Kam</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Kamis</div>
+                                </button>
+                                <button type="button" onclick="selectDay('jumat')" id="btn-day-jumat" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Jum</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Jumat</div>
+                                </button>
+                                <button type="button" onclick="selectDay('sabtu')" id="btn-day-sabtu" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Sab</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Sabtu</div>
+                                </button>
+                                <button type="button" onclick="selectDay('minggu')" id="btn-day-minggu" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Min</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Minggu</div>
+                                </button>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Klik hari untuk mengatur konfigurasi. Hari yang sudah dikonfigurasi akan ditandai dengan warna biru.
+                            </p>
+                        </div>
+
+                        <!-- Day Configuration Area -->
+                        <div id="day-config-area" class="hidden space-y-6 p-5 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                            <div class="flex justify-between items-center pb-3 border-b border-blue-300">
+                                <h6 class="text-base font-bold text-blue-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-gear"></i>
+                                    Konfigurasi <span id="current-day-name" class="text-blue-600">Hari</span>
+                                </h6>
+                                <button type="button" onclick="toggleDayActive()" id="toggle-day-active" 
+                                        class="px-4 py-2 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition-all">
+                                    <i class="fa-solid fa-check mr-1"></i> Aktifkan Hari Ini
+                                </button>
+                            </div>
+
+                            <!-- Threshold Settings per Day -->
+                            <div class="space-y-4">
+                                <h6 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                    <i class="fa-solid fa-droplet"></i> Threshold Kelembapan
+                                </h6>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-3">
+                                        🔴 Batas Kering (Pompa ON):
+                                    </label>
+                                    <div class="flex items-center gap-4">
+                                        <input type="range" id="range-day-on" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="29" oninput="updateDayThresholdOnDisplay()">
+                                        <div class="text-right min-w-[100px]">
+                                            <div id="val-day-on" class="px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center">29%</div>
+                                            <div id="adc-day-on" class="text-[10px] text-slate-500 mt-1 text-center font-medium">ADC: ~1200</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-3">
+                                        💧 Batas Basah (Pompa OFF):
+                                    </label>
+                                    <div class="flex items-center gap-4">
+                                        <input type="range" id="range-day-off" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="61" oninput="updateDayThresholdOffDisplay()">
+                                        <div class="text-right min-w-[100px]">
+                                            <div id="val-day-off" class="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center">61%</div>
+                                            <div id="adc-day-off" class="text-[10px] text-slate-500 mt-1 text-center font-medium">ADC: ~2500</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Watering Time per Day -->
+                            <div class="space-y-4">
+                                <h6 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                    <i class="fa-solid fa-clock"></i> Jam Penyiraman
+                                </h6>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-2">⏰ Jam Pagi:</label>
+                                        <input type="time" id="time-day-pagi" class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none font-medium" value="07:00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-2">🌅 Jam Sore:</label>
+                                        <input type="time" id="time-day-sore" class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none font-medium" value="17:00">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Save Day Config Button -->
+                            <button type="button" onclick="saveDayConfig()" 
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-save"></i>
+                                Simpan Konfigurasi Hari Ini
+                            </button>
+                        </div>
+
+                        <!-- Summary of Configured Days -->
+                        <div id="weekly-summary" class="hidden p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                            <h6 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check"></i>
+                                Ringkasan Konfigurasi Mingguan
+                            </h6>
+                            <div id="summary-content" class="space-y-2 text-xs">
+                                <!-- Will be populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Kalibrasi Sensor ADC -->
+                        <div class="border-t-2 border-purple-200 pt-6">
+                            <h6 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-wrench text-amber-600"></i>
+                                🔧 Kalibrasi Sensor (Opsional)
+                            </h6>
+                            <p class="text-xs text-slate-600 mb-4">
+                                Sesuaikan nilai ADC sensor untuk akurasi optimal. Perubahan ini akan otomatis dikirim ke Pico W.
                             </p>
                             
-                            <!-- Quick Info -->
-                            <div class="bg-white rounded-lg p-4 space-y-2 text-left border border-purple-100 mb-4">
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-check-circle text-purple-600"></i>
-                                    <span class="text-sm text-slate-700"><strong>7 Hari Konfigurasi:</strong> Senin - Minggu</span>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fa-solid fa-sun text-amber-500 mr-1"></i>
+                                        Nilai ADC Kering (Udara):
+                                    </label>
+                                    <input type="number" id="input-adc-min" 
+                                           class="w-full px-4 py-2 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-500" 
+                                           value="4095" min="0" max="4095" placeholder="Default: 4095">
+                                    <p class="text-xs text-slate-500 mt-1">
+                                        <i class="fa-solid fa-info-circle mr-1"></i>
+                                        Saat sensor di udara (kering maksimal)
+                                    </p>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-check-circle text-purple-600"></i>
-                                    <span class="text-sm text-slate-700"><strong>Threshold Adaptif:</strong> Batas ON & OFF per hari</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-check-circle text-purple-600"></i>
-                                    <span class="text-sm text-slate-700"><strong>Jadwal Fleksibel:</strong> Jam pagi & sore</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-check-circle text-purple-600"></i>
-                                    <span class="text-sm text-slate-700"><strong>Loop Otomatis:</strong> Berjalan setiap minggu</span>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        <i class="fa-solid fa-droplet text-blue-500 mr-1"></i>
+                                        Nilai ADC Basah (Air):
+                                    </label>
+                                    <input type="number" id="input-adc-max" 
+                                           class="w-full px-4 py-2 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500" 
+                                           value="1500" min="0" max="4095" placeholder="Default: 1500">
+                                    <p class="text-xs text-slate-500 mt-1">
+                                        <i class="fa-solid fa-info-circle mr-1"></i>
+                                        Saat sensor di air (basah maksimal)
+                                    </p>
                                 </div>
                             </div>
                             
-                            <!-- Info Box -->
-                            <div class="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
-                                <p class="text-xs text-slate-700 flex items-start gap-2">
-                                    <i class="fa-solid fa-info-circle text-blue-600 mt-0.5"></i>
-                                    <span><strong>✨ Modal akan terbuka otomatis!</strong> Silakan configure hari yang ingin diaktifkan, atur threshold, dan jadwal penyiraman.</span>
+                            <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                <p class="text-xs text-slate-700">
+                                    <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i>
+                                    <strong>Cara Kalibrasi:</strong> 1) Ukur sensor di udara (catat nilai), 2) Celupkan ke air (catat nilai), 3) Masukkan kedua nilai di atas, 4) Simpan.
                                 </p>
                             </div>
                         </div>
                     </div>
                 `;
+                
+                // Load ADC values from current device
+                if (minimalDeviceId && window.currentDevice) {
+                    document.getElementById('input-adc-min').value = window.currentDevice.sensor_min || 4095;
+                    document.getElementById('input-adc-max').value = window.currentDevice.sensor_max || 1500;
+                }
             }
         }
 
@@ -2095,8 +2250,33 @@
                     mode: minimalCurrentMode
                 };
                 
+                // === KALIBRASI ADC (ALWAYS SEND) ===
+                const adcMin = parseInt(document.getElementById('input-adc-min').value);
+                const adcMax = parseInt(document.getElementById('input-adc-max').value);
+                
+                // Validation: ADC Min must be greater than ADC Max
+                if (adcMin <= adcMax) {
+                    alert('⚠️ Nilai ADC Kering harus lebih besar dari ADC Basah!\n\nContoh: Kering=4095, Basah=1500');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-save"></i> Simpan Perubahan';
+                    return;
+                }
+                
+                data.sensor_min = adcMin;
+                data.sensor_max = adcMax;
+                
                 // Mode 2 (Fuzzy AI): No additional settings needed
-                // Mode 4 (Manual): Weekly schedule configured via modal, no settings here
+                // Mode 4 (Manual): Include weekly schedule
+                if (minimalCurrentMode === 4) {
+                    const activeDays = Object.entries(weeklyConfig).filter(([day, config]) => config.active);
+                    if (activeDays.length === 0) {
+                        alert('⚠️ Silakan aktifkan minimal 1 hari untuk Mode Manual!');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-save"></i> Simpan Perubahan';
+                        return;
+                    }
+                    data.weekly_schedule = weeklyConfig;
+                }
                 
                 console.log('Saving settings:', { device_id: minimalDeviceId, data });
                 
@@ -2246,3 +2426,4 @@
     </script>
 </body>
 </html>
+
