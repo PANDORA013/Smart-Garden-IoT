@@ -772,13 +772,20 @@
             document.getElementById('nav-' + pageId).classList.add('active-nav');
             document.getElementById('nav-' + pageId).classList.remove('inactive-nav');
 
+            // Control auto-refresh: hanya aktif di dashboard
+            if (pageId === 'dashboard') {
+                startDashboardAutoRefresh();
+            } else {
+                stopDashboardAutoRefresh();
+            }
+
             // Load data based on page
             if (pageId === 'logs') {
                 loadLogs();
             } else if (pageId === 'devices') {
                 loadDevices();
             } else if (pageId === 'settings') {
-                updateSettingsDeviceStatus();
+                loadMinimalSettings();
             }
         }
 
@@ -1285,6 +1292,7 @@
                 console.error('Error syncing device status:', error);
                 updateConnectionStatus(false);
             }
+        }
 
         async function toggleRelay() {
             const toggleSwitch = document.getElementById('toggleSwitch');
@@ -2357,43 +2365,6 @@
             }
         }
 
-        // Override switchPage to load settings and control auto-refresh
-        const originalSwitchPage = switchPage;
-        switchPage = function(pageId) {
-            // Panggil fungsi switchPage asli DULU (untuk switch halaman)
-            originalSwitchPage(pageId);
-            
-            // Kemudian jalankan logic tambahan setelah halaman switch
-            
-            // Load settings jika pindah ke halaman settings
-            if (pageId === 'settings') {
-                loadMinimalSettings();
-            }
-            
-            // Load devices jika pindah ke halaman devices
-            if (pageId === 'devices') {
-                loadDevices();
-            }
-            
-            // Load logs jika pindah ke halaman logs
-            if (pageId === 'logs') {
-                loadLogs();
-            }
-            
-            // Control auto-refresh: hanya aktif di dashboard
-            if (pageId === 'dashboard') {
-                startDashboardAutoRefresh();
-            } else {
-                stopDashboardAutoRefresh();
-            }
-        };
-
-        // Fungsi refresh untuk masing-masing halaman
-        function refreshDevices() {
-            loadDevices();
-        }
-
-        // Quick Actions Functions
         async function testPump() {
             if (!confirm('Tes pompa akan menyalakan pompa selama 5 detik. Lanjutkan?')) {
                 return;
