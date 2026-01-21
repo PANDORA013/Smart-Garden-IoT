@@ -336,21 +336,15 @@
                         <!-- Mode Selector -->
                         <div class="space-y-3">
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Mode Operasi</label>
-                            <div class="grid grid-cols-3 gap-3">
-                                <button onclick="setMinimalMode(1)" id="minimal-mode-1" 
-                                        class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-green-400 bg-white">
-                                    <div class="text-2xl mb-1">🌱</div>
-                                    <div>Basic</div>
-                                    <div class="text-[10px] text-slate-400 font-normal mt-1">Threshold Sederhana</div>
-                                </button>
+                            <div class="grid grid-cols-2 gap-3">
                                 <button onclick="setMinimalMode(2)" id="minimal-mode-2" 
                                         class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-blue-400 bg-white">
                                     <div class="text-2xl mb-1">🤖</div>
                                     <div>Fuzzy AI</div>
-                                    <div class="text-[10px] text-slate-400 font-normal mt-1">Hemat & Presisi</div>
+                                    <div class="text-[10px] text-slate-400 font-normal mt-1">Threshold 35-45%</div>
                                 </button>
-                                <button onclick="setMinimalMode(3)" id="minimal-mode-3" 
-                                        class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-purple-400 bg-white">
+                                <button onclick="setMinimalMode(4)" id="minimal-mode-4" 
+                                        class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-slate-400 bg-white">
                                     <div class="text-2xl mb-1">🛠️</div>
                                     <div>Manual</div>
                                     <div class="text-[10px] text-slate-400 font-normal mt-1">Threshold + Jadwal</div>
@@ -469,42 +463,22 @@
 
                 <!-- Mode Selection Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <!-- Mode 1: Pemula -->
-                    <div id="card-mode-1" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-green-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(1)">
-                        <div class="text-center">
-                            <div class="text-6xl mb-3">🌱</div>
-                            <h5 class="text-lg font-bold text-slate-800 mb-2">Mode Pemula</h5>
-                            <p class="text-sm text-slate-600 mb-3">Paling mudah. Siram otomatis jika tanah kering (< 40%). Tanpa ribet.</p>
-                            <span class="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">✅ Rekomendasi Awal</span>
-                        </div>
-                    </div>
-
                     <!-- Mode 2: AI Fuzzy -->
                     <div id="card-mode-2" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-blue-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(2)">
                         <div class="text-center">
                             <div class="text-6xl mb-3">🤖</div>
                             <h5 class="text-lg font-bold text-slate-800 mb-2">Mode AI (Fuzzy)</h5>
-                            <p class="text-sm text-slate-600 mb-3">Hemat air & presisi. Menyesuaikan siraman dengan suhu udara panas/dingin.</p>
+                            <p class="text-sm text-slate-600 mb-3">Pompa menyala otomatis saat kelembapan < 35-45% (kering), dan berhenti saat kelembapan kembali normal.</p>
                             <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">⭐ Paling Efisien</span>
-                        </div>
-                    </div>
-
-                    <!-- Mode 3: Jadwal -->
-                    <div id="card-mode-3" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-yellow-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(3)">
-                        <div class="text-center">
-                            <div class="text-6xl mb-3">📅</div>
-                            <h5 class="text-lg font-bold text-slate-800 mb-2">Mode Terjadwal</h5>
-                            <p class="text-sm text-slate-600 mb-3">Siram rutin pagi & sore. Cocok untuk pembiasaan tanaman.</p>
-                            <span class="inline-block px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">⏰ Teratur</span>
                         </div>
                     </div>
 
                     <!-- Mode 4: Manual -->
                     <div id="card-mode-4" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-slate-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(4)">
                         <div class="text-center">
-                            <div class="text-6xl mb-3">🛠️</div>
+                            <div class="text-6xl mb-3">�️</div>
                             <h5 class="text-lg font-bold text-slate-800 mb-2">Mode Manual</h5>
-                            <p class="text-sm text-slate-600 mb-3">Kendali penuh. Anda tentukan sendiri kapan pompa menyala.</p>
+                            <p class="text-sm text-slate-600 mb-3">Kendali penuh dengan Threshold + Jadwal. Atur kapan dan bagaimana pompa bekerja.</p>
                             <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">🎛️ Advanced</span>
                         </div>
                     </div>
@@ -529,63 +503,76 @@
                         </div>
                     </div>
 
-                    <!-- Input for Mode 3: Schedule -->
-                    <div id="input-jadwal" class="hidden config-group space-y-4">
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
-                            <p class="text-sm text-yellow-800">
-                                <i class="fa-solid fa-lightbulb mr-2"></i>
-                                Tentukan jam penyiraman pagi dan sore. Sistem akan menyiram secara otomatis pada waktu yang ditentukan.
-                            </p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">⏰ Jam Pagi:</label>
-                                <input type="time" id="conf-pagi" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-yellow-500" value="07:00">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">🌅 Jam Sore:</label>
-                                <input type="time" id="conf-sore" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-yellow-500" value="17:00">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">⏱️ Durasi Siram (detik):</label>
-                            <input type="number" id="conf-durasi" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-yellow-500" value="5" min="1" max="60">
-                        </div>
-                    </div>
-
                     <!-- Input for Mode 4: Manual -->
-                    <div id="input-manual" class="hidden config-group space-y-4">
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
-                            <p class="text-sm text-slate-700">
-                                <i class="fa-solid fa-sliders mr-2"></i>
-                                Geser slider untuk menentukan kapan pompa harus menyala berdasarkan kelembapan tanah.
-                            </p>
-                        </div>
+                    <div id="input-manual" class="hidden config-group space-y-6">
+                        <!-- Threshold Settings -->
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-3">
-                                Batas Kelembapan Kering (Pompa ON):
-                            </label>
-                            <div class="flex items-center gap-4">
-                                <input type="range" id="range-manual" class="flex-grow-1 w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="40" oninput="document.getElementById('val-manual').textContent = this.value + '%'">
-                                <span id="val-manual" class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-lg min-w-[70px] text-center">40%</span>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
+                                <p class="text-sm font-bold text-slate-700 mb-1">
+                                    <i class="fa-solid fa-sliders mr-2"></i>
+                                    Pengaturan Threshold (Otomatis)
+                                </p>
+                                <p class="text-xs text-slate-600">
+                                    Pompa akan menyala/mati otomatis berdasarkan kelembapan tanah.
+                                </p>
                             </div>
-                            <p class="text-xs text-slate-500 mt-2">
-                                <i class="fa-solid fa-info-circle mr-1"></i>
-                                Pompa akan menyala jika kelembapan di bawah angka ini.
-                            </p>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-3">
+                                        Batas Kelembapan Kering (Pompa ON):
+                                    </label>
+                                    <div class="flex items-center gap-4">
+                                        <input type="range" id="range-manual" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="40" oninput="document.getElementById('val-manual').textContent = this.value + '%'">
+                                        <span id="val-manual" class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-lg min-w-[70px] text-center">40%</span>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-2">
+                                        <i class="fa-solid fa-info-circle mr-1"></i>
+                                        Pompa akan menyala jika kelembapan di bawah angka ini.
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-3">
+                                        Batas Kelembapan Basah (Pompa OFF):
+                                    </label>
+                                    <div class="flex items-center gap-4">
+                                        <input type="range" id="range-manual-stop" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="70" oninput="document.getElementById('val-manual-stop').textContent = this.value + '%'">
+                                        <span id="val-manual-stop" class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-lg min-w-[70px] text-center">70%</span>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-2">
+                                        <i class="fa-solid fa-info-circle mr-1"></i>
+                                        Pompa akan mati jika kelembapan mencapai angka ini atau lebih.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Schedule Settings -->
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-3">
-                                Batas Kelembapan Basah (Pompa OFF):
-                            </label>
-                            <div class="flex items-center gap-4">
-                                <input type="range" id="range-manual-stop" class="flex-grow-1 w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="70" oninput="document.getElementById('val-manual-stop').textContent = this.value + '%'">
-                                <span id="val-manual-stop" class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-lg min-w-[70px] text-center">70%</span>
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                                <p class="text-sm font-bold text-blue-700 mb-1">
+                                    <i class="fa-solid fa-clock mr-2"></i>
+                                    Pengaturan Jadwal (Opsional)
+                                </p>
+                                <p class="text-xs text-blue-600">
+                                    Pompa juga akan menyiram pada waktu terjadwal, selain threshold otomatis.
+                                </p>
                             </div>
-                            <p class="text-xs text-slate-500 mt-2">
-                                <i class="fa-solid fa-info-circle mr-1"></i>
-                                Pompa akan mati jika kelembapan mencapai angka ini atau lebih.
-                            </p>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">⏰ Jam Pagi:</label>
+                                        <input type="time" id="conf-pagi" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="07:00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-2">🌅 Jam Sore:</label>
+                                        <input type="time" id="conf-sore" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="17:00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">⏱️ Durasi Siram (detik):</label>
+                                    <input type="number" id="conf-durasi" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="5" min="1" max="60">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -921,9 +908,8 @@
                     
                     // Mode mapping
                     const modeNames = {
-                        1: '🟢 Mode Pemula',
                         2: '🤖 Mode AI Fuzzy',
-                        3: '️ Mode Manual'
+                        4: '🛠️ Mode Manual'
                     };
                     document.getElementById('mode-display').textContent = 
                         modeNames[data.mode] || '-';
@@ -1269,8 +1255,8 @@
             // Load devices for selection
             loadDevicesForConfig();
             
-            // Default select Mode 1
-            selectSmartMode(1);
+            // Default select Mode 2 (AI Fuzzy)
+            selectSmartMode(2);
         }
 
         function closeSmartConfigModal() {
@@ -1374,12 +1360,8 @@
             
             // Highlight selected card
             const selectedCard = document.getElementById(`card-mode-${mode}`);
-            if (mode === 1) {
-                selectedCard.classList.add('border-green-500', 'bg-green-50', 'ring-4', 'ring-green-200');
-            } else if (mode === 2) {
+            if (mode === 2) {
                 selectedCard.classList.add('border-blue-500', 'bg-blue-50', 'ring-4', 'ring-blue-200');
-            } else if (mode === 3) {
-                selectedCard.classList.add('border-yellow-500', 'bg-yellow-50', 'ring-4', 'ring-yellow-200');
             } else if (mode === 4) {
                 selectedCard.classList.add('border-slate-500', 'bg-slate-50', 'ring-4', 'ring-slate-200');
             }
@@ -1396,14 +1378,11 @@
             });
             
             // Show appropriate config based on mode
-            if (mode === 1 || mode === 2) {
-                // Mode Pemula & AI Fuzzy: Auto (no config needed)
+            if (mode === 2) {
+                // Mode AI Fuzzy: Auto (no config needed)
                 document.getElementById('msg-auto').classList.remove('hidden');
-            } else if (mode === 3) {
-                // Mode Jadwal: Show time inputs
-                document.getElementById('input-jadwal').classList.remove('hidden');
             } else if (mode === 4) {
-                // Mode Manual: Show sliders
+                // Mode Manual: Show threshold + schedule inputs
                 document.getElementById('input-manual').classList.remove('hidden');
             }
         }
@@ -1437,20 +1416,11 @@
             requestData.sensor_min = adcMin;
             requestData.sensor_max = adcMax;
             
-            if (mode === 1) {
-                // Mode Pemula: Force to standard (20% ON, 30% OFF)
-                requestData.batas_siram = 20;    // Update: Pompa ON di 20%
-                requestData.batas_stop = 30;     // Update: Pompa OFF di 30%
-            } else if (mode === 2) {
+            if (mode === 2) {
                 // Mode AI Fuzzy: No additional parameters (fully automatic)
                 // Backend will handle fuzzy logic
-            } else if (mode === 3) {
-                // Mode Jadwal: Get schedule times
-                requestData.jam_pagi = document.getElementById('conf-pagi').value;
-                requestData.jam_sore = document.getElementById('conf-sore').value;
-                requestData.durasi_siram = parseInt(document.getElementById('conf-durasi').value);
             } else if (mode === 4) {
-                // Mode Manual: Get user-defined thresholds
+                // Mode Manual: Get user-defined thresholds + schedule
                 requestData.batas_siram = parseInt(document.getElementById('range-manual').value);
                 requestData.batas_stop = parseInt(document.getElementById('range-manual-stop').value);
                 
@@ -1459,6 +1429,11 @@
                     alert('⚠️ Batas Basah (OFF) harus lebih tinggi dari Batas Kering (ON)!');
                     return;
                 }
+                
+                // Get schedule times
+                requestData.jam_pagi = document.getElementById('conf-pagi').value;
+                requestData.jam_sore = document.getElementById('conf-sore').value;
+                requestData.durasi_siram = parseInt(document.getElementById('conf-durasi').value);
             }
             
             console.log('Request data:', requestData);
@@ -1471,9 +1446,7 @@
                 if (response.data.success) {
                     // Show success message with mode name
                     const modeNames = {
-                        1: '🌱 Mode Pemula',
                         2: '🤖 Mode AI (Fuzzy)',
-                        3: '📅 Mode Terjadwal',
                         4: '🛠️ Mode Manual'
                     };
                     
@@ -1502,11 +1475,11 @@
 
 
         // ==================== MINIMALIST SETTINGS FUNCTIONS ====================
-        let minimalCurrentMode = 1;
+        let minimalCurrentMode = 2; // Default to AI Fuzzy mode
         let minimalDeviceId = 'PICO_TEST_01'; // Device ID (string, bukan integer)
         let minimalSettings = {
             device_name: '',
-            mode: 1,
+            mode: 2,
             batas_siram: 20,    // Update: Pompa ON saat kelembaban < 20%
             batas_stop: 30,     // Update: Pompa OFF saat kelembaban >= 30%
             jam_pagi: '07:00',
@@ -1565,32 +1538,31 @@
             minimalSettings.mode = mode;
             
             // Update button styles dengan design yang konsisten
-            for (let i = 1; i <= 3; i++) {
+            const modes = [2, 4];
+            modes.forEach(i => {
                 const btn = document.getElementById(`minimal-mode-${i}`);
-                if (i === mode) {
-                    // Active state dengan warna berbeda per mode
-                    btn.classList.remove('border-slate-200', 'text-slate-600', 'bg-white');
-                    if (mode === 1) {
-                        btn.classList.add('border-green-500', 'bg-green-50', 'text-green-700', 'shadow-md');
-                    } else if (mode === 2) {
-                        btn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700', 'shadow-md');
-                    } else if (mode === 3) {
-                        btn.classList.add('border-purple-500', 'bg-purple-50', 'text-purple-700', 'shadow-md');
+                if (btn) {
+                    if (i === mode) {
+                        // Active state dengan warna berbeda per mode
+                        btn.classList.remove('border-slate-200', 'text-slate-600', 'bg-white');
+                        if (mode === 2) {
+                            btn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700', 'shadow-md');
+                        } else if (mode === 4) {
+                            btn.classList.add('border-slate-500', 'bg-slate-50', 'text-slate-700', 'shadow-md');
+                        }
+                    } else {
+                        // Inactive state
+                        btn.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-700',
+                                            'border-slate-500', 'bg-slate-50', 'text-slate-700', 'shadow-md');
+                        btn.classList.add('border-slate-200', 'text-slate-600', 'bg-white');
                     }
-                } else {
-                    // Inactive state
-                    btn.classList.remove('border-green-500', 'bg-green-50', 'text-green-700', 
-                                        'border-blue-500', 'bg-blue-50', 'text-blue-700',
-                                        'border-purple-500', 'bg-purple-50', 'text-purple-700', 'shadow-md');
-                    btn.classList.add('border-slate-200', 'text-slate-600', 'bg-white');
                 }
-            }
+            });
             
             // Update mode display
             const modeNames = {
-                1: '🌱 Basic Threshold',
                 2: '🤖 Fuzzy Logic AI',
-                3: '🛠️ Manual Control'
+                4: '🛠️ Manual Control'
             };
             if (document.getElementById('current-mode-display')) {
                 document.getElementById('current-mode-display').textContent = modeNames[mode];
@@ -1603,37 +1575,7 @@
         function updateMinimalSettingsArea() {
             const area = document.getElementById('minimal-settings-area');
             
-            if (minimalCurrentMode === 1) {
-                // Basic: Threshold settings dengan style konsisten
-                area.innerHTML = `
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center py-2">
-                            <label class="text-sm font-medium text-slate-700">Batas Kering (Pompa ON)</label>
-                            <div class="flex items-center gap-2">
-                                <input type="number" id="minimal-batas-siram" value="${minimalSettings.batas_siram}" 
-                                       class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none text-sm font-medium" 
-                                       min="0" max="100">
-                                <span class="text-sm font-medium text-slate-500">%</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center py-2">
-                            <label class="text-sm font-medium text-slate-700">Batas Basah (Pompa OFF)</label>
-                            <div class="flex items-center gap-2">
-                                <input type="number" id="minimal-batas-stop" value="${minimalSettings.batas_stop}" 
-                                       class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none text-sm font-medium" 
-                                       min="0" max="100">
-                                <span class="text-sm font-medium text-slate-500">%</span>
-                            </div>
-                        </div>
-                        <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p class="text-xs text-blue-700">
-                                <i class="fa-solid fa-info-circle mr-1"></i>
-                                Pompa akan menyala otomatis jika kelembaban tanah di bawah batas kering, dan mati saat mencapai batas basah.
-                            </p>
-                        </div>
-                    </div>
-                `;
-            } else if (minimalCurrentMode === 2) {
+            if (minimalCurrentMode === 2) {
                 // Fuzzy AI: Info card dengan style dashboard
                 area.innerHTML = `
                     <div class="text-center py-6">
@@ -1642,25 +1584,31 @@
                         </div>
                         <h4 class="font-bold text-slate-800 mb-2">Mode Fuzzy Logic AI</h4>
                         <p class="text-sm text-slate-600 mb-4">
-                            Sistem akan mengatur durasi penyiraman secara otomatis berdasarkan kombinasi <strong>suhu udara</strong> dan <strong>kelembaban tanah</strong>.
+                            Sistem mengaktifkan pompa air melalui relay apabila sensor mendeteksi kelembapan tanah turun di bawah <strong>ambang batas (threshold) 35-45%</strong> (kering). Proses penyiraman berhenti otomatis saat kelembapan tanah kembali mencapai batas normal.
                         </p>
-                        <div class="bg-white rounded-lg p-4 space-y-2 text-left border border-blue-100">
-                            <div class="flex items-center gap-2 text-sm">
-                                <i class="fa-solid fa-fire text-red-500"></i>
-                                <span class="text-slate-600">Panas (>30°C) + Kering = Siram <strong>8 detik</strong></span>
+                        <div class="bg-white rounded-lg p-4 space-y-3 text-left border border-blue-100">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-green-500 mt-0.5"></i>
+                                <div class="text-sm text-slate-700">
+                                    <strong>Pompa ON:</strong> Saat kelembapan < 35-45% (tanah kering)
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2 text-sm">
-                                <i class="fa-solid fa-sun text-yellow-500"></i>
-                                <span class="text-slate-600">Sedang (25-30°C) + Kering = Siram <strong>5 detik</strong></span>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-stop-circle text-red-500 mt-0.5"></i>
+                                <div class="text-sm text-slate-700">
+                                    <strong>Pompa OFF:</strong> Saat kelembapan kembali normal (otomatis)
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2 text-sm">
-                                <i class="fa-solid fa-snowflake text-blue-500"></i>
-                                <span class="text-slate-600">Dingin (<25°C) + Kering = Siram <strong>3 detik</strong></span>
+                            <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+                                <p class="text-xs text-blue-700">
+                                    <i class="fa-solid fa-info-circle mr-1"></i>
+                                    <strong>Mode Otomatis Penuh:</strong> Sistem memantau kelembapan tanah secara real-time dan mengontrol pompa tanpa intervensi manual.
+                                </p>
                             </div>
                         </div>
                     </div>
                 `;
-            } else if (minimalCurrentMode === 3) {
+            } else if (minimalCurrentMode === 4) {
                 // Manual: Threshold + Schedule (Unified)
                 area.innerHTML = `
                     <div class="space-y-6">
@@ -1673,7 +1621,7 @@
                                 <label class="text-sm font-medium text-slate-700">Batas Kering (Pompa ON)</label>
                                 <div class="flex items-center gap-2">
                                     <input type="number" id="minimal-batas-siram" value="${minimalSettings.batas_siram}" 
-                                           class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:outline-none text-sm font-medium" 
+                                           class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-slate-500 focus:outline-none text-sm font-medium" 
                                            min="0" max="100">
                                     <span class="text-sm font-medium text-slate-500">%</span>
                                 </div>
@@ -1682,7 +1630,7 @@
                                 <label class="text-sm font-medium text-slate-700">Batas Basah (Pompa OFF)</label>
                                 <div class="flex items-center gap-2">
                                     <input type="number" id="minimal-batas-stop" value="${minimalSettings.batas_stop}" 
-                                           class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:outline-none text-sm font-medium" 
+                                           class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-slate-500 focus:outline-none text-sm font-medium" 
                                            min="0" max="100">
                                     <span class="text-sm font-medium text-slate-500">%</span>
                                 </div>
@@ -1698,20 +1646,29 @@
                                 <div>
                                     <label class="block text-xs font-medium text-slate-500 mb-2">⏰ Jadwal Pagi</label>
                                     <input type="time" id="minimal-jam-pagi" value="${minimalSettings.jam_pagi}" 
-                                           class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:outline-none font-medium">
+                                           class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-slate-500 focus:outline-none font-medium">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-500 mb-2">🌅 Jadwal Sore</label>
                                     <input type="time" id="minimal-jam-sore" value="${minimalSettings.jam_sore}" 
-                                           class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:outline-none font-medium">
+                                           class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-slate-500 focus:outline-none font-medium">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-2">⏱️ Durasi Siram</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="minimal-durasi" value="${minimalSettings.durasi_siram}" 
+                                           class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-slate-500 focus:outline-none text-sm font-medium" 
+                                           min="1" max="60">
+                                    <span class="text-sm font-medium text-slate-500">detik</span>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                            <p class="text-xs text-purple-700">
+                        <div class="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                            <p class="text-xs text-slate-700">
                                 <i class="fa-solid fa-lightbulb mr-1"></i>
-                                <strong>Mode Manual:</strong> Pompa bekerja otomatis berdasarkan threshold (mati saat basah) dan juga menyala pada jadwal pagi/sore. Durasi ditentukan oleh threshold, bukan timer fixed.
+                                <strong>Mode Manual:</strong> Pompa bekerja otomatis berdasarkan threshold kelembaban (ON jika kering, OFF jika basah) dan juga menyala pada jadwal pagi/sore dengan durasi yang ditentukan.
                             </p>
                         </div>
                     </div>
@@ -1733,17 +1690,13 @@
                 };
                 
                 // Add mode-specific data
-                if (minimalCurrentMode === 1) {
-                    // Mode Basic: Threshold only
-                    data.batas_siram = parseInt(document.getElementById('minimal-batas-siram').value);
-                    data.batas_stop = parseInt(document.getElementById('minimal-batas-stop').value);
-                } else if (minimalCurrentMode === 3) {
+                if (minimalCurrentMode === 4) {
                     // Mode Manual: Threshold + Schedule (unified)
                     data.batas_siram = parseInt(document.getElementById('minimal-batas-siram').value);
                     data.batas_stop = parseInt(document.getElementById('minimal-batas-stop').value);
                     data.jam_pagi = document.getElementById('minimal-jam-pagi').value;
                     data.jam_sore = document.getElementById('minimal-jam-sore').value;
-                    // No durasi_siram - pompa akan mati otomatis berdasarkan threshold
+                    data.durasi_siram = parseInt(document.getElementById('minimal-durasi').value);
                 }
                 // Mode 2 (Fuzzy AI): No additional settings needed
                 
