@@ -1967,6 +1967,17 @@
             
             // Update dynamic settings area
             updateMinimalSettingsArea();
+            
+            // AUTO-OPEN MODAL untuk Mode Manual (Mode 4)
+            if (mode === 4) {
+                setTimeout(() => {
+                    openSmartConfigModal();
+                    // Auto-select Mode Manual di modal
+                    setTimeout(() => {
+                        selectSmartMode(4);
+                    }, 100);
+                }, 300);
+            }
         }
 
         function updateMinimalSettingsArea() {
@@ -2006,148 +2017,44 @@
                     </div>
                 `;
             } else if (minimalCurrentMode === 4) {
-                // Manual: Weekly Loop System - Show inline configuration
+                // Manual: Weekly Loop System - Direct user to modal
                 area.innerHTML = `
-                    <div class="space-y-4">
-                        <!-- Weekly Loop Title -->
-                        <div class="text-center">
-                            <div class="inline-block p-3 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl mb-2 border-2 border-purple-200">
-                                <i class="fa-solid fa-calendar-week text-3xl text-purple-600"></i>
+                    <div class="space-y-6">
+                        <div class="text-center py-6">
+                            <div class="inline-block p-4 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl mb-3 border-2 border-purple-200">
+                                <i class="fa-solid fa-calendar-week text-5xl text-purple-600"></i>
                             </div>
-                            <h4 class="font-bold text-slate-800 mb-1 text-sm">📅 Penjadwalan Mingguan (Weekly Loop)</h4>
-                            <p class="text-[10px] text-slate-600 mb-3">
-                                Pilih hari aktif dan atur threshold + jam penyiraman per hari. Sistem berjalan otomatis sesuai siklus mingguan.
+                            <h4 class="font-bold text-slate-800 mb-2">� Mode Manual - Weekly Loop System</h4>
+                            <p class="text-sm text-slate-600 mb-4">
+                                Sistem penjadwalan mingguan dengan threshold & jam yang dapat dikustomisasi per hari.
                             </p>
-                        </div>
-
-                        <!-- Day Selector -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-700 mb-2 flex items-center gap-2">
-                                <i class="fa-solid fa-calendar-days"></i>
-                                Pilih Hari untuk Dikonfigurasi:
-                            </label>
-                            <div class="grid grid-cols-7 gap-1.5">
-                                <button type="button" onclick="selectDay('senin')" id="btn-day-senin" 
-                                        class="day-selector px-2 py-2.5 rounded-lg border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
-                                    <div class="text-[10px] font-bold text-slate-600">Sen</div>
-                                    <div class="text-[8px] text-slate-400 mt-0.5">Senin</div>
-                                </button>
-                                <button type="button" onclick="selectDay('selasa')" id="btn-day-selasa" 
-                                        class="day-selector px-2 py-2.5 rounded-lg border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
-                                    <div class="text-[10px] font-bold text-slate-600">Sel</div>
-                                    <div class="text-[8px] text-slate-400 mt-0.5">Selasa</div>
-                                </button>
-                                <button type="button" onclick="selectDay('rabu')" id="btn-day-rabu" 
-                                        class="day-selector px-2 py-2.5 rounded-lg border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
-                                    <div class="text-[10px] font-bold text-slate-600">Rab</div>
-                                    <div class="text-[8px] text-slate-400 mt-0.5">Rabu</div>
-                                </button>
-                                <button type="button" onclick="selectDay('kamis')" id="btn-day-kamis" 
-                                        class="day-selector px-2 py-2.5 rounded-lg border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
-                                    <div class="text-[10px] font-bold text-slate-600">Kam</div>
-                                    <div class="text-[8px] text-slate-400 mt-0.5">Kamis</div>
-                                </button>
-                                <button type="button" onclick="selectDay('jumat')" id="btn-day-jumat" 
-                                        class="day-selector px-2 py-2.5 rounded-lg border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
-                                    <div class="text-[10px] font-bold text-slate-600">Jum</div>
-                                    <div class="text-[8px] text-slate-400 mt-0.5">Jumat</div>
-                                </button>
-                                <button type="button" onclick="selectDay('sabtu')" id="btn-day-sabtu" 
-                                        class="day-selector px-2 py-2.5 rounded-lg border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
-                                    <div class="text-[10px] font-bold text-slate-600">Sab</div>
-                                    <div class="text-[8px] text-slate-400 mt-0.5">Sabtu</div>
-                                </button>
-                                <button type="button" onclick="selectDay('minggu')" id="btn-day-minggu" 
-                                        class="day-selector px-2 py-2.5 rounded-lg border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
-                                    <div class="text-[10px] font-bold text-slate-600">Min</div>
-                                    <div class="text-[8px] text-slate-400 mt-0.5">Minggu</div>
-                                </button>
-                            </div>
-                            <p class="text-[9px] text-slate-500 mt-1.5">
-                                <i class="fa-solid fa-info-circle mr-1"></i>
-                                Klik hari untuk konfigurasi. Hari aktif ditandai ✓
-                            </p>
-                        </div>
-
-                        <!-- Day Configuration Area -->
-                        <div id="day-config-area" class="hidden space-y-3 p-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
-                            <div class="flex justify-between items-center pb-2 border-b border-blue-300">
-                                <h6 class="text-[11px] font-bold text-blue-800 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-gear text-[10px]"></i>
-                                    <span id="current-day-name">Konfigurasi Hari</span>
-                                </h6>
-                                <button type="button" onclick="toggleDayActive()" id="toggle-day-active" 
-                                        class="px-2.5 py-1 rounded-lg bg-green-600 text-white text-[9px] font-bold hover:bg-green-700 transition-all">
-                                    <i class="fa-solid fa-check mr-0.5"></i> Aktifkan
-                                </button>
-                            </div>
-
-                            <!-- Threshold Settings -->
-                            <div class="space-y-2.5">
-                                <h6 class="text-[10px] font-bold text-slate-700 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-droplet text-[9px]"></i> Threshold Kelembapan
-                                </h6>
-                                <div>
-                                    <label class="block text-[9px] font-medium text-slate-700 mb-1.5">
-                                        🔥 Batas Kering (Pompa ON):
-                                    </label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="range" id="range-day-on" class="flex-grow w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
-                                               min="0" max="100" value="29" oninput="updateDayThresholdOnDisplay()">
-                                        <div class="text-right min-w-[70px]">
-                                            <div id="val-day-on" class="px-2 py-0.5 bg-red-600 text-white rounded-lg font-bold text-[11px] text-center">29%</div>
-                                            <div id="adc-day-on" class="text-[8px] text-slate-500 mt-0.5 text-center font-medium">ADC: ~1200</div>
-                                        </div>
-                                    </div>
+                            
+                            <!-- Quick Info -->
+                            <div class="bg-white rounded-lg p-4 space-y-2 text-left border border-purple-100 mb-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-check-circle text-purple-600"></i>
+                                    <span class="text-sm text-slate-700"><strong>7 Hari Konfigurasi:</strong> Senin - Minggu</span>
                                 </div>
-                                <div>
-                                    <label class="block text-[9px] font-medium text-slate-700 mb-1.5">
-                                        💧 Batas Basah (Pompa OFF):
-                                    </label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="range" id="range-day-off" class="flex-grow w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
-                                               min="0" max="100" value="61" oninput="updateDayThresholdOffDisplay()">
-                                        <div class="text-right min-w-[70px]">
-                                            <div id="val-day-off" class="px-2 py-0.5 bg-green-600 text-white rounded-lg font-bold text-[11px] text-center">61%</div>
-                                            <div id="adc-day-off" class="text-[8px] text-slate-500 mt-0.5 text-center font-medium">ADC: ~2500</div>
-                                        </div>
-                                    </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-check-circle text-purple-600"></i>
+                                    <span class="text-sm text-slate-700"><strong>Threshold Adaptif:</strong> Batas ON & OFF per hari</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-check-circle text-purple-600"></i>
+                                    <span class="text-sm text-slate-700"><strong>Jadwal Fleksibel:</strong> Jam pagi & sore</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-check-circle text-purple-600"></i>
+                                    <span class="text-sm text-slate-700"><strong>Loop Otomatis:</strong> Berjalan setiap minggu</span>
                                 </div>
                             </div>
-
-                            <!-- Watering Time -->
-                            <div class="space-y-2">
-                                <h6 class="text-[10px] font-bold text-slate-700 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-clock text-[9px]"></i> Jam Penyiraman
-                                </h6>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="block text-[9px] font-medium text-slate-500 mb-1">⏰ Pagi:</label>
-                                        <input type="time" id="time-day-pagi" class="w-full px-2 py-1 text-[10px] rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none font-medium" value="07:00">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[9px] font-medium text-slate-500 mb-1">🌅 Sore:</label>
-                                        <input type="time" id="time-day-sore" class="w-full px-2 py-1 text-[10px] rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none font-medium" value="17:00">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Save Day Config Button -->
-                            <button type="button" onclick="saveDayConfig()" 
-                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 px-3 rounded-lg font-semibold text-[10px] transition-all flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-save"></i>
-                                Simpan Konfigurasi Hari Ini
-                            </button>
-                        </div>
-
-                        <!-- Weekly Summary -->
-                        <div id="weekly-summary" class="hidden p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                            <h6 class="text-[10px] font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                                <i class="fa-solid fa-list-check text-[9px]"></i>
-                                Ringkasan Mingguan
-                            </h6>
-                            <div id="summary-content" class="space-y-1.5 text-[9px]">
-                                <!-- Dynamic content -->
+                            
+                            <!-- Info Box -->
+                            <div class="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+                                <p class="text-xs text-slate-700 flex items-start gap-2">
+                                    <i class="fa-solid fa-info-circle text-blue-600 mt-0.5"></i>
+                                    <span><strong>✨ Modal akan terbuka otomatis!</strong> Silakan configure hari yang ingin diaktifkan, atur threshold, dan jadwal penyiraman.</span>
+                                </p>
                             </div>
                         </div>
                     </div>
