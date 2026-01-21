@@ -568,87 +568,147 @@
                         </div>
                     </div>
 
-                    <!-- Input for Mode 4: Manual -->
+                    <!-- Input for Mode 4: Manual (Weekly Loop System) -->
                     <div id="input-manual" class="hidden config-group space-y-6">
-                        <!-- Threshold Settings -->
-                        <div>
-                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
-                                <p class="text-sm font-bold text-slate-700 mb-1">
-                                    <i class="fa-solid fa-sliders mr-2"></i>
-                                    Pengaturan Threshold (Otomatis)
-                                </p>
-                                <p class="text-xs text-slate-600">
-                                    Pompa akan menyala/mati otomatis berdasarkan kelembapan tanah.
-                                </p>
-                            </div>
-                            <div class="space-y-4">
+                        <!-- Info Weekly Loop -->
+                        <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-calendar-week text-purple-600 text-xl mt-0.5"></i>
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-3">
-                                        🔥 Batas Kelembapan Kering (Pompa ON):
-                                    </label>
-                                    <div class="flex items-center gap-4">
-                                        <input type="range" id="range-manual" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="40" oninput="updateManualRangeDisplay()">
-                                        <div class="text-right min-w-[100px]">
-                                            <div id="val-manual" class="px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center">40%</div>
-                                            <div id="adc-manual" class="text-[10px] text-slate-500 mt-1 text-center font-medium">ADC: ~1640</div>
-                                        </div>
-                                    </div>
-                                    <p class="text-xs text-slate-500 mt-2">
-                                        <i class="fa-solid fa-info-circle mr-1"></i>
-                                        Pompa akan <strong class="text-red-600">MENYALA</strong> jika kelembapan di bawah angka ini.
+                                    <p class="text-sm font-bold text-purple-800 mb-1">📅 Sistem Penjadwalan Mingguan (Weekly Loop)</p>
+                                    <p class="text-xs text-purple-700">
+                                        Pilih hari aktif dan atur threshold + jam penyiraman per hari. Sistem akan berjalan otomatis sesuai siklus mingguan yang tersimpan.
                                     </p>
-                                    <div id="status-manual" class="mt-2 text-xs font-semibold text-orange-600">
-                                        💡 Rekomendasi: Set 29% (ADC 1200) untuk mulai menyiram
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-3">
-                                        💧 Batas Kelembapan Basah (Pompa OFF):
-                                    </label>
-                                    <div class="flex items-center gap-4">
-                                        <input type="range" id="range-manual-stop" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="70" oninput="updateManualStopRangeDisplay()">
-                                        <div class="text-right min-w-[100px]">
-                                            <div id="val-manual-stop" class="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center">70%</div>
-                                            <div id="adc-manual-stop" class="text-[10px] text-slate-500 mt-1 text-center font-medium">ADC: ~2867</div>
-                                        </div>
-                                    </div>
-                                    <p class="text-xs text-slate-500 mt-2">
-                                        <i class="fa-solid fa-info-circle mr-1"></i>
-                                        Pompa akan <strong class="text-green-600">MATI</strong> jika kelembapan mencapai angka ini atau lebih.
-                                    </p>
-                                    <div id="status-manual-stop" class="mt-2 text-xs font-semibold text-green-600">
-                                        ✅ Rekomendasi: Set 61% (ADC 2500) untuk kondisi ideal
-                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Schedule Settings -->
+                        <!-- Day Selector -->
                         <div>
-                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                                <p class="text-sm font-bold text-blue-700 mb-1">
-                                    <i class="fa-solid fa-clock mr-2"></i>
-                                    Pengaturan Jadwal (Opsional)
-                                </p>
-                                <p class="text-xs text-blue-600">
-                                    Pompa juga akan menyiram pada waktu terjadwal, selain threshold otomatis.
-                                </p>
+                            <label class="block text-sm font-bold text-slate-700 mb-3">
+                                <i class="fa-solid fa-calendar-days mr-2"></i>
+                                Pilih Hari Aktif untuk Dikonfigurasi:
+                            </label>
+                            <div class="grid grid-cols-7 gap-2">
+                                <button type="button" onclick="selectDay('senin')" id="btn-day-senin" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Sen</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Senin</div>
+                                </button>
+                                <button type="button" onclick="selectDay('selasa')" id="btn-day-selasa" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Sel</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Selasa</div>
+                                </button>
+                                <button type="button" onclick="selectDay('rabu')" id="btn-day-rabu" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Rab</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Rabu</div>
+                                </button>
+                                <button type="button" onclick="selectDay('kamis')" id="btn-day-kamis" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Kam</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Kamis</div>
+                                </button>
+                                <button type="button" onclick="selectDay('jumat')" id="btn-day-jumat" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Jum</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Jumat</div>
+                                </button>
+                                <button type="button" onclick="selectDay('sabtu')" id="btn-day-sabtu" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Sab</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Sabtu</div>
+                                </button>
+                                <button type="button" onclick="selectDay('minggu')" id="btn-day-minggu" 
+                                        class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
+                                    <div class="text-xs font-bold text-slate-600">Min</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Minggu</div>
+                                </button>
                             </div>
+                            <p class="text-xs text-slate-500 mt-2">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Klik hari untuk mengatur konfigurasi. Hari yang sudah dikonfigurasi akan ditandai dengan warna biru.
+                            </p>
+                        </div>
+
+                        <!-- Day Configuration Area -->
+                        <div id="day-config-area" class="hidden space-y-6 p-5 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                            <div class="flex justify-between items-center pb-3 border-b border-blue-300">
+                                <h6 class="text-base font-bold text-blue-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-gear"></i>
+                                    Konfigurasi <span id="current-day-name" class="text-blue-600">Hari</span>
+                                </h6>
+                                <button type="button" onclick="toggleDayActive()" id="toggle-day-active" 
+                                        class="px-4 py-2 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition-all">
+                                    <i class="fa-solid fa-check mr-1"></i> Aktifkan Hari Ini
+                                </button>
+                            </div>
+
+                            <!-- Threshold Settings per Day -->
                             <div class="space-y-4">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-700 mb-2">⏰ Jam Pagi:</label>
-                                        <input type="time" id="conf-pagi" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="07:00">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-700 mb-2">🌅 Jam Sore:</label>
-                                        <input type="time" id="conf-sore" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="17:00">
+                                <h6 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                    <i class="fa-solid fa-droplet"></i> Threshold Kelembapan
+                                </h6>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-3">
+                                        � Batas Kering (Pompa ON):
+                                    </label>
+                                    <div class="flex items-center gap-4">
+                                        <input type="range" id="range-day-on" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="29" oninput="updateDayThresholdOnDisplay()">
+                                        <div class="text-right min-w-[100px]">
+                                            <div id="val-day-on" class="px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center">29%</div>
+                                            <div id="adc-day-on" class="text-[10px] text-slate-500 mt-1 text-center font-medium">ADC: ~1200</div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">⏱️ Durasi Siram (detik):</label>
-                                    <input type="number" id="conf-durasi" class="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" value="5" min="1" max="60">
+                                    <label class="block text-sm font-medium text-slate-700 mb-3">
+                                        💧 Batas Basah (Pompa OFF):
+                                    </label>
+                                    <div class="flex items-center gap-4">
+                                        <input type="range" id="range-day-off" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="61" oninput="updateDayThresholdOffDisplay()">
+                                        <div class="text-right min-w-[100px]">
+                                            <div id="val-day-off" class="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center">61%</div>
+                                            <div id="adc-day-off" class="text-[10px] text-slate-500 mt-1 text-center font-medium">ADC: ~2500</div>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <!-- Watering Time per Day -->
+                            <div class="space-y-4">
+                                <h6 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                    <i class="fa-solid fa-clock"></i> Jam Penyiraman
+                                </h6>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-2">⏰ Jam Pagi:</label>
+                                        <input type="time" id="time-day-pagi" class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none font-medium" value="07:00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-2">🌅 Jam Sore:</label>
+                                        <input type="time" id="time-day-sore" class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none font-medium" value="17:00">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Save Day Config Button -->
+                            <button type="button" onclick="saveDayConfig()" 
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-save"></i>
+                                Simpan Konfigurasi Hari Ini
+                            </button>
+                        </div>
+
+                        <!-- Summary of Configured Days -->
+                        <div id="weekly-summary" class="hidden p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                            <h6 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check"></i>
+                                Ringkasan Konfigurasi Mingguan
+                            </h6>
+                            <div id="summary-content" class="space-y-2 text-xs">
+                                <!-- Will be populated dynamically -->
                             </div>
                         </div>
                     </div>
@@ -1528,6 +1588,228 @@
             }
         }
 
+        // Weekly Loop System - Mode Manual
+        let weeklyConfig = {
+            senin: { active: false, threshold_on: 29, threshold_off: 61, jam_pagi: '07:00', jam_sore: '17:00' },
+            selasa: { active: false, threshold_on: 29, threshold_off: 61, jam_pagi: '07:00', jam_sore: '17:00' },
+            rabu: { active: false, threshold_on: 29, threshold_off: 61, jam_pagi: '07:00', jam_sore: '17:00' },
+            kamis: { active: false, threshold_on: 29, threshold_off: 61, jam_pagi: '07:00', jam_sore: '17:00' },
+            jumat: { active: false, threshold_on: 29, threshold_off: 61, jam_pagi: '07:00', jam_sore: '17:00' },
+            sabtu: { active: false, threshold_on: 29, threshold_off: 61, jam_pagi: '07:00', jam_sore: '17:00' },
+            minggu: { active: false, threshold_on: 29, threshold_off: 61, jam_pagi: '07:00', jam_sore: '17:00' }
+        };
+        let currentSelectedDay = null;
+
+        function selectDay(day) {
+            currentSelectedDay = day;
+            
+            // Update day selector buttons
+            document.querySelectorAll('.day-selector').forEach(btn => {
+                btn.classList.remove('bg-blue-500', 'text-white', 'border-blue-600', 'ring-4', 'ring-blue-200');
+                btn.classList.add('border-slate-200', 'text-slate-600');
+            });
+            
+            const selectedBtn = document.getElementById(`btn-day-${day}`);
+            selectedBtn.classList.remove('border-slate-200', 'text-slate-600');
+            selectedBtn.classList.add('bg-blue-500', 'text-white', 'border-blue-600', 'ring-4', 'ring-blue-200');
+            
+            // Show config area
+            document.getElementById('day-config-area').classList.remove('hidden');
+            
+            // Update day name
+            const dayNames = {
+                senin: 'Senin',
+                selasa: 'Selasa',
+                rabu: 'Rabu',
+                kamis: 'Kamis',
+                jumat: 'Jumat',
+                sabtu: 'Sabtu',
+                minggu: 'Minggu'
+            };
+            document.getElementById('current-day-name').textContent = dayNames[day];
+            
+            // Load existing config for this day
+            const config = weeklyConfig[day];
+            document.getElementById('range-day-on').value = config.threshold_on;
+            document.getElementById('range-day-off').value = config.threshold_off;
+            document.getElementById('time-day-pagi').value = config.jam_pagi;
+            document.getElementById('time-day-sore').value = config.jam_sore;
+            
+            // Update displays
+            updateDayThresholdOnDisplay();
+            updateDayThresholdOffDisplay();
+            
+            // Update active button
+            const toggleBtn = document.getElementById('toggle-day-active');
+            if (config.active) {
+                toggleBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Hari Aktif';
+                toggleBtn.className = 'px-4 py-2 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition-all';
+            } else {
+                toggleBtn.innerHTML = '<i class="fa-solid fa-times mr-1"></i> Hari Nonaktif';
+                toggleBtn.className = 'px-4 py-2 rounded-lg bg-slate-400 text-white text-xs font-bold hover:bg-slate-500 transition-all';
+            }
+            
+            // Mark configured days
+            updateDayMarkers();
+        }
+
+        function toggleDayActive() {
+            if (!currentSelectedDay) return;
+            
+            weeklyConfig[currentSelectedDay].active = !weeklyConfig[currentSelectedDay].active;
+            
+            const toggleBtn = document.getElementById('toggle-day-active');
+            if (weeklyConfig[currentSelectedDay].active) {
+                toggleBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Hari Aktif';
+                toggleBtn.className = 'px-4 py-2 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition-all';
+            } else {
+                toggleBtn.innerHTML = '<i class="fa-solid fa-times mr-1"></i> Hari Nonaktif';
+                toggleBtn.className = 'px-4 py-2 rounded-lg bg-slate-400 text-white text-xs font-bold hover:bg-slate-500 transition-all';
+            }
+            
+            updateDayMarkers();
+        }
+
+        function updateDayThresholdOnDisplay() {
+            const slider = document.getElementById('range-day-on');
+            const percentage = parseInt(slider.value);
+            const adc = percentageToADC(percentage);
+            
+            document.getElementById('val-day-on').textContent = percentage + '%';
+            document.getElementById('adc-day-on').textContent = `ADC: ~${adc}`;
+            
+            // Update background color
+            const valBox = document.getElementById('val-day-on');
+            if (percentage <= 29) {
+                valBox.className = 'px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 44) {
+                valBox.className = 'px-4 py-2 bg-yellow-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 61) {
+                valBox.className = 'px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center';
+            } else {
+                valBox.className = 'px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-lg text-center';
+            }
+        }
+
+        function updateDayThresholdOffDisplay() {
+            const slider = document.getElementById('range-day-off');
+            const percentage = parseInt(slider.value);
+            const adc = percentageToADC(percentage);
+            
+            document.getElementById('val-day-off').textContent = percentage + '%';
+            document.getElementById('adc-day-off').textContent = `ADC: ~${adc}`;
+            
+            // Update background color
+            const valBox = document.getElementById('val-day-off');
+            if (percentage <= 29) {
+                valBox.className = 'px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 44) {
+                valBox.className = 'px-4 py-2 bg-yellow-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 61) {
+                valBox.className = 'px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center';
+            } else {
+                valBox.className = 'px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-lg text-center';
+            }
+        }
+
+        function saveDayConfig() {
+            if (!currentSelectedDay) return;
+            
+            // Save config for current day
+            weeklyConfig[currentSelectedDay].threshold_on = parseInt(document.getElementById('range-day-on').value);
+            weeklyConfig[currentSelectedDay].threshold_off = parseInt(document.getElementById('range-day-off').value);
+            weeklyConfig[currentSelectedDay].jam_pagi = document.getElementById('time-day-pagi').value;
+            weeklyConfig[currentSelectedDay].jam_sore = document.getElementById('time-day-sore').value;
+            
+            // Validation
+            if (weeklyConfig[currentSelectedDay].threshold_off <= weeklyConfig[currentSelectedDay].threshold_on) {
+                alert('⚠️ Batas Basah (OFF) harus lebih tinggi dari Batas Kering (ON)!');
+                return;
+            }
+            
+            // Update markers and summary
+            updateDayMarkers();
+            updateWeeklySummary();
+            
+            // Show success message
+            alert(`✅ Konfigurasi ${document.getElementById('current-day-name').textContent} berhasil disimpan!`);
+        }
+
+        function updateDayMarkers() {
+            const days = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
+            days.forEach(day => {
+                const btn = document.getElementById(`btn-day-${day}`);
+                const config = weeklyConfig[day];
+                
+                if (config.active) {
+                    // Mark as configured and active
+                    if (day !== currentSelectedDay) {
+                        btn.classList.add('bg-blue-100', 'border-blue-400');
+                        btn.classList.remove('border-slate-200');
+                    }
+                    
+                    // Add checkmark indicator
+                    const dayLabel = btn.querySelector('.text-xs');
+                    if (!dayLabel.innerHTML.includes('✓')) {
+                        dayLabel.innerHTML = '✓ ' + dayLabel.textContent;
+                        dayLabel.classList.add('text-blue-700');
+                    }
+                } else {
+                    if (day !== currentSelectedDay) {
+                        btn.classList.remove('bg-blue-100', 'border-blue-400');
+                        btn.classList.add('border-slate-200');
+                    }
+                    
+                    // Remove checkmark
+                    const dayLabel = btn.querySelector('.text-xs');
+                    dayLabel.innerHTML = dayLabel.textContent.replace('✓ ', '');
+                    dayLabel.classList.remove('text-blue-700');
+                }
+            });
+        }
+
+        function updateWeeklySummary() {
+            const summaryContent = document.getElementById('summary-content');
+            const summaryContainer = document.getElementById('weekly-summary');
+            
+            const activeDays = Object.entries(weeklyConfig).filter(([day, config]) => config.active);
+            
+            if (activeDays.length === 0) {
+                summaryContainer.classList.add('hidden');
+                return;
+            }
+            
+            summaryContainer.classList.remove('hidden');
+            
+            const dayNames = {
+                senin: 'Senin',
+                selasa: 'Selasa',
+                rabu: 'Rabu',
+                kamis: 'Kamis',
+                jumat: 'Jumat',
+                sabtu: 'Sabtu',
+                minggu: 'Minggu'
+            };
+            
+            let html = '';
+            activeDays.forEach(([day, config]) => {
+                html += `
+                    <div class="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-200">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-check-circle text-green-600"></i>
+                            <span class="font-bold text-slate-700">${dayNames[day]}</span>
+                        </div>
+                        <div class="text-right text-[11px] text-slate-600">
+                            <div>Threshold: ${config.threshold_on}%-${config.threshold_off}%</div>
+                            <div>Pagi: ${config.jam_pagi} | Sore: ${config.jam_sore}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            summaryContent.innerHTML = html;
+        }
+
         function selectSmartMode(mode) {
             // Reset all cards
             document.querySelectorAll('.mode-card').forEach(card => {
@@ -1558,11 +1840,13 @@
                 // Mode AI Fuzzy: Auto (no config needed)
                 document.getElementById('msg-auto').classList.remove('hidden');
             } else if (mode === 4) {
-                // Mode Manual: Show threshold + schedule inputs
+                // Mode Manual: Weekly Loop System
                 document.getElementById('input-manual').classList.remove('hidden');
-                // Initialize display values
-                updateManualRangeDisplay();
-                updateManualStopRangeDisplay();
+                // Reset weekly config
+                currentSelectedDay = null;
+                document.getElementById('day-config-area').classList.add('hidden');
+                document.getElementById('weekly-summary').classList.add('hidden');
+                updateDayMarkers();
             }
         }
 
@@ -1599,20 +1883,16 @@
                 // Mode AI Fuzzy: No additional parameters (fully automatic)
                 // Backend will handle fuzzy logic
             } else if (mode === 4) {
-                // Mode Manual: Get user-defined thresholds + schedule
-                requestData.batas_siram = parseInt(document.getElementById('range-manual').value);
-                requestData.batas_stop = parseInt(document.getElementById('range-manual-stop').value);
+                // Mode Manual: Weekly Loop System
+                // Send weekly configuration
+                const activeDays = Object.entries(weeklyConfig).filter(([day, config]) => config.active);
                 
-                // Validation: batas_stop must be greater than batas_siram
-                if (requestData.batas_stop <= requestData.batas_siram) {
-                    alert('⚠️ Batas Basah (OFF) harus lebih tinggi dari Batas Kering (ON)!');
+                if (activeDays.length === 0) {
+                    alert('⚠️ Silakan aktifkan minimal 1 hari untuk Mode Manual!');
                     return;
                 }
                 
-                // Get schedule times
-                requestData.jam_pagi = document.getElementById('conf-pagi').value;
-                requestData.jam_sore = document.getElementById('conf-sore').value;
-                requestData.durasi_siram = parseInt(document.getElementById('conf-durasi').value);
+                requestData.weekly_schedule = weeklyConfig;
             }
             
             console.log('Request data:', requestData);
