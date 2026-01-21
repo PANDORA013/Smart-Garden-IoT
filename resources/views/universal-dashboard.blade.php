@@ -772,6 +772,9 @@
             document.getElementById('nav-' + pageId).classList.add('active-nav');
             document.getElementById('nav-' + pageId).classList.remove('inactive-nav');
 
+            // Sync status online/offline dari API
+            syncDeviceStatusToSidebar();
+
             // Control auto-refresh: hanya aktif di dashboard
             if (pageId === 'dashboard') {
                 startDashboardAutoRefresh();
@@ -902,8 +905,8 @@
                     const data = response.data.data;
                     const isOnline = data.is_online;
                     
-                    // Update connection status di dashboard header dan sidebar
-                    updateConnectionStatus(isOnline);
+                    // Sync status: selalu perbarui dari /api/devices untuk consistency
+                    await syncAndUpdateConnectionStatus(isOnline);
                     
                     // Jika offline, tampilkan data sebagai tidak tersedia
                     if (!isOnline) {
@@ -1267,6 +1270,92 @@
             
             // Sync device status dengan sidebar
             syncDeviceStatusToSidebar();
+        }
+        
+        /**
+         * Sync device status dari /api/devices dan update connection indicator
+         * Ini adalah single source of truth untuk status online/offline
+         */
+        async function syncAndUpdateConnectionStatus(fallbackStatus = null) {
+            try {
+                const response = await axios.get('/api/devices', {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (response.data.data && response.data.data.length > 0) {
+                    const firstDevice = response.data.data[0];
+                    // Determine status: prefer device status, fallback to parameter
+                    const deviceStatus = firstDevice.status || 'offline';
+                    const isOnline = deviceStatus === 'online' || 
+                                   deviceStatus === 'idle' ||
+                                   (fallbackStatus !== null ? fallbackStatus : false);
+                    
+                    console.log(`[SYNC] Device status from /api/devices: ${deviceStatus} → isOnline: ${isOnline}`);
+                    updateConnectionStatus(isOnline);
+                } else {
+                    // No devices found
+                    console.log('[SYNC] No devices found, setting status to offline');
+                    updateConnectionStatus(false);
+                }
+            } catch (error) {
+                console.error('[SYNC] Error syncing device status:', error);
+                // Fallback to parameter or offline
+                updateConnectionStatus(fallbackStatus !== null ? fallbackStatus : false);
+            }
+        }
+        
+        /**
+         * Sync device status ke sidebar (connection indicator)
+         */
+        async function syncDeviceStatusToSidebar() {
+            try {
+                const response = await axios.get('/api/devices', {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (response.data.data && response.data.data.length > 0) {
+                    const firstDevice = response.data.data[0];
+                    const deviceStatus = firstDevice.status || 'offline';
+                    const isOnline = deviceStatus === 'online' || deviceStatus === 'idle';
+                    updateConnectionStatus(isOnline);
+                } else {
+                    updateConnectionStatus(false);
+                }
+            } catch (error) {
+                console.error('Error syncing device status:', error);
+                updateConnectionStatus(false);
+            }
+        }
+        
+        /**
+         * Sync device status ke sidebar (connection indicator)
+         */
+        async function syncDeviceStatusToSidebar() {
+            try {
+                const response = await axios.get('/api/devices', {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (response.data.data && response.data.data.length > 0) {
+                    const firstDevice = response.data.data[0];
+                    const isOnline = firstDevice.status === 'online';
+                    updateConnectionStatus(isOnline);
+                } else {
+                    updateConnectionStatus(false);
+                }
+            } catch (error) {
+                console.error('Error syncing device status:', error);
+                updateConnectionStatus(false);
+            }
         }
         
         /**
