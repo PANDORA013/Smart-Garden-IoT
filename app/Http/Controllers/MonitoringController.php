@@ -52,8 +52,9 @@ class MonitoringController extends Controller
         $validator = Validator::make($request->all(), [
             'device_id' => 'required|string|max:100',
             'temperature' => 'nullable|numeric|min:-50|max:100',
-            'soil_moisture' => 'nullable|numeric|min:0|max:100',
-            'raw_adc' => 'nullable|integer|min:0|max:65535', // Update: Support 16-bit ADC
+            'soil_moisture' => 'nullable|numeric|min:0|max:100', // Opsional (dihitung di backend)
+            'raw_adc' => 'nullable|integer|min:0|max:4095', // 12-bit ADC from Pico
+            'raw_adc_raw' => 'nullable|integer|min:0|max:4095', // Debug: unfiltered ADC
             'relay_status' => 'nullable|boolean',
             'device_name' => 'nullable|string|max:100',
             'ip_address' => 'nullable|ip',
@@ -68,22 +69,7 @@ class MonitoringController extends Controller
             ], 422);
         }
 
-        // 1. SIMPAN DATA SENSOR
-        $data = [
-            'device_id' => $request->device_id,
-            'device_name' => $request->device_name ?? $request->device_id,
-            'temperature' => $request->temperature,
-            'soil_moisture' => $request->soil_moisture,
-            'raw_adc' => $request->raw_adc,
-            'relay_status' => $request->relay_status ?? false,
-            'status_pompa' => $request->relay_status ? 'Hidup' : 'Mati',
-            'ip_address' => $request->ip_address,
-            'hardware_status' => $request->hardware_status ?? null,
-        ];
-
-        $monitoring = Monitoring::create($data);
-
-        // 2. AMBIL/BUAT KONFIGURASI (Auto-Provisioning) - OPTIMIZED dengan Cache
+        // 1. AMBIL/BUAT KONFIGURASI (Auto-Provisioning) - Untuk kalkulasi soil_moisture
         $cacheKey = 'device_setting_' . $request->device_id;
         
         $setting = cache()->remember($cacheKey, 60, function() use ($request) {
@@ -92,51 +78,109 @@ class MonitoringController extends Controller
                 [
                     'device_name' => $request->device_name ?? $request->device_id,
                     'mode' => 1,
-                    'sensor_min' => 4095,
-                    'sensor_max' => 1500,
+                    'sensor_min' => 4095,   // Default: Capacitive sensor (kering = ADC tinggi)
+                    'sensor_max' => 1500,   // Default: Capacitive sensor (basah = ADC rendah)
                     'batas_siram' => 20,
                     'batas_stop' => 30,
                 ]
             );
         });
+
+        // 2. HITUNG SOIL MOISTURE dari RAW ADC (Backend-side calculation)
+        $soilMoisture = null;
+        $rawAdc = $request->raw_adc;
+        
+        if ($rawAdc !== null) {
+            $adcKering = $setting->sensor_min;  // ADC saat kering
+            $adcBasah = $setting->sensor_max;   // ADC saat basah
+            
+            // Deteksi jenis sensor dan hitung moisture
+            if ($adcKering > $adcBasah) {
+                // CAPACITIVE: Kering=Tinggi, Basah=Rendah
+                $rawClamped = max($adcBasah, min($adcKering, $rawAdc));
+                $dryness = ($rawClamped - $adcBasah) / ($adcKering - $adcBasah) * 100;
+                $soilMoisture = round(100 - $dryness, 1);
+            } else {
+                // RESISTIVE: Kering=Rendah, Basah=Tinggi  
+                $rawClamped = max($adcKering, min($adcBasah, $rawAdc));
+                $wetness = ($rawClamped - $adcKering) / ($adcBasah - $adcKering) * 100;
+                $soilMoisture = round($wetness, 1);
+            }
+            
+            // Batasi 0-100%
+            $soilMoisture = max(0, min(100, $soilMoisture));
+        }
+
+        // 3. SIMPAN DATA SENSOR (gunakan soil_moisture yang dihitung)
+        $data = [
+            'device_id' => $request->device_id,
+            'device_name' => $request->device_name ?? $request->device_id,
+            'temperature' => $request->temperature,
+            'soil_moisture' => $soilMoisture,  // Dari kalkulasi backend
+            'raw_adc' => $rawAdc,
+            'relay_status' => $request->relay_status ?? false,
+            'status_pompa' => $request->relay_status ? 'Hidup' : 'Mati',
+            'ip_address' => $request->ip_address,
+            'hardware_status' => $request->hardware_status ?? null,
+        ];
+
+        $monitoring = Monitoring::create($data);
         
         // ===== AUTO CALIBRATION SYSTEM =====
-        // Jika nilai ADC masih default (4095/1500), sistem perlu kalibrasi
-        // Kalibrasi dilakukan dengan mengumpulkan sample ADC dari sensor
+        // Sistem otomatis mendeteksi jenis sensor (capacitive/resistive) dan kalibrasi range
         $needsCalibration = ($setting->sensor_min == 4095 && $setting->sensor_max == 1500);
         
-        if ($needsCalibration && $request->raw_adc) {
+        if ($needsCalibration && $rawAdc) {
             // Mode: Auto-learning dari sample data
-            // Ambil 20 sample terakhir untuk analisis
+            // Ambil 30 sample terakhir untuk analisis (lebih banyak = lebih akurat)
             $recentSamples = Monitoring::where('device_id', $request->device_id)
                 ->whereNotNull('raw_adc')
                 ->orderBy('created_at', 'desc')
-                ->take(20)
+                ->take(30)
                 ->pluck('raw_adc');
             
-            // Jika sudah ada minimal 20 sample, kalkulasi min/max
-            if ($recentSamples->count() >= 20) {
+            // Jika sudah ada minimal 30 sample, kalkulasi min/max
+            if ($recentSamples->count() >= 30) {
                 $minADC = $recentSamples->min();
                 $maxADC = $recentSamples->max();
                 $avgADC = $recentSamples->avg();
+                $range = $maxADC - $minADC;
                 
-                // Validasi: ADC range harus masuk akal (perbedaan minimal 5000)
-                if (($maxADC - $minADC) > 5000) {
-                    // Update sensor_min (kering) dan sensor_max (basah)
-                    // Catatan: sensor_min = ADC tertinggi (kering), sensor_max = ADC terendah (basah)
-                    $setting->update([
-                        'sensor_min' => $maxADC,  // Kering = ADC tinggi
-                        'sensor_max' => $minADC,  // Basah = ADC rendah
-                    ]);
+                // Validasi: ADC range harus masuk akal (minimal 100 untuk 12-bit ADC)
+                if ($range >= 100) {
+                    // Deteksi jenis sensor berdasarkan range ADC
+                    // Capacitive: Range 500-3000 (dry=high, wet=low)
+                    // Resistive: Range 100-2000 (dry=low, wet=high)
                     
-                    cache()->forget($cacheKey);
+                    $sensorType = 'unknown';
                     
-                    Log::info("🎯 AUTO CALIBRATION SUCCESS - Device: {$request->device_id}, Min(Wet): {$minADC}, Max(Dry): {$maxADC}, Avg: " . round($avgADC));
+                    if ($avgADC > 1500 && $range > 500) {
+                        // Kemungkinan CAPACITIVE (ADC rata-rata tinggi)
+                        $sensorType = 'capacitive';
+                        $setting->update([
+                            'sensor_min' => $maxADC,  // Kering = ADC tinggi
+                            'sensor_max' => $minADC,  // Basah = ADC rendah
+                        ]);
+                    } else if ($avgADC < 1500 && $range > 100) {
+                        // Kemungkinan RESISTIVE (ADC rata-rata rendah)
+                        $sensorType = 'resistive';
+                        $setting->update([
+                            'sensor_min' => $minADC,  // Kering = ADC rendah
+                            'sensor_max' => $maxADC,  // Basah = ADC tinggi
+                        ]);
+                    }
+                    
+                    if ($sensorType !== 'unknown') {
+                        cache()->forget($cacheKey);
+                        Log::info("🎯 AUTO CALIBRATION SUCCESS - Device: {$request->device_id}, Type: {$sensorType}, Range: {$range}, Avg: " . round($avgADC));
+                    } else {
+                        Log::warning("⚠️ AUTO CALIBRATION UNCERTAIN - Device: {$request->device_id}, Avg: {$avgADC}, Range: {$range}");
+                    }
                 } else {
-                    Log::warning("⚠️ AUTO CALIBRATION SKIPPED - Device: {$request->device_id}, Range too small: " . ($maxADC - $minADC));
+                    Log::warning("⚠️ AUTO CALIBRATION SKIPPED - Device: {$request->device_id}, Range too small: {$range}");
                 }
             } else {
-                Log::info("📊 Collecting calibration samples - Device: {$request->device_id}, Current: {$recentSamples->count()}/20");
+                Log::info("📊 Collecting calibration samples - Device: {$request->device_id}, Current: {$recentSamples->count()}/30");
             }
         }
 
