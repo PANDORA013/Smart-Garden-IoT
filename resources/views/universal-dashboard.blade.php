@@ -136,30 +136,6 @@
                     </div>
                 </div>
 
-                <!-- Device Info Card -->
-                <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-2xl shadow-lg mb-8 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-bold mb-2">📱 <span id="device-name-display">Loading...</span></h3>
-                            <p class="text-sm opacity-90">Jenis Tanaman: <span id="plant-type-display" class="font-bold">-</span></p>
-                            <p class="text-sm opacity-90">Mode Operasi: <span id="mode-display" class="font-bold">-</span></p>
-                            
-                            <!-- Auto-Detected Devices -->
-                            <div class="mt-4 pt-3 border-t border-white/20">
-                                <p class="text-xs opacity-75 mb-2">🔌 Perangkat Terdeteksi Otomatis:</p>
-                                <div id="detected-devices-list" class="flex flex-wrap gap-2">
-                                    <span class="text-xs bg-white/20 px-2 py-1 rounded">Menunggu data...</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xs opacity-75">IP Address</p>
-                            <p class="font-mono text-sm" id="device-ip-display">-</p>
-                            <p class="text-xs opacity-75 mt-2">Last Update</p>
-                            <p class="text-sm font-medium" id="last-update-display">-</p>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Chart -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
@@ -779,7 +755,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const API_BASE_URL = '/api/monitoring';
+        const API_BASE_URL = `${window.location.origin}/api/monitoring`;
         const UPDATE_INTERVAL = 3000; // 3 seconds
 
         // --- PAGE SWITCHING LOGIC ---
@@ -919,6 +895,9 @@
                     const data = response.data.data;
                     const isOnline = data.is_online;
                     
+                    // Update connection status di dashboard header dan sidebar
+                    updateConnectionStatus(isOnline);
+                    
                     // Jika offline, tampilkan data sebagai tidak tersedia
                     if (!isOnline) {
                         document.getElementById('sensor-temp').textContent = '--°C';
@@ -927,9 +906,11 @@
                         document.getElementById('toggleSwitch').checked = false;
                         document.getElementById('toggleSwitch').disabled = true;
                         
-                        // Tampilkan peringatan offline di dashboard
+                        // Tampilkan peringatan offline di dashboard (jika elemen masih ada)
                         const deviceListContainer = document.getElementById('detected-devices-list');
-                        deviceListContainer.innerHTML = '<span class="text-red-500 text-xs font-bold">⚠️ Device Offline - Tidak ada data sensor</span>';
+                        if (deviceListContainer) {
+                            deviceListContainer.innerHTML = '<span class="text-red-500 text-xs font-bold">⚠️ Device Offline - Tidak ada data sensor</span>';
+                        }
                     } else {
                         // Online: tampilkan data normal
                         const temp = data.temperature;
@@ -975,7 +956,7 @@
                             
                             if (rawAdc >= 0 && rawAdc <= 500) {
                                 // Kering (Di udara)
-                                soilConditionEl.textContent = '�️ Kering (Udara)';
+                                soilConditionEl.textContent = '🌵 Kering (Udara)';
                                 soilConditionEl.className = 'text-2xl font-bold text-slate-600 mt-1';
                                 soilAdcEl.className = 'text-xs text-slate-500 mt-2 font-semibold';
                             } else if (rawAdc >= 1200 && rawAdc <= 2500) {
@@ -1014,47 +995,51 @@
                         document.getElementById('toggleSwitch').checked = data.relay_status;
                         document.getElementById('toggleSwitch').disabled = false;
                         
-                        // Update detected devices list dengan data hardware_status dari Pico
+                        // Update detected devices list dengan data hardware_status dari Pico (jika elemen masih ada)
                         const deviceListContainer = document.getElementById('detected-devices-list');
-                        const hwStatus = data.hardware_status || {};
+                        if (deviceListContainer) {
+                            const hwStatus = data.hardware_status || {};
+                            const hardwareList = [
+                                { name: 'DHT Sensor', icon: 'fa-temperature-high', status: hwStatus.dht11 || hwStatus.dht22 || false },
+                                { name: 'Soil Sensor', icon: 'fa-droplet', status: hwStatus.soil_sensor || false },
+                            ];
+                            let html = '';
+                            hardwareList.forEach(hw => {
+                                const statusColor = hw.status ? 'text-green-600' : 'text-red-500';
+                                const statusIcon = hw.status ? 'fa-check-circle' : 'fa-times-circle';
+                                html += `<span class="flex items-center gap-1 px-2 py-1 bg-white ${statusColor} text-xs font-bold rounded-lg shadow-sm">
+                                    <i class="fa-solid ${hw.icon}"></i> ${hw.name}
+                                    <i class="fa-solid ${statusIcon} text-[10px]"></i>
+                                </span>`;
+                            });
+                            deviceListContainer.innerHTML = html;
+                        }
                         
-                        const hardwareList = [
-                            { name: 'DHT Sensor', icon: 'fa-temperature-high', status: hwStatus.dht11 || hwStatus.dht22 || false },
-                            { name: 'Soil Sensor', icon: 'fa-droplet', status: hwStatus.soil_sensor || false },
-                            { name: 'Relay', icon: 'fa-toggle-on', status: hwStatus.relay !== false },
-                            { name: 'LCD', icon: 'fa-display', status: hwStatus.lcd || false }
-                        ];
-                        
-                        let html = '';
-                        hardwareList.forEach(hw => {
-                            const statusColor = hw.status ? 'text-green-600' : 'text-red-500';
-                            const statusIcon = hw.status ? 'fa-check-circle' : 'fa-times-circle';
-                            html += `<span class="flex items-center gap-1 px-2 py-1 bg-white ${statusColor} text-xs font-bold rounded-lg shadow-sm">
-                                <i class="fa-solid ${hw.icon}"></i> ${hw.name}
-                                <i class="fa-solid ${statusIcon} text-[10px]"></i>
-                            </span>`;
-                        });
-                        deviceListContainer.innerHTML = html;
+                        // Update device info card (Dashboard) - selalu tampilkan
+                        // updateConnectionStatus sudah dipanggil di awal fetchStats
                     }
                     
-                    // Update device info card (Dashboard) - selalu tampilkan
-                    document.getElementById('device-name-display').textContent = 
-                        data.device_name || 'Smart Garden Device';
-                    document.getElementById('plant-type-display').textContent = 
-                        data.plant_type || '-';
-                    
+                    // Update chart
+                    mainChart.data.labels = data.map(item => {
+                        const date = new Date(item.created_at);
+                        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    });
+                    mainChart.data.datasets[0].data = data.map(item => item.temperature || 0);
+                    mainChart.data.datasets[1].data = data.map(item => item.raw_adc || 0);
+                    mainChart.update();
                     // Mode mapping
                     const modeNames = {
                         2: '🤖 Mode AI Fuzzy',
                         4: '🛠️ Mode Manual'
                     };
-                    document.getElementById('mode-display').textContent = 
-                        modeNames[data.mode] || '-';
+                    const modeDisplayEl = document.getElementById('mode-display');
+                    if (modeDisplayEl) modeDisplayEl.textContent = modeNames[data.mode] || '-';
                     
-                    document.getElementById('device-ip-display').textContent = 
-                        data.ip_address || '-';
-                    document.getElementById('last-update-display').textContent = 
-                        new Date().toLocaleTimeString('id-ID');
+                    const ipEl = document.getElementById('device-ip-display');
+                    if (ipEl) ipEl.textContent = data.ip_address || '-';
+                    
+                    const updEl = document.getElementById('last-update-display');
+                    if (updEl) updEl.textContent = new Date().toLocaleTimeString('id-ID');
                     
                     // Update settings page info
                     if (document.getElementById('settings-device-name')) {
@@ -1069,9 +1054,6 @@
                         document.getElementById('settings-plant-type').textContent = 
                             data.plant_type || '-';
                     }
-                    
-                    // Update status Admin di sidebar
-                    updateConnectionStatus(isOnline);
                 }
                 
             } catch (error) {
@@ -1208,6 +1190,24 @@
                             }
                         }
 
+                        // Build hardware status list
+                        const hwStatus = device.hardware_status || {};
+                        const hardwareList = [
+                            { name: 'DHT Sensor', icon: 'fa-temperature-high', status: hwStatus.dht11 || hwStatus.dht22 || false },
+                            { name: 'Soil Sensor', icon: 'fa-droplet', status: hwStatus.soil_sensor || false },
+                            { name: 'Relay', icon: 'fa-toggle-on', status: hwStatus.relay !== false },
+                            { name: 'LCD', icon: 'fa-display', status: hwStatus.lcd || false }
+                        ];
+                        let hardwareHtml = '';
+                        hardwareList.forEach(hw => {
+                            const statusColor = hw.status ? 'text-green-600' : 'text-red-500';
+                            const statusIcon = hw.status ? 'fa-check-circle' : 'fa-times-circle';
+                            hardwareHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-white ${statusColor} text-xs font-bold rounded-lg shadow-sm">
+                                <i class="fa-solid ${hw.icon}"></i> ${hw.name}
+                                <i class="fa-solid ${statusIcon} text-[10px]"></i>
+                            </span>`;
+                        });
+
                         return `
                             <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-100 relative overflow-hidden group">
                                 <div class="flex justify-between items-start mb-6 relative z-10">
@@ -1223,6 +1223,10 @@
                                     ${statusBadge}
                                 </div>
                                 
+                                <div class="mt-4 pt-4 border-t border-slate-100">
+                                    <p class="text-xs opacity-75 mb-2">🔌 Perangkat Terdeteksi Otomatis:</p>
+                                    <div class="flex flex-wrap gap-2">${hardwareHtml}</div>
+                                </div>
                                 <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
                                     <span><i class="fa-regular fa-clock mr-1"></i> Last Seen: ${lastSeenText}</span>
                                     <span><i class="fa-solid fa-network-wired mr-1"></i> IP: ${device.ip_address || '-'}</span>
@@ -1250,8 +1254,37 @@
                         <p>Error loading devices</p>
                     </div>
                 `;
+                // Sync status: offline jika error loading devices
+                updateConnectionStatus(false);
             }
+            
+            // Sync device status dengan sidebar
+            syncDeviceStatusToSidebar();
         }
+        
+        /**
+         * Sync device status ke sidebar (connection indicator)
+         */
+        async function syncDeviceStatusToSidebar() {
+            try {
+                const response = await axios.get('/api/devices', {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (response.data.data && response.data.data.length > 0) {
+                    const firstDevice = response.data.data[0];
+                    const isOnline = firstDevice.status === 'online';
+                    updateConnectionStatus(isOnline);
+                } else {
+                    updateConnectionStatus(false);
+                }
+            } catch (error) {
+                console.error('Error syncing device status:', error);
+                updateConnectionStatus(false);
+            }
 
         async function toggleRelay() {
             const toggleSwitch = document.getElementById('toggleSwitch');
