@@ -108,6 +108,7 @@ class DeviceController extends Controller
                     'is_active' => $device->is_active,
                     'last_seen' => $device->last_seen,
                     'ip_address' => $latestMonitoring->ip_address ?? null,
+                    'hardware_status' => $latestMonitoring->hardware_status ?? null,
                     'status' => $this->getDeviceStatus($device),
                 ];
             })
