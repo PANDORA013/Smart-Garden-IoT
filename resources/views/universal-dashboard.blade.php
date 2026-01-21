@@ -527,7 +527,7 @@
                 </div>
 
                 <!-- Mode Selection Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div id="mode-selection-section" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <!-- Mode 2: AI Fuzzy -->
                     <div id="card-mode-2" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-blue-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(2)">
                         <div class="text-center">
@@ -1385,15 +1385,39 @@
         }
 
         // --- SMART CONFIG MODAL FUNCTIONS ---
-        function openSmartConfigModal() {
+        function openSmartConfigModal(preSelectMode = null) {
             document.getElementById('smartConfigModal').classList.remove('hidden');
             document.getElementById('smartConfigModal').classList.add('flex');
             
             // Load devices for selection
             loadDevicesForConfig();
             
-            // Default select Mode 2 (AI Fuzzy)
-            selectSmartMode(2);
+            // If preSelectMode provided, hide mode selection step and update header
+            if (preSelectMode) {
+                document.getElementById('mode-selection-section').classList.add('hidden');
+                
+                // Update modal header
+                const header = document.querySelector('#smartConfigModal .flex.justify-between');
+                const headerH3 = header.querySelector('h3');
+                const headerP = header.querySelector('p');
+                
+                if (preSelectMode === 4) {
+                    headerH3.textContent = '⚙️ Konfigurasi Mode Manual - Weekly Loop System';
+                    headerP.textContent = 'Atur penjadwalan mingguan dengan threshold dan jam penyiraman per hari';
+                }
+            } else {
+                // Show mode selection and restore original header
+                document.getElementById('mode-selection-section').classList.remove('hidden');
+                const header = document.querySelector('#smartConfigModal .flex.justify-between');
+                const headerH3 = header.querySelector('h3');
+                const headerP = header.querySelector('p');
+                headerH3.textContent = '🎮 Pilih Metode Perawatan Tanaman';
+                headerP.textContent = 'Pilih strategi yang paling sesuai dengan kebutuhan Anda';
+            }
+            
+            // If preSelectMode provided, use it; otherwise default to Mode 2
+            const modeToSelect = preSelectMode || 2;
+            selectSmartMode(modeToSelect);
         }
 
         function closeSmartConfigModal() {
@@ -1968,14 +1992,10 @@
             // Update dynamic settings area
             updateMinimalSettingsArea();
             
-            // AUTO-OPEN MODAL untuk Mode Manual (Mode 4)
+            // AUTO-OPEN MODAL untuk Mode Manual (Mode 4) - langsung ke konfigurasi
             if (mode === 4) {
                 setTimeout(() => {
-                    openSmartConfigModal();
-                    // Auto-select Mode Manual di modal
-                    setTimeout(() => {
-                        selectSmartMode(4);
-                    }, 100);
+                    openSmartConfigModal(4);  // Pass mode=4 to skip mode selection step
                 }, 300);
             }
         }
