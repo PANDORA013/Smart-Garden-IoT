@@ -190,62 +190,127 @@
                             <table class="w-full text-xs border-collapse bg-white rounded-lg overflow-hidden shadow-sm">
                                 <thead class="bg-gradient-to-r from-slate-700 to-slate-600 text-white">
                                     <tr>
-                                        <th class="px-4 py-3 text-left font-bold">Kondisi Tanah</th>
-                                        <th class="px-4 py-3 text-center font-bold">Nilai ADC (Raw)</th>
-                                        <th class="px-4 py-3 text-left font-bold">Penjelasan</th>
+                                        <th class="px-3 py-3 text-center font-bold">Nilai ADC (Raw)</th>
+                                        <th class="px-3 py-3 text-center font-bold">Persentase (%)</th>
+                                        <th class="px-3 py-3 text-left font-bold">Status Kelembapan</th>
+                                        <th class="px-3 py-3 text-left font-bold">Tindakan Pompa (Rekomendasi)</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    <tr class="hover:bg-slate-50 transition-colors">
-                                        <td class="px-4 py-3 font-semibold text-slate-700">
-                                            <i class="fa-solid fa-wind text-slate-500 mr-2"></i>
-                                            Kering (Di udara)
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 font-bold rounded-full">
+                                    <tr class="hover:bg-red-50 transition-colors">
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="inline-block px-2 py-1 bg-red-100 text-red-700 font-bold rounded-full text-[11px]">
                                                 0 – 500
                                             </span>
                                         </td>
-                                        <td class="px-4 py-3 text-slate-600">
-                                            Tidak ada konduktivitas/kapasitansi yang terbaca.
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="font-bold text-red-600">0% – 12%</span>
+                                        </td>
+                                        <td class="px-3 py-3 font-semibold text-red-700">
+                                            <i class="fa-solid fa-triangle-exclamation text-red-500 mr-2"></i>
+                                            Sangat Kering
+                                        </td>
+                                        <td class="px-3 py-3 text-slate-600">
+                                            <span class="font-bold text-red-600">🔴 HIDUPKAN</span> (Segera siram)
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-orange-50 transition-colors">
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="inline-block px-2 py-1 bg-orange-100 text-orange-700 font-bold rounded-full text-[11px]">
+                                                501 – 1199
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="font-bold text-orange-600">12% – 29%</span>
+                                        </td>
+                                        <td class="px-3 py-3 font-semibold text-orange-700">
+                                            <i class="fa-solid fa-fire text-orange-500 mr-2"></i>
+                                            Kering
+                                        </td>
+                                        <td class="px-3 py-3 text-slate-600">
+                                            <span class="font-bold text-orange-600">🟠 HIDUPKAN</span> (Mulai menyiram)
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-yellow-50 transition-colors">
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-700 font-bold rounded-full text-[11px]">
+                                                1200 – 1800
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="font-bold text-yellow-600">29% – 44%</span>
+                                        </td>
+                                        <td class="px-3 py-3 font-semibold text-yellow-700">
+                                            <i class="fa-solid fa-cloud text-yellow-500 mr-2"></i>
+                                            Lembab (Awal)
+                                        </td>
+                                        <td class="px-3 py-3 text-slate-600">
+                                            <span class="font-bold text-green-600">⚫ MATIKAN</span> (Cukup air)
                                         </td>
                                     </tr>
                                     <tr class="hover:bg-green-50 transition-colors">
-                                        <td class="px-4 py-3 font-semibold text-green-700">
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="inline-block px-2 py-1 bg-green-100 text-green-700 font-bold rounded-full text-[11px]">
+                                                1801 – 2500
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="font-bold text-green-600">44% – 61%</span>
+                                        </td>
+                                        <td class="px-3 py-3 font-semibold text-green-700">
                                             <i class="fa-solid fa-seedling text-green-500 mr-2"></i>
                                             Lembab (Ideal)
                                         </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-block px-3 py-1 bg-green-100 text-green-700 font-bold rounded-full">
-                                                1200 – 2500
+                                        <td class="px-3 py-3 text-slate-600">
+                                            <span class="font-bold text-green-600">✅ MATIKAN</span> (Kondisi Terbaik)
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-cyan-50 transition-colors">
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="inline-block px-2 py-1 bg-cyan-100 text-cyan-700 font-bold rounded-full text-[11px]">
+                                                2501 – 3000
                                             </span>
                                         </td>
-                                        <td class="px-4 py-3 text-slate-600">
-                                            <span class="font-semibold text-green-700">✅ Tanah memiliki kandungan air yang cukup.</span> Kondisi optimal untuk tanaman cabai.
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="font-bold text-cyan-600">61% – 73%</span>
+                                        </td>
+                                        <td class="px-3 py-3 font-semibold text-cyan-700">
+                                            <i class="fa-solid fa-droplet text-cyan-500 mr-2"></i>
+                                            Basah
+                                        </td>
+                                        <td class="px-3 py-3 text-slate-600">
+                                            <span class="font-bold text-slate-600">⚫ MATIKAN</span> (Jangan disiram)
                                         </td>
                                     </tr>
                                     <tr class="hover:bg-blue-50 transition-colors">
-                                        <td class="px-4 py-3 font-semibold text-blue-700">
-                                            <i class="fa-solid fa-droplet text-blue-500 mr-2"></i>
-                                            Basah (Air)
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-full">
-                                                &gt; 3000
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="inline-block px-2 py-1 bg-blue-100 text-blue-700 font-bold rounded-full text-[11px]">
+                                                3001 – 4095
                                             </span>
                                         </td>
-                                        <td class="px-4 py-3 text-slate-600">
-                                            Sensor mendeteksi kadar air tinggi (basah kuyup).
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="font-bold text-blue-600">73% – 100%</span>
+                                        </td>
+                                        <td class="px-3 py-3 font-semibold text-blue-700">
+                                            <i class="fa-solid fa-water text-blue-500 mr-2"></i>
+                                            Sangat Basah
+                                        </td>
+                                        <td class="px-3 py-3 text-slate-600">
+                                            <span class="font-bold text-red-600">⛔ MATIKAN</span> (Risiko busuk akar)
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                         
-                        <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <p class="text-xs text-yellow-800 flex items-start gap-2">
-                                <i class="fa-solid fa-lightbulb text-yellow-600 mt-0.5"></i>
-                                <span><strong>Tips:</strong> Untuk tanaman cabai, pertahankan nilai ADC antara <strong>1200-2500</strong> untuk pertumbuhan optimal. Sistem akan otomatis menyiram jika nilai ADC < 1200 (kering).</span>
+                        <div class="mt-3 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
+                            <p class="text-xs text-slate-700 flex items-start gap-2 mb-2">
+                                <i class="fa-solid fa-lightbulb text-green-600 mt-0.5"></i>
+                                <span><strong>Tips Mode Manual:</strong> Untuk tanaman cabai, atur <strong>Batas Kering (ON)</strong> di <strong>29%</strong> (ADC 1200) dan <strong>Batas Basah (OFF)</strong> di <strong>61%</strong> (ADC 2500) untuk hasil optimal.</span>
+                            </p>
+                            <p class="text-xs text-slate-600 flex items-start gap-2">
+                                <i class="fa-solid fa-info-circle text-blue-600 mt-0.5"></i>
+                                <span><strong>Rentang Ideal:</strong> 29% - 61% (ADC 1200-2500) = Zona hijau untuk pertumbuhan terbaik. Hindari < 12% (sangat kering) dan > 73% (risiko busuk akar).</span>
                             </p>
                         </div>
                     </div>
@@ -519,29 +584,41 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700 mb-3">
-                                        Batas Kelembapan Kering (Pompa ON):
+                                        🔥 Batas Kelembapan Kering (Pompa ON):
                                     </label>
                                     <div class="flex items-center gap-4">
-                                        <input type="range" id="range-manual" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="40" oninput="document.getElementById('val-manual').textContent = this.value + '%'">
-                                        <span id="val-manual" class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-lg min-w-[70px] text-center">40%</span>
+                                        <input type="range" id="range-manual" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="40" oninput="updateManualRangeDisplay()">
+                                        <div class="text-right min-w-[100px]">
+                                            <div id="val-manual" class="px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center">40%</div>
+                                            <div id="adc-manual" class="text-[10px] text-slate-500 mt-1 text-center font-medium">ADC: ~1640</div>
+                                        </div>
                                     </div>
                                     <p class="text-xs text-slate-500 mt-2">
                                         <i class="fa-solid fa-info-circle mr-1"></i>
-                                        Pompa akan menyala jika kelembapan di bawah angka ini.
+                                        Pompa akan <strong class="text-red-600">MENYALA</strong> jika kelembapan di bawah angka ini.
                                     </p>
+                                    <div id="status-manual" class="mt-2 text-xs font-semibold text-orange-600">
+                                        💡 Rekomendasi: Set 29% (ADC 1200) untuk mulai menyiram
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700 mb-3">
-                                        Batas Kelembapan Basah (Pompa OFF):
+                                        💧 Batas Kelembapan Basah (Pompa OFF):
                                     </label>
                                     <div class="flex items-center gap-4">
-                                        <input type="range" id="range-manual-stop" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="70" oninput="document.getElementById('val-manual-stop').textContent = this.value + '%'">
-                                        <span id="val-manual-stop" class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-lg min-w-[70px] text-center">70%</span>
+                                        <input type="range" id="range-manual-stop" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="70" oninput="updateManualStopRangeDisplay()">
+                                        <div class="text-right min-w-[100px]">
+                                            <div id="val-manual-stop" class="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center">70%</div>
+                                            <div id="adc-manual-stop" class="text-[10px] text-slate-500 mt-1 text-center font-medium">ADC: ~2867</div>
+                                        </div>
                                     </div>
                                     <p class="text-xs text-slate-500 mt-2">
                                         <i class="fa-solid fa-info-circle mr-1"></i>
-                                        Pompa akan mati jika kelembapan mencapai angka ini atau lebih.
+                                        Pompa akan <strong class="text-green-600">MATI</strong> jika kelembapan mencapai angka ini atau lebih.
                                     </p>
+                                    <div id="status-manual-stop" class="mt-2 text-xs font-semibold text-green-600">
+                                        ✅ Rekomendasi: Set 61% (ADC 2500) untuk kondisi ideal
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1352,6 +1429,105 @@
             icon.className = `fa-solid ${status.icon} text-[8px]`;
         }
 
+        // Helper functions for ADC conversion and status display
+        function percentageToADC(percentage) {
+            // Konversi persentase (0-100%) ke ADC (4095-0)
+            // 0% = 4095 ADC (kering), 100% = 0 ADC (basah)
+            return Math.round(4095 - (percentage * 40.95));
+        }
+
+        function getStatusByPercentage(percentage) {
+            if (percentage >= 0 && percentage <= 12) {
+                return {
+                    text: '🔴 Sangat Kering - HIDUPKAN Pompa',
+                    class: 'text-red-600',
+                    recommendation: '💡 Segera siram! Tanaman kekurangan air.'
+                };
+            } else if (percentage >= 12 && percentage <= 29) {
+                return {
+                    text: '🟠 Kering - HIDUPKAN Pompa',
+                    class: 'text-orange-600',
+                    recommendation: '💡 Mulai menyiram untuk mencegah stress tanaman.'
+                };
+            } else if (percentage >= 29 && percentage <= 44) {
+                return {
+                    text: '🟡 Lembab Awal - MATIKAN Pompa',
+                    class: 'text-yellow-600',
+                    recommendation: '✅ Cukup air, tidak perlu menyiram.'
+                };
+            } else if (percentage >= 44 && percentage <= 61) {
+                return {
+                    text: '✅ Lembab Ideal - MATIKAN Pompa',
+                    class: 'text-green-600',
+                    recommendation: '✅ Kondisi Terbaik! Pertahankan kelembapan ini.'
+                };
+            } else if (percentage >= 61 && percentage <= 73) {
+                return {
+                    text: '💧 Basah - MATIKAN Pompa',
+                    class: 'text-cyan-600',
+                    recommendation: '⚠️ Jangan disiram, sudah terlalu basah.'
+                };
+            } else {
+                return {
+                    text: '⛔ Sangat Basah - MATIKAN Pompa',
+                    class: 'text-blue-700',
+                    recommendation: '⛔ Risiko busuk akar! Stop penyiraman.'
+                };
+            }
+        }
+
+        function updateManualRangeDisplay() {
+            const slider = document.getElementById('range-manual');
+            const percentage = parseInt(slider.value);
+            const adc = percentageToADC(percentage);
+            const status = getStatusByPercentage(percentage);
+            
+            document.getElementById('val-manual').textContent = percentage + '%';
+            document.getElementById('adc-manual').textContent = `ADC: ~${adc}`;
+            
+            const statusEl = document.getElementById('status-manual');
+            statusEl.textContent = status.recommendation;
+            statusEl.className = `mt-2 text-xs font-semibold ${status.class}`;
+            
+            // Update background color based on range
+            const valBox = document.getElementById('val-manual');
+            if (percentage <= 29) {
+                valBox.className = 'px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 44) {
+                valBox.className = 'px-4 py-2 bg-yellow-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 61) {
+                valBox.className = 'px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center';
+            } else {
+                valBox.className = 'px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-lg text-center';
+            }
+        }
+
+        function updateManualStopRangeDisplay() {
+            const slider = document.getElementById('range-manual-stop');
+            const percentage = parseInt(slider.value);
+            const adc = percentageToADC(percentage);
+            const status = getStatusByPercentage(percentage);
+            
+            document.getElementById('val-manual-stop').textContent = percentage + '%';
+            document.getElementById('adc-manual-stop').textContent = `ADC: ~${adc}`;
+            
+            const statusEl = document.getElementById('status-manual-stop');
+            statusEl.textContent = status.recommendation;
+            statusEl.className = `mt-2 text-xs font-semibold ${status.class}`;
+            
+            // Update background color based on range
+            const valBox = document.getElementById('val-manual-stop');
+            if (percentage <= 29) {
+                valBox.className = 'px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 44) {
+                valBox.className = 'px-4 py-2 bg-yellow-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 61) {
+                valBox.className = 'px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center';
+            } else {
+                valBox.className = 'px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-lg text-center';
+            }
+        }
+
         function selectSmartMode(mode) {
             // Reset all cards
             document.querySelectorAll('.mode-card').forEach(card => {
@@ -1384,6 +1560,9 @@
             } else if (mode === 4) {
                 // Mode Manual: Show threshold + schedule inputs
                 document.getElementById('input-manual').classList.remove('hidden');
+                // Initialize display values
+                updateManualRangeDisplay();
+                updateManualStopRangeDisplay();
             }
         }
 
@@ -1612,27 +1791,47 @@
                 // Manual: Threshold + Schedule (Unified)
                 area.innerHTML = `
                     <div class="space-y-6">
-                        <!-- Threshold Settings -->
+                        <!-- Threshold Settings with Slider -->
                         <div class="space-y-4 pb-4 border-b border-slate-200">
                             <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                                 <i class="fa-solid fa-droplet"></i> Pengaturan Threshold Kelembaban
                             </h5>
-                            <div class="flex justify-between items-center py-2">
-                                <label class="text-sm font-medium text-slate-700">Batas Kering (Pompa ON)</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="number" id="minimal-batas-siram" value="${minimalSettings.batas_siram}" 
-                                           class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-slate-500 focus:outline-none text-sm font-medium" 
-                                           min="0" max="100">
-                                    <span class="text-sm font-medium text-slate-500">%</span>
+                            
+                            <!-- Batas Kering (ON) -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-3">
+                                    🔥 Batas Kelembapan Kering (Pompa ON):
+                                </label>
+                                <div class="flex items-center gap-4">
+                                    <input type="range" id="minimal-batas-siram" value="${minimalSettings.batas_siram}" 
+                                           class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
+                                           min="0" max="100" oninput="updateMinimalBatasSiramDisplay()">
+                                    <div class="text-right min-w-[100px]">
+                                        <div id="minimal-val-siram" class="px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center">${minimalSettings.batas_siram}%</div>
+                                        <div id="minimal-adc-siram" class="text-[10px] text-slate-500 mt-1 text-center font-medium">ADC: ~${Math.round(4095 - (minimalSettings.batas_siram * 40.95))}</div>
+                                    </div>
+                                </div>
+                                <div id="minimal-status-siram" class="mt-2 text-xs font-semibold text-orange-600">
+                                    💡 Rekomendasi: Set 29% (ADC 1200) untuk mulai menyiram
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center py-2">
-                                <label class="text-sm font-medium text-slate-700">Batas Basah (Pompa OFF)</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="number" id="minimal-batas-stop" value="${minimalSettings.batas_stop}" 
-                                           class="w-20 text-center px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-slate-500 focus:outline-none text-sm font-medium" 
-                                           min="0" max="100">
-                                    <span class="text-sm font-medium text-slate-500">%</span>
+                            
+                            <!-- Batas Basah (OFF) -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-3">
+                                    💧 Batas Kelembapan Basah (Pompa OFF):
+                                </label>
+                                <div class="flex items-center gap-4">
+                                    <input type="range" id="minimal-batas-stop" value="${minimalSettings.batas_stop}" 
+                                           class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
+                                           min="0" max="100" oninput="updateMinimalBatasStopDisplay()">
+                                    <div class="text-right min-w-[100px]">
+                                        <div id="minimal-val-stop" class="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center">${minimalSettings.batas_stop}%</div>
+                                        <div id="minimal-adc-stop" class="text-[10px] text-slate-500 mt-1 text-center font-medium">ADC: ~${Math.round(4095 - (minimalSettings.batas_stop * 40.95))}</div>
+                                    </div>
+                                </div>
+                                <div id="minimal-status-stop" class="mt-2 text-xs font-semibold text-green-600">
+                                    ✅ Rekomendasi: Set 61% (ADC 2500) untuk kondisi ideal
                                 </div>
                             </div>
                         </div>
@@ -1665,14 +1864,72 @@
                             </div>
                         </div>
                         
-                        <div class="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                            <p class="text-xs text-slate-700">
-                                <i class="fa-solid fa-lightbulb mr-1"></i>
+                        <div class="mt-3 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
+                            <p class="text-xs text-slate-700 mb-1">
+                                <i class="fa-solid fa-lightbulb mr-1 text-green-600"></i>
                                 <strong>Mode Manual:</strong> Pompa bekerja otomatis berdasarkan threshold kelembaban (ON jika kering, OFF jika basah) dan juga menyala pada jadwal pagi/sore dengan durasi yang ditentukan.
+                            </p>
+                            <p class="text-xs text-slate-600 mt-2">
+                                <i class="fa-solid fa-info-circle mr-1 text-blue-600"></i>
+                                <strong>Zona Ideal:</strong> 29%-61% (ADC 1200-2500) untuk pertumbuhan optimal tanaman cabai.
+                            </p>
+                        </div>
                             </p>
                         </div>
                     </div>
                 `;
+            }
+        }
+
+        function updateMinimalBatasSiramDisplay() {
+            const slider = document.getElementById('minimal-batas-siram');
+            const percentage = parseInt(slider.value);
+            const adc = percentageToADC(percentage);
+            const status = getStatusByPercentage(percentage);
+            
+            document.getElementById('minimal-val-siram').textContent = percentage + '%';
+            document.getElementById('minimal-adc-siram').textContent = `ADC: ~${adc}`;
+            
+            const statusEl = document.getElementById('minimal-status-siram');
+            statusEl.textContent = status.recommendation;
+            statusEl.className = `mt-2 text-xs font-semibold ${status.class}`;
+            
+            // Update background color
+            const valBox = document.getElementById('minimal-val-siram');
+            if (percentage <= 29) {
+                valBox.className = 'px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 44) {
+                valBox.className = 'px-4 py-2 bg-yellow-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 61) {
+                valBox.className = 'px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center';
+            } else {
+                valBox.className = 'px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-lg text-center';
+            }
+        }
+
+        function updateMinimalBatasStopDisplay() {
+            const slider = document.getElementById('minimal-batas-stop');
+            const percentage = parseInt(slider.value);
+            const adc = percentageToADC(percentage);
+            const status = getStatusByPercentage(percentage);
+            
+            document.getElementById('minimal-val-stop').textContent = percentage + '%';
+            document.getElementById('minimal-adc-stop').textContent = `ADC: ~${adc}`;
+            
+            const statusEl = document.getElementById('minimal-status-stop');
+            statusEl.textContent = status.recommendation;
+            statusEl.className = `mt-2 text-xs font-semibold ${status.class}`;
+            
+            // Update background color
+            const valBox = document.getElementById('minimal-val-stop');
+            if (percentage <= 29) {
+                valBox.className = 'px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 44) {
+                valBox.className = 'px-4 py-2 bg-yellow-600 text-white rounded-lg font-bold text-lg text-center';
+            } else if (percentage <= 61) {
+                valBox.className = 'px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg text-center';
+            } else {
+                valBox.className = 'px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-lg text-center';
             }
         }
 
