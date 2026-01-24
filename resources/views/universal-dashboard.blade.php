@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Universal IoT Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
@@ -1001,13 +1001,21 @@
                         document.getElementById('toggleSwitch').disabled = false;
                         
                         // Update chart
-                    mainChart.data.labels = data.map(item => {
-                        const date = new Date(item.created_at);
-                        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                    });
-                    mainChart.data.datasets[0].data = data.map(item => item.temperature || 0);
-                    mainChart.data.datasets[1].data = data.map(item => item.raw_adc || 0);
-                    mainChart.update();
+                        mainChart.data.labels = data.map(item => {
+                            const date = new Date(item.created_at);
+                            return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                        });
+                        mainChart.data.datasets[0].data = data.map(item => item.temperature || 0);
+                        mainChart.data.datasets[1].data = data.map(item => item.raw_adc || 0);
+                        mainChart.update();
+                    }
+                    
+                    // Update device info card (Dashboard) - selalu tampilkan
+                    document.getElementById('device-name-display').textContent = 
+                        data.device_name || 'Smart Garden Device';
+                    document.getElementById('plant-type-display').textContent = 
+                        data.plant_type || '-';
+                    
                     // Mode mapping
                     const modeNames = {
                         2: '🤖 Mode AI Fuzzy',
@@ -1038,7 +1046,6 @@
                 }
                 
             } catch (error) {
-                console.error('Error fetching stats:', error);
                 updateConnectionStatus(false);
             }
         }
@@ -1059,7 +1066,7 @@
                     mainChart.update();
                 }
             } catch (error) {
-                console.error('Error fetching history:', error);
+                // Error fetching history - chart will remain empty
             }
         }
 
