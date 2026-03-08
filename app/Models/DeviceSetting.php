@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 
 class DeviceSetting extends Model
 {
+    use HasFactory;
     /**
      * The table associated with the model.
      *
@@ -32,9 +35,10 @@ class DeviceSetting extends Model
         'durasi_siram',
         'is_active',
         'last_seen',
+        'last_seen_at',
         'firmware_version',
         'notes',
-        'relay_command',  // ← TAMBAHKAN INI!
+        'relay_command',
     ];
 
     /**
@@ -50,8 +54,9 @@ class DeviceSetting extends Model
         'batas_stop' => 'integer',
         'durasi_siram' => 'integer',
         'is_active' => 'boolean',
-        'relay_command' => 'boolean',  // ← TAMBAHKAN INI!
+        'relay_command' => 'integer',
         'last_seen' => 'datetime',
+        'last_seen_at' => 'datetime',
     ];
 
     /**
@@ -67,7 +72,7 @@ class DeviceSetting extends Model
      */
     public function monitorings()
     {
-        return $this->hasMany(Monitoring::class, 'device_name', 'device_id');
+        return $this->hasMany(Monitoring::class, 'device_id', 'device_id');
     }
 
     /**
@@ -103,20 +108,24 @@ class DeviceSetting extends Model
      */
     public function updateLastSeen()
     {
-        $this->update(['last_seen' => now()]);
+        $now = Carbon::now();
+        $this->update(['last_seen' => $now, 'last_seen_at' => $now]);
     }
 
     /**
      * Cek apakah device online (last_seen dalam 60 detik terakhir)
+     * Fallback ke last_seen_at jika last_seen null (kolom lama)
      */
     public function isOnline(): bool
     {
-        if (!$this->last_seen) {
+        // Support both column names: last_seen_at (insert()) and last_seen (legacy)
+        $lastSeen = $this->last_seen_at ?? $this->last_seen;
+        if (!$lastSeen) {
             return false;
         }
-        
-        // Device dianggap online jika last_seen kurang dari 60 detik yang lalu
-        return $this->last_seen->diffInSeconds(now()) <= 60;
+
+        // Device dianggap online jika last seen kurang dari 60 detik yang lalu
+        return $lastSeen->diffInSeconds(Carbon::now()) <= 60;
     }
 
     /**

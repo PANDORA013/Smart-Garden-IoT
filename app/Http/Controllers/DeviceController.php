@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DeviceSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class DeviceController extends Controller
 {
@@ -42,14 +43,16 @@ class DeviceController extends Controller
                 [
                     'device_name' => $deviceId,
                     'firmware_version' => $firmware,
-                    'last_seen' => now(),
+                    'last_seen' => Carbon::now(),
+                    'last_seen_at' => Carbon::now(),
                 ]
             )
         );
 
         // Update last_seen dan firmware setiap check-in
         $setting->update([
-            'last_seen' => now(),
+            'last_seen' => Carbon::now(),
+            'last_seen_at' => Carbon::now(),
             'firmware_version' => $firmware ?? $setting->firmware_version,
         ]);
 
@@ -82,14 +85,22 @@ class DeviceController extends Controller
     {
         $devices = DeviceSetting::orderBy('last_seen', 'desc')->get();
 
+        // Fix N+1: Ambil semua monitoring terakhir per device dalam 1 query
+        $deviceIds = $devices->pluck('device_id')->toArray();
+        $latestMonitorings = \App\Models\Monitoring::whereIn('device_id', $deviceIds)
+            ->whereIn('id', function($query) {
+                $query->selectRaw('MAX(id)')
+                      ->from('monitorings')
+                      ->groupBy('device_id');
+            })
+            ->get()
+            ->keyBy('device_id');
+
         return response()->json([
             'success' => true,
             'count' => $devices->count(),
-            'data' => $devices->map(function ($device) {
-                // Ambil IP address dari monitoring terakhir
-                $latestMonitoring = \App\Models\Monitoring::where('device_id', $device->device_id)
-                    ->latest()
-                    ->first();
+            'data' => $devices->map(function ($device) use ($latestMonitorings) {
+                $latestMonitoring = $latestMonitorings->get($device->device_id);
                 
                 return [
                     'id' => $device->id,
@@ -107,14 +118,16 @@ class DeviceController extends Controller
                     'firmware_version' => $device->firmware_version,
                     'is_active' => $device->is_active,
                     'last_seen' => $device->last_seen,
+                    'last_seen_at' => $device->last_seen_at,
                     'ip_address' => $latestMonitoring->ip_address ?? null,
                     'hardware_status' => $latestMonitoring->hardware_status ?? null,
-                    'status' => $this->getDeviceStatus($device),
+                    'last_temperature' => $latestMonitoring ? round($latestMonitoring->temperature, 1) : null,
+                    'last_soil' => $latestMonitoring ? round($latestMonitoring->soil_moisture, 1) : null,
+                    'relay_status' => $latestMonitoring->relay_status ?? false,
+                    'status' => $this->getDeviceStatusFromMonitoring($latestMonitoring),
                 ];
             })
-        ], 200)->header('Cache-Control', 'no-cache, no-store, must-revalidate')
-                 ->header('Pragma', 'no-cache')
-                 ->header('Expires', '0');
+        ], 200);
     }
 
     /**
@@ -278,27 +291,8 @@ class DeviceController extends Controller
         }
 
         // Update parameter berdasarkan mode
-        if ($request->mode == 1) {
-            // Mode Pemula: Force to standard (auto-set by smart config)
-            if ($request->has('batas_siram')) {
-                $updateData['batas_siram'] = $request->batas_siram;
-            }
-            if ($request->has('batas_stop')) {
-                $updateData['batas_stop'] = $request->batas_stop;
-            }
-        } elseif ($request->mode == 3) {
-            // Mode Schedule: Update jadwal
-            if ($request->has('jam_pagi')) {
-                $updateData['jam_pagi'] = $request->jam_pagi;
-            }
-            if ($request->has('jam_sore')) {
-                $updateData['jam_sore'] = $request->jam_sore;
-            }
-            if ($request->has('durasi_siram')) {
-                $updateData['durasi_siram'] = $request->durasi_siram;
-            }
-        } elseif ($request->mode == 4) {
-            // Mode Manual: User-defined thresholds
+        if ($request->mode == 1 || $request->mode == 2 || $request->mode == 4) {
+            // Mode Basic, Fuzzy AI & Manual: all use batas_siram/batas_stop thresholds
             if ($request->has('batas_siram')) {
                 $updateData['batas_siram'] = $request->batas_siram;
             }
@@ -311,12 +305,22 @@ class DeviceController extends Controller
                 if ($updateData['batas_stop'] <= $updateData['batas_siram']) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Batas Basah (OFF) harus lebih tinggi dari Batas Kering (ON)'
+                        'message' => 'Batas Stop (OFF) harus lebih tinggi dari Batas Siram (ON)'
                     ], 422);
                 }
             }
+        } elseif ($request->mode == 3) {
+            // Mode Schedule: Update jadwal
+            if ($request->has('jam_pagi')) {
+                $updateData['jam_pagi'] = $request->jam_pagi;
+            }
+            if ($request->has('jam_sore')) {
+                $updateData['jam_sore'] = $request->jam_sore;
+            }
+            if ($request->has('durasi_siram')) {
+                $updateData['durasi_siram'] = $request->durasi_siram;
+            }
         }
-        // Mode 2 (Fuzzy) tidak ada parameter tambahan
 
         $device->update($updateData);
 
@@ -335,7 +339,25 @@ class DeviceController extends Controller
     }
 
     /**
-     * Get device status (online/offline)
+     * Get device status from already-fetched monitoring record (no extra query)
+     */
+    private function getDeviceStatusFromMonitoring($monitoring): string
+    {
+        if (!$monitoring) {
+            return 'never_connected';
+        }
+
+        $secondsAgo = $monitoring->updated_at
+            ? Carbon::parse($monitoring->updated_at)->diffInSeconds(Carbon::now())
+            : PHP_INT_MAX;
+
+        if ($secondsAgo < 30) return 'online';
+        if ($secondsAgo < 120) return 'idle';
+        return 'offline';
+    }
+
+    /**
+     * Get device status (online/offline) — kept for single-device use
      */
     private function getDeviceStatus(DeviceSetting $device): string
     {
@@ -344,19 +366,6 @@ class DeviceController extends Controller
             ->latest()
             ->first();
         
-        if (!$latestMonitoring) {
-            return 'never_connected';
-        }
-
-        $secondsAgo = $latestMonitoring->updated_at->diffInSeconds(now());
-
-        // Online jika data < 30 detik (sinkron dengan MonitoringController)
-        if ($secondsAgo < 30) {
-            return 'online';
-        } elseif ($secondsAgo < 120) {
-            return 'idle';
-        } else {
-            return 'offline';
-        }
+        return $this->getDeviceStatusFromMonitoring($latestMonitoring);
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class MonitoringController extends Controller
 {
@@ -183,6 +184,8 @@ class MonitoringController extends Controller
                     
                     if ($sensorType !== 'unknown') {
                         cache()->forget($cacheKey);
+                        $setting->refresh(); // Re-sync local model with updated DB values
+                        $needsCalibration = false; // Mark as calibrated for remainder of this request
                         Log::info("🎯 AUTO CALIBRATION SUCCESS - Device: {$request->device_id}, Type: {$sensorType}, Range: {$range}, Avg: " . round($avgADC));
                     } else {
                         Log::warning("⚠️ AUTO CALIBRATION UNCERTAIN - Device: {$request->device_id}, Avg: {$avgADC}, Range: {$range}");
@@ -195,9 +198,12 @@ class MonitoringController extends Controller
             }
         }
 
-        // Update last_seen hanya setiap 30 detik (skip jika baru saja update)
-        if (!$setting->last_seen || $setting->last_seen->diffInSeconds(now()) > 30) {
-            $setting->update(['last_seen' => now()]);
+        // Update last_seen dan last_seen_at setiap 30 detik (skip jika baru saja update)
+        if (!$setting->last_seen || $setting->last_seen->diffInSeconds(Carbon::now()) > 30) {
+            $setting->update([
+                'last_seen' => Carbon::now(),
+                'last_seen_at' => Carbon::now(),
+            ]);
             cache()->forget($cacheKey); // Refresh cache setelah update
         }
 
@@ -249,7 +255,7 @@ class MonitoringController extends Controller
             } else {
                 Log::info("⏳ WAITING FOR EXECUTION - Device: {$request->device_id}, Expected: {$commandValue}, Current: {$currentRelayStatus}");
             }
-        } 
+        }
         // 5. JIKA TIDAK ADA MANUAL COMMAND, JALANKAN LOGIKA AUTO BERDASARKAN MODE
         else {
             // ===== SAFETY CHECK: SKIP AUTO LOGIC JIKA BELUM KALIBRASI =====
@@ -309,18 +315,20 @@ class MonitoringController extends Controller
             // === MODE 3: SCHEDULE (Jadwal Pagi & Sore) ===
             elseif ($setting->mode == 3) {
                 // Mode schedule: Siram sesuai jadwal jam_pagi dan jam_sore
-                // Durasi siram sesuai durasi_siram (dalam detik)
-                // CATATAN: Logika schedule lebih kompleks, butuh tracking waktu terakhir siram
-                //          Untuk saat ini, gunakan threshold sederhana sebagai fallback
+                // Durasi siram sesuai durasi_siram (dalam menit)
+                // Window: ±5 menit dari jam yang dijadwalkan
                 
-                $currentHour = (int)date('H');
-                $jamPagi = (int)date('H', strtotime($setting->jam_pagi));
-                $jamSore = (int)date('H', strtotime($setting->jam_sore));
+                $nowCarbon = Carbon::now();
+                $jamPagiCarbon = Carbon::createFromTimeString($setting->jam_pagi);
+                $jamSoreCarbon = Carbon::createFromTimeString($setting->jam_sore);
+                $withinPagi = abs($nowCarbon->diffInMinutes($jamPagiCarbon, false)) <= 5;
+                $withinSore = abs($nowCarbon->diffInMinutes($jamSoreCarbon, false)) <= 5;
                 
-                // Sederhana: Jika jam sekarang = jam pagi/sore DAN tanah < 50% -> siram
-                if (($currentHour == $jamPagi || $currentHour == $jamSore) && $soilMoisture < 50) {
+                // Siram jika dalam window jadwal DAN tanah < 50%
+                if (($withinPagi || $withinSore) && $soilMoisture < 50) {
                     $autoCommand = 1;
-                    Log::info("⏰ MODE 3 SCHEDULE: Time {$currentHour}:00, Soil {$soilMoisture}% -> Pump ON");
+                    $schedLabel = $withinPagi ? 'pagi' : 'sore';
+                    Log::info("⏰ MODE 3 SCHEDULE: Within {$schedLabel} window, Soil {$soilMoisture}% -> Pump ON");
                 } else {
                     $autoCommand = 0;
                     Log::info("⏰ MODE 3 SCHEDULE: Outside schedule or soil OK -> Pump OFF");
@@ -349,11 +357,18 @@ class MonitoringController extends Controller
 
     /**
      * Ambil data terbaru untuk dashboard
-     * Endpoint: GET /api/monitoring/latest
+     * Endpoint: GET /api/monitoring/latest?device_id=PICO_CABAI_01
      */
-    public function latest()
+    public function latest(Request $request)
     {
-        $latest = Monitoring::latest()->first();
+        $deviceId = $request->input('device_id');
+
+        $query = Monitoring::latest();
+        if ($deviceId) {
+            $query->where('device_id', $deviceId);
+        }
+
+        $latest = $query->first();
 
         if (!$latest) {
             return response()->json([
@@ -388,18 +403,24 @@ class MonitoringController extends Controller
     public function history(Request $request)
     {
         $limit = $request->input('limit', 50);
+        $deviceId = $request->input('device_id');
+        // Include device_id in cache key to prevent cross-device cache contamination
+        $cacheKey = 'history_' . ($deviceId ?? 'all') . '_' . $limit;
         
-        $history = Monitoring::latest()
-            ->take($limit)
-            ->get()
-            ->reverse()
-            ->values();
+        // Cache for 3 seconds to reduce database load
+        $history = cache()->remember($cacheKey, 3, function() use ($limit, $deviceId) {
+            $query = Monitoring::latest()->take($limit);
+            if ($deviceId) {
+                $query->where('device_id', $deviceId);
+            }
+            return $query->get()->reverse()->values();
+        });
 
         return response()->json([
             'success' => true,
             'count' => $history->count(),
             'data' => $history
-        ], 200);
+        ], 200)->header('Cache-Control', 'public, max-age=2');
     }
 
     /**
@@ -408,9 +429,21 @@ class MonitoringController extends Controller
      */
     public function cleanup(Request $request)
     {
-        $days = $request->input('days', 7);
+        $days = (int)$request->input('days', 7);
         
-        $deleted = Monitoring::where('created_at', '<', now()->subDays($days))->delete();
+        if ($days === 0) {
+            // Delete ALL monitoring data
+            $deleted = Monitoring::count();
+            Monitoring::query()->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menghapus semua data monitoring ({$deleted} record)",
+                'deleted_count' => $deleted
+            ], 200);
+        }
+
+        $deleted = Monitoring::where('created_at', '<', Carbon::now()->subDays($days))->delete();
 
         return response()->json([
             'success' => true,
@@ -426,51 +459,130 @@ class MonitoringController extends Controller
      */
     public function toggleRelay(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|boolean',
-            'device_id' => 'nullable|string',
-        ]);
+        try {
+            // Validasi input menggunakan Request class
+            $validated = $request->validate([
+                'status' => 'nullable|boolean',
+                'relay_status' => 'nullable|boolean',
+                'device_id' => 'nullable|string|max:100',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
+            // Support both field names: 'status' (legacy) and 'relay_status' (new)
+            $relayStatus = $validated['relay_status'] ?? $validated['status'] ?? null;
+            if ($relayStatus === null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Field status atau relay_status diperlukan',
+                ], 422);
+            }
 
-        // Ambil device_id (default ke PICO_CABAI_01)
-        $deviceId = $request->device_id ?? 'PICO_CABAI_01';
-        
-        // Set relay command di device_settings
-        $setting = \App\Models\DeviceSetting::where('device_id', $deviceId)->first();
-        
-        Log::info("🔧 toggleRelay called - Device: {$deviceId}, status: " . ($request->status ? 'ON' : 'OFF') . ", setting found: " . ($setting ? 'YES' : 'NO'));
-        
-        if ($setting) {
-            Log::info("📝 BEFORE UPDATE - relay_command: " . var_export($setting->relay_command, true));
+            $deviceId = $validated['device_id'] ?? 'PICO_CABAI_01';
             
-            $setting->update(['relay_command' => $request->status]);
+            // Log request
+            \App\Services\ApiLoggerService::logRequest($request, 'toggleRelay', [
+                'device_id' => $deviceId,
+                'status' => $relayStatus
+            ]);
+
+            // Check device exists
+            $device = \App\Models\Device::where('device_id', $deviceId)->first();
+            if (!$device) {
+                \App\Services\ApiLoggerService::logError(
+                    'toggleRelay',
+                    new \Exception("Device not found: {$deviceId}"),
+                    ['device_id' => $deviceId],
+                    404
+                );
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Device tidak ditemukan'
+                ], 404);
+            }
+
+            // Check device is online — check BOTH Device.status AND DeviceSetting.last_seen_at
+            // because the heartbeat from insert() only updates DeviceSetting, not Device.status.
+            $recentlySeen = \App\Models\DeviceSetting::where('device_id', $deviceId)
+                ->where('last_seen_at', '>=', Carbon::now()->subMinutes(2))
+                ->exists();
+
+            if (!$recentlySeen && $device->status !== 'online' && $device->status !== 'idle') {
+                \App\Services\ApiLoggerService::logError(
+                    'toggleRelay',
+                    new \Exception("Device offline: {$deviceId}"),
+                    ['device_id' => $deviceId, 'device_status' => $device->status],
+                    400
+                );
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Device sedang offline, tidak dapat mengontrol relay'
+                ], 400);
+            }
+
+            // Update relay command
+            $setting = \App\Models\DeviceSetting::where('device_id', $deviceId)->first();
             
-            // Re-fetch to verify
-            $setting->refresh();
-            Log::info("✅ AFTER UPDATE - relay_command: " . var_export($setting->relay_command, true));
-            
+            if (!$setting) {
+                \App\Services\ApiLoggerService::logError(
+                    'toggleRelay',
+                    new \Exception("DeviceSetting not found: {$deviceId}"),
+                    ['device_id' => $deviceId],
+                    404
+                );
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Konfigurasi device tidak ditemukan'
+                ], 404);
+            }
+
+            // Update relay command atomically: store as integer (1=ON, 0=OFF, null=no command)
+            // Use a DB transaction with pessimistic locking to prevent race condition
+            // from simultaneous toggle requests overwriting each other.
+            \Illuminate\Support\Facades\DB::transaction(function () use ($deviceId, $relayStatus) {
+                \App\Models\DeviceSetting::where('device_id', $deviceId)
+                    ->lockForUpdate()
+                    ->firstOrFail()
+                    ->update(['relay_command' => $relayStatus ? 1 : 0]);
+            });
             cache()->forget('device_setting_' . $deviceId);
+            
+            // Log device control action
+            \App\Services\ApiLoggerService::logDeviceControl(
+                'relay_toggle',
+                $device->id,
+                ['status' => $relayStatus, 'device_id' => $deviceId]
+            );
+            
+            \App\Services\ApiLoggerService::logSuccess('toggleRelay', [
+                'device_id' => $deviceId,
+                'relay_status' => $relayStatus
+            ]);
             
             return response()->json([
                 'success' => true,
-                'message' => 'Relay command sent',
-                'relay_command' => $request->status
+                'message' => 'Relay command berhasil dikirim',
+                'relay_command' => $relayStatus
             ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \App\Services\ApiLoggerService::logValidationError('toggleRelay', $e->errors());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            \App\Services\ApiLoggerService::logError('toggleRelay', $e);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengontrol relay'
+            ], 500);
         }
-        
-        Log::error("❌ toggleRelay FAILED - Device not found: {$deviceId}");
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Device not found'
-        ], 404);
     }
 
     /**
@@ -480,54 +592,55 @@ class MonitoringController extends Controller
     public function stats(Request $request)
     {
         $deviceId = $request->input('device_id');
+        $cacheKey = 'stats_' . ($deviceId ?? 'all');
         
-        // Query latest data (dengan atau tanpa filter device_id)
-        $query = Monitoring::latest();
-        if ($deviceId) {
-            $query->where('device_id', $deviceId);
-        }
-        $latest = $query->first();
-        
-        $count = Monitoring::count();
-        
-        // Hitung uptime (asumsi: waktu dari record pertama)
-        $firstRecord = Monitoring::oldest()->first();
-        $uptime = $firstRecord ? now()->diffInMinutes($firstRecord->created_at) : 0;
-        $uptimeHours = floor($uptime / 60);
-        $uptimeMinutes = $uptime % 60;
+        // Cache for 5 seconds to reduce database load
+        $statsData = cache()->remember($cacheKey, 5, function() use ($deviceId) {
+            // Query latest data (dengan atau tanpa filter device_id)
+            $query = Monitoring::latest();
+            if ($deviceId) {
+                $query->where('device_id', $deviceId);
+            }
+            $latest = $query->first();
+            
+            $count = Monitoring::count();
+            
+            // Hitung uptime (asumsi: waktu dari record pertama)
+            $firstRecord = Monitoring::oldest()->first();
+            $uptime = $firstRecord ? Carbon::now()->diffInMinutes($firstRecord->created_at) : 0;
+            $uptimeHours = floor($uptime / 60);
+            $uptimeMinutes = $uptime % 60;
 
-        // Average values (24 jam terakhir)
-        $avgQuery = Monitoring::where('created_at', '>', now()->subDay());
-        if ($deviceId) {
-            $avgQuery->where('device_id', $deviceId);
-        }
-        
-        $avgTemp = $avgQuery->whereNotNull('temperature')->avg('temperature');
+            // Average values (24 jam terakhir)
+            $avgQuery = Monitoring::where('created_at', '>', Carbon::now()->subDay());
+            if ($deviceId) {
+                $avgQuery->where('device_id', $deviceId);
+            }
+            
+            $avgTemp = $avgQuery->whereNotNull('temperature')->avg('temperature');
 
-        // Ambil info device dari settings jika ada
-        $deviceInfo = null;
-        if ($latest && $latest->device_id) {
-            $deviceInfo = \App\Models\DeviceSetting::where('device_id', $latest->device_id)->first();
-        }
+            // Ambil info device dari settings jika ada
+            $deviceInfo = null;
+            if ($latest && $latest->device_id) {
+                $deviceInfo = \App\Models\DeviceSetting::where('device_id', $latest->device_id)->first();
+            }
 
-        // Cek apakah device online (data < 30 detik)
-        $isOnline = $latest && $latest->updated_at->diffInSeconds(now()) < 30;
-        
-        // Jika device offline, set semua hardware_status menjadi false
-        $hardwareStatus = $latest->hardware_status ?? null;
-        if (!$isOnline && $hardwareStatus) {
-            $hardwareStatus = [
-                'dht22' => false,
-                'soil_sensor' => false,
-                'relay' => false,
-                'servo' => false,
-                'lcd' => false
-            ];
-        }
+            // Cek apakah device online (data < 30 detik)
+            $isOnline = $latest && $latest->updated_at->diffInSeconds(Carbon::now()) < 30;
+            
+            // Jika device offline, set semua hardware_status menjadi false
+            $hardwareStatus = $latest->hardware_status ?? null;
+            if (!$isOnline && $hardwareStatus) {
+                $hardwareStatus = [
+                    'dht22' => false,
+                    'soil_sensor' => false,
+                    'relay' => false,
+                    'servo' => false,
+                    'lcd' => false
+                ];
+            }
 
-        return response()->json([
-            'success' => true,
-            'data' => [
+            return [
                 'device_id' => $latest->device_id ?? null,
                 'device_name' => $latest->device_name ?? 'Smart Garden',
                 'plant_type' => $deviceInfo->plant_type ?? 'cabai',
@@ -543,7 +656,12 @@ class MonitoringController extends Controller
                 'total_records' => $count,
                 'avg_temperature_24h' => round($avgTemp ?? 0, 1),
                 'is_online' => $isOnline,
-            ]
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $statsData
         ], 200)->header('Cache-Control', 'no-cache, no-store, must-revalidate')
                  ->header('Pragma', 'no-cache')
                  ->header('Expires', '0');
@@ -559,15 +677,15 @@ class MonitoringController extends Controller
         
         // Cek apakah ada data terbaru dalam 30 detik terakhir
         $latestData = Monitoring::latest()->first();
-        $isDeviceOnline = $latestData && $latestData->updated_at->diffInSeconds(now()) < 30;
+        $isDeviceOnline = $latestData && $latestData->updated_at->diffInSeconds(Carbon::now()) < 30;
         
         // Jika device offline, tambahkan log warning di awal
         $offlineLog = null;
         if (!$isDeviceOnline && $latestData) {
             $offlineLog = [
                 'id' => 'offline',
-                'time' => now()->format('H:i:s'),
-                'date' => now()->format('Y-m-d'),
+                'time' => Carbon::now()->format('H:i:s'),
+                'date' => Carbon::now()->format('Y-m-d'),
                 'level' => 'ERROR',
                 'device' => $latestData->device_name ?? 'Pico W',
                 'message' => '🔴 PICO W OFFLINE - Tidak ada data dalam 30 detik terakhir',
@@ -753,8 +871,8 @@ class MonitoringController extends Controller
             ->get()
             ->map(function($item) {
                 // Status online berdasarkan updated_at dari tabel monitorings
-                $updatedAt = $item->updated_at ? \Carbon\Carbon::parse($item->updated_at) : null;
-                $item->is_online = $updatedAt ? $updatedAt->diffInSeconds(now()) < 30 : false;
+                $updatedAt = $item->updated_at ? Carbon::parse($item->updated_at) : null;
+                $item->is_online = $updatedAt ? $updatedAt->diffInSeconds(Carbon::now()) < 30 : false;
                 return $item;
             });
 
@@ -974,13 +1092,14 @@ class MonitoringController extends Controller
             'device_id' => $deviceId
         ];
         
-        // Cek apakah ada manual command (mode 0 atau relay_command tidak null)
+        // relay_command: null = no pending command, 1 = turn ON, 0 = turn OFF
+        // Cast to nullable integer (not boolean)
         if ($setting->relay_command !== null) {
             $commandValue = (int)$setting->relay_command;
             
             // Hanya kirim command jika berbeda dengan status sekarang
             if ($commandValue !== $currentRelayStatus) {
-                $response['relay_command'] = $setting->relay_command;
+                $response['relay_command'] = $commandValue;
                 Log::info("⚡ FAST CHECK - Command found: {$commandValue} for {$deviceId}");
             } else {
                 // Command sudah dijalankan - reset ke null

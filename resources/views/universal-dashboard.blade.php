@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -18,9 +18,27 @@
         .active-nav { background-color: #2563eb; color: white; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3); }
         .inactive-nav { color: #94a3b8; }
         .inactive-nav:hover { background-color: #1e293b; color: white; }
+        
+        /* Notification animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(20px); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        
+        /* Loading spinner */
+        .spinner { border: 3px solid #e2e8f0; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="text-slate-800">
+
+    <!-- Toast/Notification Container -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-3 max-w-md"></div>
 
     <div class="flex h-screen overflow-hidden">
         
@@ -75,7 +93,7 @@
             <div id="page-dashboard" class="page-content">
                 <div class="flex justify-between items-end mb-8">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900">🌿 Monitoring Tanaman Real-time</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">?? Monitoring Tanaman Real-time</h2>
                         <p class="text-slate-500 text-sm mt-1">Pantau kondisi sensor dan status perangkat secara langsung</p>
                     </div>
                     <div class="flex items-center gap-4">
@@ -97,7 +115,7 @@
                             <div class="p-3 bg-blue-50 rounded-xl text-blue-600"><i class="fa-solid fa-temperature-half text-xl"></i></div>
                         </div>
                         <p class="text-slate-500 text-sm font-medium">Sensor Suhu</p>
-                        <h3 class="text-3xl font-bold text-slate-800 mt-1" id="sensor-temp">--°C</h3>
+                        <h3 class="text-3xl font-bold text-slate-800 mt-1" id="sensor-temp">--�C</h3>
                         <p class="text-xs text-slate-400 mt-2" id="temp-status">Menunggu data...</p>
                     </div>
                     
@@ -125,7 +143,7 @@
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 card-hover">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-amber-50 rounded-xl text-amber-600"><i class="fa-solid fa-lightbulb text-xl"></i></div>
-                            <label class="relative inline-flex items-center cursor-pointer">
+                            <label class="relative inline-flex items-center cursor-pointer" for="toggleSwitch">
                                 <input type="checkbox" id="toggleSwitch" class="sr-only peer" onchange="toggleRelay()">
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                             </label>
@@ -159,7 +177,7 @@
                     <div class="mt-4 p-4 bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl border border-slate-200">
                         <div class="flex items-center gap-2 mb-3">
                             <i class="fa-solid fa-info-circle text-blue-600 text-lg"></i>
-                            <p class="text-sm font-bold text-slate-700">📊 Panduan Nilai ADC (12-bit: 0-4095) - Sensor Kelembaban Tanah</p>
+                            <p class="text-sm font-bold text-slate-700">?? Panduan Nilai ADC (12-bit: 0-4095) - Sensor Kelembaban Tanah</p>
                         </div>
                         
                         <div class="overflow-x-auto">
@@ -176,103 +194,103 @@
                                     <tr class="hover:bg-red-50 transition-colors">
                                         <td class="px-3 py-3 text-center">
                                             <span class="inline-block px-2 py-1 bg-red-100 text-red-700 font-bold rounded-full text-[11px]">
-                                                0 – 500
+                                                0 � 500
                                             </span>
                                         </td>
                                         <td class="px-3 py-3 text-center">
-                                            <span class="font-bold text-red-600">0% – 12%</span>
+                                            <span class="font-bold text-red-600">0% � 12%</span>
                                         </td>
                                         <td class="px-3 py-3 font-semibold text-red-700">
                                             <i class="fa-solid fa-triangle-exclamation text-red-500 mr-2"></i>
                                             Sangat Kering
                                         </td>
                                         <td class="px-3 py-3 text-slate-600">
-                                            <span class="font-bold text-red-600">🔴 HIDUPKAN</span> (Segera siram)
+                                            <span class="font-bold text-red-600">?? HIDUPKAN</span> (Segera siram)
                                         </td>
                                     </tr>
                                     <tr class="hover:bg-orange-50 transition-colors">
                                         <td class="px-3 py-3 text-center">
                                             <span class="inline-block px-2 py-1 bg-orange-100 text-orange-700 font-bold rounded-full text-[11px]">
-                                                501 – 1199
+                                                501 � 1199
                                             </span>
                                         </td>
                                         <td class="px-3 py-3 text-center">
-                                            <span class="font-bold text-orange-600">12% – 29%</span>
+                                            <span class="font-bold text-orange-600">12% � 29%</span>
                                         </td>
                                         <td class="px-3 py-3 font-semibold text-orange-700">
                                             <i class="fa-solid fa-fire text-orange-500 mr-2"></i>
                                             Kering
                                         </td>
                                         <td class="px-3 py-3 text-slate-600">
-                                            <span class="font-bold text-orange-600">🟠 HIDUPKAN</span> (Mulai menyiram)
+                                            <span class="font-bold text-orange-600">?? HIDUPKAN</span> (Mulai menyiram)
                                         </td>
                                     </tr>
                                     <tr class="hover:bg-yellow-50 transition-colors">
                                         <td class="px-3 py-3 text-center">
                                             <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-700 font-bold rounded-full text-[11px]">
-                                                1200 – 1800
+                                                1200 � 1800
                                             </span>
                                         </td>
                                         <td class="px-3 py-3 text-center">
-                                            <span class="font-bold text-yellow-600">29% – 44%</span>
+                                            <span class="font-bold text-yellow-600">29% � 44%</span>
                                         </td>
                                         <td class="px-3 py-3 font-semibold text-yellow-700">
                                             <i class="fa-solid fa-cloud text-yellow-500 mr-2"></i>
                                             Lembab (Awal)
                                         </td>
                                         <td class="px-3 py-3 text-slate-600">
-                                            <span class="font-bold text-green-600">⚫ MATIKAN</span> (Cukup air)
+                                            <span class="font-bold text-green-600">? MATIKAN</span> (Cukup air)
                                         </td>
                                     </tr>
                                     <tr class="hover:bg-green-50 transition-colors">
                                         <td class="px-3 py-3 text-center">
                                             <span class="inline-block px-2 py-1 bg-green-100 text-green-700 font-bold rounded-full text-[11px]">
-                                                1801 – 2500
+                                                1801 � 2500
                                             </span>
                                         </td>
                                         <td class="px-3 py-3 text-center">
-                                            <span class="font-bold text-green-600">44% – 61%</span>
+                                            <span class="font-bold text-green-600">44% � 61%</span>
                                         </td>
                                         <td class="px-3 py-3 font-semibold text-green-700">
                                             <i class="fa-solid fa-seedling text-green-500 mr-2"></i>
                                             Lembab (Ideal)
                                         </td>
                                         <td class="px-3 py-3 text-slate-600">
-                                            <span class="font-bold text-green-600">✅ MATIKAN</span> (Kondisi Terbaik)
+                                            <span class="font-bold text-green-600">? MATIKAN</span> (Kondisi Terbaik)
                                         </td>
                                     </tr>
                                     <tr class="hover:bg-cyan-50 transition-colors">
                                         <td class="px-3 py-3 text-center">
                                             <span class="inline-block px-2 py-1 bg-cyan-100 text-cyan-700 font-bold rounded-full text-[11px]">
-                                                2501 – 3000
+                                                2501 � 3000
                                             </span>
                                         </td>
                                         <td class="px-3 py-3 text-center">
-                                            <span class="font-bold text-cyan-600">61% – 73%</span>
+                                            <span class="font-bold text-cyan-600">61% � 73%</span>
                                         </td>
                                         <td class="px-3 py-3 font-semibold text-cyan-700">
                                             <i class="fa-solid fa-droplet text-cyan-500 mr-2"></i>
                                             Basah
                                         </td>
                                         <td class="px-3 py-3 text-slate-600">
-                                            <span class="font-bold text-slate-600">⚫ MATIKAN</span> (Jangan disiram)
+                                            <span class="font-bold text-slate-600">? MATIKAN</span> (Jangan disiram)
                                         </td>
                                     </tr>
                                     <tr class="hover:bg-blue-50 transition-colors">
                                         <td class="px-3 py-3 text-center">
                                             <span class="inline-block px-2 py-1 bg-blue-100 text-blue-700 font-bold rounded-full text-[11px]">
-                                                3001 – 4095
+                                                3001 � 4095
                                             </span>
                                         </td>
                                         <td class="px-3 py-3 text-center">
-                                            <span class="font-bold text-blue-600">73% – 100%</span>
+                                            <span class="font-bold text-blue-600">73% � 100%</span>
                                         </td>
                                         <td class="px-3 py-3 font-semibold text-blue-700">
                                             <i class="fa-solid fa-water text-blue-500 mr-2"></i>
                                             Sangat Basah
                                         </td>
                                         <td class="px-3 py-3 text-slate-600">
-                                            <span class="font-bold text-red-600">⛔ MATIKAN</span> (Risiko busuk akar)
+                                            <span class="font-bold text-red-600">? MATIKAN</span> (Risiko busuk akar)
                                         </td>
                                     </tr>
                                 </tbody>
@@ -310,7 +328,7 @@
             <div id="page-logs" class="page-content hidden-page">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900">📋 Riwayat Aktivitas & Log</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">?? Riwayat Aktivitas & Log</h2>
                         <p class="text-slate-500 text-sm mt-1">Pantau semua perubahan status relay, sensor, dan kondisi sistem</p>
                     </div>
                     <button class="text-sm text-blue-600 font-semibold hover:underline flex items-center gap-2" onclick="refreshLogs()">
@@ -345,7 +363,7 @@
             <div id="page-settings" class="page-content hidden-page">
                 <div class="flex justify-between items-end mb-8">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900">⚙️ Pengaturan Sistem</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">?? Pengaturan Sistem</h2>
                         <p class="text-slate-500 text-sm mt-1">Konfigurasi mode operasi dan strategi penyiraman</p>
                     </div>
                 </div>
@@ -368,7 +386,7 @@
                     <div class="p-6 space-y-6">
                         <!-- Nama Perangkat -->
                         <div class="space-y-2">
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Perangkat</label>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider" for="minimal-device-name">Nama Perangkat</label>
                             <input type="text" id="minimal-device-name" 
                                    class="w-full px-4 py-3 text-base font-medium border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors" 
                                    placeholder="Smart Garden #1">
@@ -376,11 +394,11 @@
                         
                         <!-- Mode Selector -->
                         <div class="space-y-3">
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Mode Operasi</label>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider" id="mode-operasi-label">Mode Operasi</label>
                             <div class="grid grid-cols-2 gap-3">
                                 <button onclick="setMinimalMode(2)" id="minimal-mode-2" 
                                         class="group relative py-4 px-4 rounded-xl text-sm font-semibold transition-all border-2 border-slate-200 text-slate-600 hover:border-blue-400 bg-white">
-                                    <div class="text-2xl mb-1">🤖</div>
+                                    <div class="text-2xl mb-1">??</div>
                                     <div>Fuzzy AI</div>
                                     <div class="text-[10px] text-slate-400 font-normal mt-1">Threshold 35-45%</div>
                                 </button>
@@ -475,7 +493,7 @@
             <!-- Modal Header -->
             <div class="flex justify-between items-center p-6 border-b border-slate-200 bg-gradient-to-r from-red-500 to-red-600">
                 <div>
-                    <h3 class="text-xl font-bold text-white">🎮 Pilih Metode Perawatan Tanaman</h3>
+                    <h3 class="text-xl font-bold text-white">?? Pilih Metode Perawatan Tanaman</h3>
                     <p class="text-sm text-red-100 mt-1">Pilih strategi yang paling sesuai dengan kebutuhan Anda</p>
                 </div>
                 <button onclick="closeSmartConfigModal()" class="text-white hover:text-red-100">
@@ -487,7 +505,7 @@
             <div class="p-6 bg-slate-50">
                 <!-- Device Selection -->
                 <div class="mb-6 bg-white p-4 rounded-xl shadow-sm">
-                    <label class="block text-sm font-bold text-slate-700 mb-3">📱 Pilih Perangkat:</label>
+                    <label class="block text-sm font-bold text-slate-700 mb-3" for="config-device-id">?? Pilih Perangkat:</label>
                     <select id="config-device-id" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-red-500 font-medium">
                         <option value="">Loading devices...</option>
                     </select>
@@ -507,27 +525,27 @@
                     <!-- Mode 2: AI Fuzzy -->
                     <div id="card-mode-2" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-blue-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(2)">
                         <div class="text-center">
-                            <div class="text-6xl mb-3">🤖</div>
+                            <div class="text-6xl mb-3">??</div>
                             <h5 class="text-lg font-bold text-slate-800 mb-2">Mode AI (Fuzzy)</h5>
                             <p class="text-sm text-slate-600 mb-3">Pompa menyala otomatis saat kelembapan < 35-45% (kering), dan berhenti saat kelembapan kembali normal.</p>
-                            <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">⭐ Paling Efisien</span>
+                            <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">? Paling Efisien</span>
                         </div>
                     </div>
 
                     <!-- Mode 4: Manual -->
                     <div id="card-mode-4" class="mode-card bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-slate-500 cursor-pointer transition-all p-6" onclick="selectSmartMode(4)">
                         <div class="text-center">
-                            <div class="text-6xl mb-3">�️</div>
+                            <div class="text-6xl mb-3">??</div>
                             <h5 class="text-lg font-bold text-slate-800 mb-2">Mode Manual</h5>
                             <p class="text-sm text-slate-600 mb-3">Kendali penuh dengan Threshold + Jadwal. Atur kapan dan bagaimana pompa bekerja.</p>
-                            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">🎛️ Advanced</span>
+                            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">⚙️ Advanced</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Detail Settings Area -->
                 <div id="detail-settings" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hidden">
-                    <h6 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-200">⚙️ Konfigurasi Detail</h6>
+                    <h6 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-200">?? Konfigurasi Detail</h6>
                     
                     <input type="hidden" id="selected-mode" value="1">
                     
@@ -551,7 +569,7 @@
                             <div class="flex items-start gap-3">
                                 <i class="fa-solid fa-calendar-week text-purple-600 text-xl mt-0.5"></i>
                                 <div>
-                                    <p class="text-sm font-bold text-purple-800 mb-1">📅 Sistem Penjadwalan Mingguan (Weekly Loop)</p>
+                                    <p class="text-sm font-bold text-purple-800 mb-1">?? Sistem Penjadwalan Mingguan (Weekly Loop)</p>
                                     <p class="text-xs text-purple-700">
                                         Pilih hari aktif dan atur threshold + jam penyiraman per hari. Sistem akan berjalan otomatis sesuai siklus mingguan yang tersimpan.
                                     </p>
@@ -561,10 +579,7 @@
 
                         <!-- Day Selector -->
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-3">
-                                <i class="fa-solid fa-calendar-days mr-2"></i>
-                                Pilih Hari Aktif untuk Dikonfigurasi:
-                            </label>
+                            <div class="block text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-calendar-days mr-2"></i>Pilih Hari Aktif untuk Dikonfigurasi:</div>
                             <div class="grid grid-cols-7 gap-2">
                                 <button type="button" onclick="selectDay('senin')" id="btn-day-senin" 
                                         class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
@@ -627,8 +642,8 @@
                                     <i class="fa-solid fa-droplet"></i> Threshold Kelembapan
                                 </h6>
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-3">
-                                        � Batas Kering (Pompa ON):
+                                    <label class="block text-sm font-medium text-slate-700 mb-3" for="range-day-on">
+                                        ? Batas Kering (Pompa ON):
                                     </label>
                                     <div class="flex items-center gap-4">
                                         <input type="range" id="range-day-on" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="29" oninput="updateDayThresholdOnDisplay()">
@@ -639,8 +654,8 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-3">
-                                        💧 Batas Basah (Pompa OFF):
+                                    <label class="block text-sm font-medium text-slate-700 mb-3" for="range-day-off">
+                                        ?? Batas Basah (Pompa OFF):
                                     </label>
                                     <div class="flex items-center gap-4">
                                         <input type="range" id="range-day-off" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="61" oninput="updateDayThresholdOffDisplay()">
@@ -659,11 +674,11 @@
                                 </h6>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-500 mb-2">⏰ Jam Pagi:</label>
+                                        <label class="block text-xs font-medium text-slate-500 mb-2" for="time-day-pagi">? Jam Pagi:</label>
                                         <input type="time" id="time-day-pagi" class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none font-medium" value="07:00">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-500 mb-2">🌅 Jam Sore:</label>
+                                        <label class="block text-xs font-medium text-slate-500 mb-2" for="time-day-sore">?? Jam Sore:</label>
                                         <input type="time" id="time-day-sore" class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none font-medium" value="17:00">
                                     </div>
                                 </div>
@@ -698,7 +713,7 @@
                         <i class="fa-solid fa-wrench text-xl"></i>
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-800 mb-1">🔧 Kalibrasi Sensor (Teknisi)</h4>
+                        <h4 class="font-bold text-slate-800 mb-1">?? Kalibrasi Sensor (Teknisi)</h4>
                         <p class="text-sm text-slate-600">
                             Sesuaikan nilai ADC sensor untuk akurasi optimal. Perubahan ini akan otomatis dikirim ke Pico W tanpa upload ulang code.
                         </p>
@@ -707,7 +722,7 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                        <label class="block text-sm font-medium text-slate-700 mb-2" for="input-adc-min">
                             <i class="fa-solid fa-sun text-amber-500 mr-1"></i>
                             Nilai ADC Kering (Udara):
                         </label>
@@ -721,7 +736,7 @@
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                        <label class="block text-sm font-medium text-slate-700 mb-2" for="input-adc-max">
                             <i class="fa-solid fa-droplet text-blue-500 mr-1"></i>
                             Nilai ADC Basah (Air):
                         </label>
@@ -804,7 +819,7 @@
                 labels: [],
                 datasets: [
                     {
-                        label: 'Suhu (°C)',
+                        label: 'Suhu (�C)',
                         data: [],
                         borderColor: '#3b82f6',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -843,11 +858,11 @@
                             afterLabel: function(context) {
                                 if (context.datasetIndex === 1) {
                                     const rawAdc = context.parsed.y;
-                                    if (rawAdc > 3500) return '🌵 Sangat Kering';
-                                    if (rawAdc > 3000) return '⚠️ Kering';
-                                    if (rawAdc > 2000) return '💧 Lembab';
-                                    if (rawAdc > 1000) return '💦 Basah';
-                                    return '🌊 Sangat Basah';
+                                    if (rawAdc > 3500) return '?? Sangat Kering';
+                                    if (rawAdc > 3000) return '?? Kering';
+                                    if (rawAdc > 2000) return '?? Lembab';
+                                    if (rawAdc > 1000) return '?? Basah';
+                                    return '?? Sangat Basah';
                                 }
                                 return '';
                             }
@@ -862,7 +877,7 @@
                         grid: { borderDash: [5, 5], color: '#f1f5f9' },
                         title: {
                             display: true,
-                            text: 'Suhu (°C)',
+                            text: 'Suhu (�C)',
                             color: '#3b82f6',
                             font: { size: 12, weight: 'bold' }
                         },
@@ -892,6 +907,67 @@
             }
         });
 
+        // --- HELPER FUNCTIONS ---
+        /**
+         * Show toast/notification message
+         * @param {string} message - Message to display
+         * @param {string} type - 'success', 'error', 'warning', 'info'
+         * @param {number} duration - Auto-close duration in ms (0 = no auto-close)
+         */
+        function showNotification(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('notification-container');
+            
+            // Color scheme
+            const typeConfig = {
+                'success': { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: 'fa-check-circle', textColor: 'text-green-600' },
+                'error': { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: 'fa-exclamation-circle', textColor: 'text-red-600' },
+                'warning': { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', icon: 'fa-warning', textColor: 'text-yellow-600' },
+                'info': { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', icon: 'fa-info-circle', textColor: 'text-blue-600' }
+            };
+            
+            const config = typeConfig[type] || typeConfig['info'];
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `${config.bg} ${config.border} border rounded-lg p-4 shadow-lg flex items-center gap-3 animate-fade-in`;
+            notification.innerHTML = `
+                <i class="fa-solid ${config.icon} ${config.textColor} text-lg"></i>
+                <div class="flex-1">
+                    <p class="${config.text} font-medium text-sm">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="${config.text} hover:opacity-70">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Auto-close after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.style.animation = 'fadeOut 0.3s ease-out forwards';
+                    setTimeout(() => notification.remove(), 300);
+                }, duration);
+            }
+        }
+
+        /**
+         * Safe DOM element text update dengan null check
+         * Mencegah "Cannot set properties of null" error
+         */
+        function safeSetText(elementId, text) {
+            const el = document.getElementById(elementId);
+            if (el) el.textContent = text;
+        }
+        
+        /**
+         * Safe DOM element class update dengan null check
+         */
+        function safeSetClass(elementId, className) {
+            const el = document.getElementById(elementId);
+            if (el) el.className = className;
+        }
+
         // --- API FUNCTIONS ---
         async function fetchStats() {
             try {
@@ -909,13 +985,45 @@
                     const devicesResponse = await syncAndUpdateConnectionStatus(null);
                     const isOnline = devicesResponse;
                     
-                    // Jika offline, tampilkan data sebagai tidak tersedia
+                    // Jika offline, bersihkan SEMUA data tanpa exception
                     if (!isOnline) {
-                        document.getElementById('sensor-temp').textContent = '--°C';
-                        document.getElementById('sensor-soil').textContent = '--%';
-                        document.getElementById('relay-status').textContent = 'OFF';
-                        document.getElementById('toggleSwitch').checked = false;
-                        document.getElementById('toggleSwitch').disabled = true;
+                        console.log('[OFFLINE] Device offline - clearing all data');
+                        
+                        // ===== BERSIHKAN SEMUA SENSOR DATA =====
+                        safeSetText('sensor-temp', '--°C');
+                        safeSetText('sensor-soil', '--%');
+                        safeSetText('temp-status', 'Device Offline');
+                        safeSetClass('temp-status', 'text-xs text-red-600 mt-2 font-semibold');
+                        
+                        // ===== BERSIHKAN SOIL CONDITION =====
+                        safeSetText('soil-condition', '--');
+                        safeSetClass('soil-condition', 'text-2xl font-bold text-slate-400 mt-1');
+                        safeSetText('soil-adc-value', 'ADC: --');
+                        safeSetClass('soil-adc-value', 'text-xs text-slate-400 mt-2');
+                        
+                        // ===== BERSIHKAN RELAY STATUS - TIDAK TAMPILKAN APAPUN =====
+                        safeSetText('relay-status', '--');
+                        const relayStatusEl = document.getElementById('relay-status');
+                        if (relayStatusEl) {
+                            relayStatusEl.className = 'text-2xl font-bold text-slate-400';
+                        }
+                        
+                        // ===== DISABLE RELAY TOGGLE =====
+                        const toggleSwitch = document.getElementById('toggleSwitch');
+                        if (toggleSwitch) {
+                            toggleSwitch.checked = false;
+                            toggleSwitch.disabled = true;
+                        }
+                        
+                        // ===== BERSIHKAN CHART =====
+                        if (mainChart) {
+                            mainChart.data.labels = [];
+                            mainChart.data.datasets[0].data = [];
+                            mainChart.data.datasets[1].data = [];
+                            mainChart.update();
+                        }
+                        
+                        console.log('[OFFLINE] All dashboard data cleared');
                     } else {
                         // Online: tampilkan data normal
                         const temp = data.temperature;
@@ -925,20 +1033,20 @@
                         // Update Suhu
                         document.getElementById('sensor-temp').textContent = 
                             temp !== null && temp !== undefined 
-                                ? `${temp.toFixed(1)}°C` 
-                                : '--°C';
+                                ? `${temp.toFixed(1)}�C` 
+                                : '--�C';
                         
                         // Update status suhu
                         const tempStatusEl = document.getElementById('temp-status');
                         if (temp !== null && temp !== undefined) {
                             if (temp < 20) {
-                                tempStatusEl.textContent = '❄️ Dingin';
+                                tempStatusEl.textContent = '?? Dingin';
                                 tempStatusEl.className = 'text-xs text-blue-600 mt-2 font-semibold';
                             } else if (temp >= 20 && temp <= 32) {
-                                tempStatusEl.textContent = '✅ Normal';
+                                tempStatusEl.textContent = '? Normal';
                                 tempStatusEl.className = 'text-xs text-green-600 mt-2 font-semibold';
                             } else {
-                                tempStatusEl.textContent = '🔥 Panas';
+                                tempStatusEl.textContent = '?? Panas';
                                 tempStatusEl.className = 'text-xs text-red-600 mt-2 font-semibold';
                             }
                         } else {
@@ -961,27 +1069,27 @@
                             
                             if (rawAdc >= 0 && rawAdc <= 500) {
                                 // Kering (Di udara)
-                                soilConditionEl.textContent = '🌵 Kering (Udara)';
+                                soilConditionEl.textContent = '?? Kering (Udara)';
                                 soilConditionEl.className = 'text-2xl font-bold text-slate-600 mt-1';
                                 soilAdcEl.className = 'text-xs text-slate-500 mt-2 font-semibold';
                             } else if (rawAdc >= 1200 && rawAdc <= 2500) {
                                 // Lembab (Ideal)
-                                soilConditionEl.textContent = '✅ Lembab (Ideal)';
+                                soilConditionEl.textContent = '? Lembab (Ideal)';
                                 soilConditionEl.className = 'text-2xl font-bold text-green-600 mt-1';
                                 soilAdcEl.className = 'text-xs text-green-500 mt-2 font-semibold';
                             } else if (rawAdc > 3000) {
                                 // Basah (Air)
-                                soilConditionEl.textContent = '💧 Basah (Air)';
+                                soilConditionEl.textContent = '?? Basah (Air)';
                                 soilConditionEl.className = 'text-2xl font-bold text-blue-600 mt-1';
                                 soilAdcEl.className = 'text-xs text-blue-500 mt-2 font-semibold';
                             } else if (rawAdc > 500 && rawAdc < 1200) {
                                 // Transisi: Agak Kering
-                                soilConditionEl.textContent = '⚠️ Agak Kering';
+                                soilConditionEl.textContent = '?? Agak Kering';
                                 soilConditionEl.className = 'text-2xl font-bold text-orange-600 mt-1';
                                 soilAdcEl.className = 'text-xs text-orange-500 mt-2 font-semibold';
                             } else {
                                 // Transisi: Cukup Basah (2500-3000)
-                                soilConditionEl.textContent = '💦 Cukup Basah';
+                                soilConditionEl.textContent = '?? Cukup Basah';
                                 soilConditionEl.className = 'text-2xl font-bold text-cyan-600 mt-1';
                                 soilAdcEl.className = 'text-xs text-cyan-500 mt-2 font-semibold';
                             }
@@ -992,29 +1100,41 @@
                             soilAdcEl.className = 'text-xs text-slate-400 mt-2';
                         }
                         
-                        // Update Status Relay
+                        // Update Status Relay dengan styling yang tepat
                         document.getElementById('relay-status').textContent = 
                             data.relay_status ? 'ON' : 'OFF';
+                        
+                        // Update relay status color
+                        const relayStatusEl = document.getElementById('relay-status');
+                        if (data.relay_status) {
+                            // ON - amber
+                            relayStatusEl.classList.remove('text-slate-400', 'text-slate-800');
+                            relayStatusEl.classList.add('text-amber-500');
+                        } else {
+                            // OFF - slate
+                            relayStatusEl.classList.remove('text-amber-500');
+                            relayStatusEl.classList.add('text-slate-800');
+                        }
                         
                         // Update toggle switch dan enable control
                         document.getElementById('toggleSwitch').checked = data.relay_status;
                         document.getElementById('toggleSwitch').disabled = false;
                         
-                        // Update chart
-                        mainChart.data.labels = data.map(item => {
-                            const date = new Date(item.created_at);
-                            return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                        });
-                        mainChart.data.datasets[0].data = data.map(item => item.temperature || 0);
-                        mainChart.data.datasets[1].data = data.map(item => item.raw_adc || 0);
-                        mainChart.update();
+                        // Update chart dengan data history (bukan stats data tunggal)
+                        // Stats hanya memberi data sensor terbaru, chart butuh historical data
+                        fetchHistory();
                     }
                     
-                    // Update device info card (Dashboard) - selalu tampilkan
-                    document.getElementById('device-name-display').textContent = 
-                        data.device_name || 'Smart Garden Device';
-                    document.getElementById('plant-type-display').textContent = 
-                        data.plant_type || '-';
+                    // Update device info card (Dashboard) - selalu tampilkan dengan null check
+                    const deviceNameEl = document.getElementById('device-name-display');
+                    if (deviceNameEl) {
+                        deviceNameEl.textContent = data.device_name || 'Smart Garden Device';
+                    }
+                    
+                    const plantTypeEl = document.getElementById('plant-type-display');
+                    if (plantTypeEl) {
+                        plantTypeEl.textContent = data.plant_type || '-';
+                    }
                     
                     // Mode mapping
                     const modeNames = {
@@ -1046,27 +1166,58 @@
                 }
                 
             } catch (error) {
+                console.error('[STATS] Error fetching stats:', error);
+                const errorMsg = error.response?.data?.message || 'Gagal mengambil data stats';
+                showNotification('✗ ' + errorMsg, 'error', 5000);
                 updateConnectionStatus(false);
             }
         }
 
         async function fetchHistory() {
             try {
-                const response = await axios.get(`${API_BASE_URL}/history?limit=20`);
-                if (response.data.success && response.data.data.length > 0) {
+                const response = await axios.get(`${API_BASE_URL}/history?limit=20`, {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (response.data && response.data.success && response.data.data && response.data.data.length > 0) {
                     const data = response.data.data;
                     
-                    // Update chart
-                    mainChart.data.labels = data.map(item => {
-                        const date = new Date(item.created_at);
-                        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    // Validasi data sebelum update chart
+                    const validLabels = [];
+                    const validTemps = [];
+                    const validAdcs = [];
+                    
+                    data.forEach(item => {
+                        try {
+                            const date = new Date(item.created_at);
+                            if (!isNaN(date.getTime())) {
+                                validLabels.push(date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
+                                validTemps.push(item.temperature || 0);
+                                validAdcs.push(item.raw_adc || 0);
+                            }
+                        } catch (e) {
+                            console.warn('Invalid data item:', item, e);
+                        }
                     });
-                    mainChart.data.datasets[0].data = data.map(item => item.temperature || 0);
-                    mainChart.data.datasets[1].data = data.map(item => item.raw_adc || 0);
-                    mainChart.update();
+                    
+                    // Update chart hanya jika ada data valid
+                    if (validLabels.length > 0 && mainChart) {
+                        mainChart.data.labels = validLabels;
+                        mainChart.data.datasets[0].data = validTemps;
+                        mainChart.data.datasets[1].data = validAdcs;
+                        mainChart.update();
+                        console.log('[CHART] Updated with', validLabels.length, 'data points');
+                    }
+                } else {
+                    console.log('[CHART] No history data available');
                 }
             } catch (error) {
-                // Error fetching history - chart will remain empty
+                console.error('[CHART] Error fetching history:', error);
+                showNotification('⚠️ Gagal memuat data grafik', 'warning', 3000);
+                // Chart tetap menampilkan data terakhir atau kosong jika belum ada
             }
         }
 
@@ -1113,11 +1264,11 @@
                                 </td>
                                 <td class="p-4">
                                     <div class="flex flex-col gap-1 text-xs">
-                                        ${log.soil_moisture ? `<span class="text-blue-600">💧 ${log.soil_moisture}%</span>` : ''}
-                                        ${log.temperature ? `<span class="text-orange-600">🌡️ ${log.temperature}°C</span>` : ''}
+                                        ${log.soil_moisture ? `<span class="text-blue-600">?? ${log.soil_moisture}%</span>` : ''}
+                                        ${log.temperature ? `<span class="text-orange-600">??? ${log.temperature}�C</span>` : ''}
                                         ${log.relay_status !== undefined ? 
                                             `<span class="${log.relay_status ? 'text-green-600' : 'text-slate-400'}">
-                                                ${log.relay_status ? '🟢 Relay ON' : '⚫ Relay OFF'}
+                                                ${log.relay_status ? '?? Relay ON' : '? Relay OFF'}
                                             </span>` : ''}
                                     </div>
                                 </td>
@@ -1232,7 +1383,7 @@
                                 </div>
                                 
                                 <div class="mt-4 pt-4 border-t border-slate-100">
-                                    <p class="text-xs opacity-75 mb-2">🔌 Perangkat Terdeteksi Otomatis:</p>
+                                    <p class="text-xs opacity-75 mb-2">?? Perangkat Terdeteksi Otomatis:</p>
                                     <div class="flex flex-wrap gap-2">${hardwareHtml}</div>
                                 </div>
                                 <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
@@ -1289,7 +1440,7 @@
                     const deviceStatus = firstDevice.status || 'offline';
                     const isOnline = deviceStatus === 'online' || deviceStatus === 'idle';
                     
-                    console.log(`[SYNC] Device status from /api/devices: ${deviceStatus} → isOnline: ${isOnline}`);
+                    console.log(`[SYNC] Device status from /api/devices: ${deviceStatus} ? isOnline: ${isOnline}`);
                     updateConnectionStatus(isOnline);
                     return isOnline;  // RETURN STATUS
                 } else {
@@ -1338,10 +1489,14 @@
             
             // Cek apakah device offline
             if (toggleSwitch.disabled) {
-                alert('⚠️ Tidak dapat mengontrol pompa! Device sedang OFFLINE.\n\nSilakan cek koneksi Pico W dan tunggu hingga status Online.');
+                showNotification('⚠️ Tidak dapat mengontrol pompa! Device sedang OFFLINE.', 'warning', 5000);
                 toggleSwitch.checked = false;
                 return;
             }
+            
+            // Disable switch during API call
+            const previousState = isChecked;
+            toggleSwitch.disabled = true;
             
             try {
                 const response = await axios.post(`${API_BASE_URL}/relay/toggle`, {
@@ -1353,16 +1508,22 @@
                     if (isChecked) {
                         document.getElementById('relay-status').classList.add('text-amber-500');
                         document.getElementById('relay-status').classList.remove('text-slate-800');
+                        showNotification('✓ Pompa berhasil diaktifkan', 'success', 5000);
                     } else {
                         document.getElementById('relay-status').classList.remove('text-amber-500');
                         document.getElementById('relay-status').classList.add('text-slate-800');
+                        showNotification('✓ Pompa berhasil dimatikan', 'success', 5000);
                     }
                 }
             } catch (error) {
                 console.error('Error toggling relay:', error);
-                alert('❌ Gagal mengontrol pompa. Pastikan device terhubung.');
+                const errorMsg = error.response?.data?.message || 'Gagal mengontrol pompa. Pastikan device terhubung.';
+                showNotification('✗ ' + errorMsg, 'error', 5000);
                 // Revert switch on error
-                toggleSwitch.checked = !isChecked;
+                toggleSwitch.checked = previousState;
+            } finally {
+                // Re-enable switch
+                toggleSwitch.disabled = false;
             }
         }
 
@@ -1481,7 +1642,7 @@
                 const headerP = header.querySelector('p');
                 
                 if (preSelectMode === 4) {
-                    headerH3.textContent = '⚙️ Konfigurasi Mode Manual - Weekly Loop System';
+                    headerH3.textContent = '?? Konfigurasi Mode Manual - Weekly Loop System';
                     headerP.textContent = 'Atur penjadwalan mingguan dengan threshold dan jam penyiraman per hari';
                 }
             } else {
@@ -1490,7 +1651,7 @@
                 const header = document.querySelector('#smartConfigModal .flex.justify-between');
                 const headerH3 = header.querySelector('h3');
                 const headerP = header.querySelector('p');
-                headerH3.textContent = '🎮 Pilih Metode Perawatan Tanaman';
+                headerH3.textContent = '?? Pilih Metode Perawatan Tanaman';
                 headerP.textContent = 'Pilih strategi yang paling sesuai dengan kebutuhan Anda';
             }
             
@@ -1602,39 +1763,39 @@
         function getStatusByPercentage(percentage) {
             if (percentage >= 0 && percentage <= 12) {
                 return {
-                    text: '🔴 Sangat Kering - HIDUPKAN Pompa',
+                    text: '?? Sangat Kering - HIDUPKAN Pompa',
                     class: 'text-red-600',
-                    recommendation: '💡 Segera siram! Tanaman kekurangan air.'
+                    recommendation: '?? Segera siram! Tanaman kekurangan air.'
                 };
             } else if (percentage >= 12 && percentage <= 29) {
                 return {
-                    text: '🟠 Kering - HIDUPKAN Pompa',
+                    text: '?? Kering - HIDUPKAN Pompa',
                     class: 'text-orange-600',
-                    recommendation: '💡 Mulai menyiram untuk mencegah stress tanaman.'
+                    recommendation: '?? Mulai menyiram untuk mencegah stress tanaman.'
                 };
             } else if (percentage >= 29 && percentage <= 44) {
                 return {
-                    text: '🟡 Lembab Awal - MATIKAN Pompa',
+                    text: '?? Lembab Awal - MATIKAN Pompa',
                     class: 'text-yellow-600',
-                    recommendation: '✅ Cukup air, tidak perlu menyiram.'
+                    recommendation: '? Cukup air, tidak perlu menyiram.'
                 };
             } else if (percentage >= 44 && percentage <= 61) {
                 return {
-                    text: '✅ Lembab Ideal - MATIKAN Pompa',
+                    text: '? Lembab Ideal - MATIKAN Pompa',
                     class: 'text-green-600',
-                    recommendation: '✅ Kondisi Terbaik! Pertahankan kelembapan ini.'
+                    recommendation: '? Kondisi Terbaik! Pertahankan kelembapan ini.'
                 };
             } else if (percentage >= 61 && percentage <= 73) {
                 return {
-                    text: '💧 Basah - MATIKAN Pompa',
+                    text: '?? Basah - MATIKAN Pompa',
                     class: 'text-cyan-600',
-                    recommendation: '⚠️ Jangan disiram, sudah terlalu basah.'
+                    recommendation: '?? Jangan disiram, sudah terlalu basah.'
                 };
             } else {
                 return {
-                    text: '⛔ Sangat Basah - MATIKAN Pompa',
+                    text: '? Sangat Basah - MATIKAN Pompa',
                     class: 'text-blue-700',
-                    recommendation: '⛔ Risiko busuk akar! Stop penyiraman.'
+                    recommendation: '? Risiko busuk akar! Stop penyiraman.'
                 };
             }
         }
@@ -1780,7 +1941,7 @@
             
             // Validation
             if (weeklyConfig[currentSelectedDay].threshold_off <= weeklyConfig[currentSelectedDay].threshold_on) {
-                alert('⚠️ Batas Basah (OFF) harus lebih tinggi dari Batas Kering (ON)!');
+                alert('?? Batas Basah (OFF) harus lebih tinggi dari Batas Kering (ON)!');
                 return;
             }
             
@@ -1788,7 +1949,7 @@
             updateDayMarkers();
             updateWeeklySummary();
             
-            alert(`✅ Konfigurasi ${dayNames[currentSelectedDay]} berhasil disimpan!`);
+            alert(`? Konfigurasi ${dayNames[currentSelectedDay]} berhasil disimpan!`);
         }
         
         // Update visual markers (checkmarks) on day buttons
@@ -1805,10 +1966,10 @@
                         btn.classList.remove('border-slate-200');
                     }
                     
-                    // Add checkmark indicator
-                    const dayLabel = btn.querySelector('.text-[10px]');
-                    if (!dayLabel.innerHTML.includes('✓')) {
-                        dayLabel.innerHTML = '✓ ' + dayLabel.textContent.replace('✓ ', '');
+                    // Add checkmark indicator - use text-xs instead of text-[10px]
+                    const dayLabel = btn.querySelector('p');
+                    if (dayLabel && !dayLabel.innerHTML.includes('?')) {
+                        dayLabel.innerHTML = '? ' + dayLabel.textContent.replace('? ', '');
                         dayLabel.classList.add('text-blue-700', 'font-bold');
                     }
                 } else {
@@ -1817,9 +1978,11 @@
                         btn.classList.remove('bg-blue-100', 'border-blue-400');
                         btn.classList.add('border-slate-200');
                     }
-                    const dayLabel = btn.querySelector('.text-[10px]');
-                    dayLabel.innerHTML = dayLabel.textContent.replace('✓ ', '');
-                    dayLabel.classList.remove('text-blue-700', 'font-bold');
+                    const dayLabel = btn.querySelector('p');
+                    if (dayLabel) {
+                        dayLabel.innerHTML = dayLabel.textContent.replace('? ', '');
+                        dayLabel.classList.remove('text-blue-700', 'font-bold');
+                    }
                 }
             });
         }
@@ -1906,7 +2069,7 @@
             console.log('Saving config - Device ID:', deviceId, 'Mode:', mode);
             
             if (!deviceId) {
-                alert('⚠️ Silakan pilih perangkat terlebih dahulu!');
+                alert('?? Silakan pilih perangkat terlebih dahulu!');
                 return;
             }
             
@@ -1921,7 +2084,7 @@
             
             // Validation: ADC Min must be greater than ADC Max
             if (adcMin <= adcMax) {
-                alert('⚠️ Nilai ADC Kering harus lebih besar dari ADC Basah!\n\nContoh: Kering=4095, Basah=1500');
+                alert('?? Nilai ADC Kering harus lebih besar dari ADC Basah!\n\nContoh: Kering=4095, Basah=1500');
                 return;
             }
             
@@ -1937,7 +2100,7 @@
                 const activeDays = Object.entries(weeklyConfig).filter(([day, config]) => config.active);
                 
                 if (activeDays.length === 0) {
-                    alert('⚠️ Silakan aktifkan minimal 1 hari untuk Mode Manual!');
+                    alert('?? Silakan aktifkan minimal 1 hari untuk Mode Manual!');
                     return;
                 }
                 
@@ -1954,11 +2117,11 @@
                 if (response.data.success) {
                     // Show success message with mode name
                     const modeNames = {
-                        2: '🤖 Mode AI (Fuzzy)',
-                        4: '🛠️ Mode Manual'
+                        2: '?? Mode AI (Fuzzy)',
+                        4: '??? Mode Manual'
                     };
                     
-                    alert(`✅ Berhasil! ${modeNames[mode]} + Kalibrasi ADC telah diterapkan.\n\n🔄 Pico W akan update konfigurasi dalam 10 detik.\n📊 ADC Range: ${adcMin} (kering) → ${adcMax} (basah)`);
+                    alert(`? Berhasil! ${modeNames[mode]} + Kalibrasi ADC telah diterapkan.\n\n?? Pico W akan update konfigurasi dalam 10 detik.\n?? ADC Range: ${adcMin} (kering) ? ${adcMax} (basah)`);
                     
                     // Close modal
                     closeSmartConfigModal();
@@ -1971,12 +2134,12 @@
                     // Refresh stats
                     fetchStats();
                 } else {
-                    alert('❌ Gagal menyimpan pengaturan: ' + (response.data.message || 'Unknown error'));
+                    alert('? Gagal menyimpan pengaturan: ' + (response.data.message || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('Error saving smart configuration:', error);
                 console.error('Error response:', error.response);
-                alert('❌ Error: ' + (error.response?.data?.message || error.message || 'Network error'));
+                alert('? Error: ' + (error.response?.data?.message || error.message || 'Network error'));
             }
         }
 
@@ -2065,8 +2228,8 @@
             
             // Update mode display
             const modeNames = {
-                2: '🤖 Fuzzy Logic AI',
-                4: '🛠️ Manual Control'
+                2: '?? Fuzzy Logic AI',
+                4: '??? Manual Control'
             };
             if (document.getElementById('current-mode-display')) {
                 document.getElementById('current-mode-display').textContent = modeNames[mode];
@@ -2121,7 +2284,7 @@
                             <div class="flex items-start gap-3">
                                 <i class="fa-solid fa-calendar-week text-purple-600 text-xl mt-0.5"></i>
                                 <div>
-                                    <p class="text-sm font-bold text-purple-800 mb-1">📅 Sistem Penjadwalan Mingguan (Weekly Loop)</p>
+                                    <p class="text-sm font-bold text-purple-800 mb-1">?? Sistem Penjadwalan Mingguan (Weekly Loop)</p>
                                     <p class="text-xs text-purple-700">
                                         Pilih hari aktif dan atur threshold + jam penyiraman per hari. Sistem akan berjalan otomatis sesuai siklus mingguan yang tersimpan.
                                     </p>
@@ -2131,10 +2294,7 @@
 
                         <!-- Day Selector -->
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-3">
-                                <i class="fa-solid fa-calendar-days mr-2"></i>
-                                Pilih Hari Aktif untuk Dikonfigurasi:
-                            </label>
+                            <div class="block text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-calendar-days mr-2"></i>Pilih Hari Aktif untuk Dikonfigurasi:</div>
                             <div class="grid grid-cols-7 gap-2">
                                 <button type="button" onclick="selectDay('senin')" id="btn-day-senin" 
                                         class="day-selector px-3 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 transition-all text-center">
@@ -2197,8 +2357,8 @@
                                     <i class="fa-solid fa-droplet"></i> Threshold Kelembapan
                                 </h6>
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-3">
-                                        🔴 Batas Kering (Pompa ON):
+                                    <label class="block text-sm font-medium text-slate-700 mb-3" for="range-day-on">
+                                        ?? Batas Kering (Pompa ON):
                                     </label>
                                     <div class="flex items-center gap-4">
                                         <input type="range" id="range-day-on" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="29" oninput="updateDayThresholdOnDisplay()">
@@ -2209,8 +2369,8 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-3">
-                                        💧 Batas Basah (Pompa OFF):
+                                    <label class="block text-sm font-medium text-slate-700 mb-3" for="range-day-off">
+                                        ?? Batas Basah (Pompa OFF):
                                     </label>
                                     <div class="flex items-center gap-4">
                                         <input type="range" id="range-day-off" class="flex-grow w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="61" oninput="updateDayThresholdOffDisplay()">
@@ -2229,11 +2389,11 @@
                                 </h6>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-500 mb-2">⏰ Jam Pagi:</label>
+                                        <label class="block text-xs font-medium text-slate-500 mb-2" for="time-day-pagi">? Jam Pagi:</label>
                                         <input type="time" id="time-day-pagi" class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none font-medium" value="07:00">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-500 mb-2">🌅 Jam Sore:</label>
+                                        <label class="block text-xs font-medium text-slate-500 mb-2" for="time-day-sore">?? Jam Sore:</label>
                                         <input type="time" id="time-day-sore" class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none font-medium" value="17:00">
                                     </div>
                                 </div>
@@ -2262,7 +2422,7 @@
                         <div class="border-t-2 border-purple-200 pt-6">
                             <h6 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
                                 <i class="fa-solid fa-wrench text-amber-600"></i>
-                                🔧 Kalibrasi Sensor (Opsional)
+                                ?? Kalibrasi Sensor (Opsional)
                             </h6>
                             <p class="text-xs text-slate-600 mb-4">
                                 Sesuaikan nilai ADC sensor untuk akurasi optimal. Perubahan ini akan otomatis dikirim ke Pico W.
@@ -2270,7 +2430,7 @@
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                    <label class="block text-sm font-medium text-slate-700 mb-2" for="input-adc-min">
                                         <i class="fa-solid fa-sun text-amber-500 mr-1"></i>
                                         Nilai ADC Kering (Udara):
                                     </label>
@@ -2284,7 +2444,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                    <label class="block text-sm font-medium text-slate-700 mb-2" for="input-adc-max">
                                         <i class="fa-solid fa-droplet text-blue-500 mr-1"></i>
                                         Nilai ADC Basah (Air):
                                     </label>
@@ -2335,7 +2495,7 @@
                 
                 // Validation: ADC Min must be greater than ADC Max
                 if (adcMin <= adcMax) {
-                    alert('⚠️ Nilai ADC Kering harus lebih besar dari ADC Basah!\n\nContoh: Kering=4095, Basah=1500');
+                    alert('?? Nilai ADC Kering harus lebih besar dari ADC Basah!\n\nContoh: Kering=4095, Basah=1500');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-save"></i> Simpan Perubahan';
                     return;
@@ -2349,7 +2509,7 @@
                 if (minimalCurrentMode === 4) {
                     const activeDays = Object.entries(weeklyConfig).filter(([day, config]) => config.active);
                     if (activeDays.length === 0) {
-                        alert('⚠️ Silakan aktifkan minimal 1 hari untuk Mode Manual!');
+                        alert('?? Silakan aktifkan minimal 1 hari untuk Mode Manual!');
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fa-solid fa-save"></i> Simpan Perubahan';
                         return;
@@ -2371,7 +2531,7 @@
                 }
                 
                 // Show success notification
-                notif.textContent = '✅ Berhasil disimpan!';
+                notif.textContent = '? Berhasil disimpan!';
                 notif.className = 'text-center text-sm font-medium py-3 rounded-xl bg-green-50 text-green-700 border border-green-200';
                 notif.classList.remove('hidden');
                 
@@ -2384,7 +2544,7 @@
                 console.error('Response data:', error.response?.data);
                 console.error('Device ID:', minimalDeviceId);
                 
-                let errorMsg = '❌ Gagal menyimpan.';
+                let errorMsg = '? Gagal menyimpan.';
                 if (error.response?.data?.message) {
                     errorMsg += ' ' + error.response.data.message;
                 } else if (error.response?.data?.errors) {
@@ -2416,23 +2576,23 @@
                 });
                 
                 if (response.data.success) {
-                    alert('✅ Pompa berhasil dinyalakan! Akan mati otomatis setelah 5 detik.');
+                    alert('? Pompa berhasil dinyalakan! Akan mati otomatis setelah 5 detik.');
                 } else {
-                    alert('❌ Gagal menyalakan pompa.');
+                    alert('? Gagal menyalakan pompa.');
                 }
             } catch (error) {
                 console.error('Error testing pump:', error);
-                alert('❌ Error: Tidak dapat menghubungi server.');
+                alert('? Error: Tidak dapat menghubungi server.');
             }
         }
 
         function refreshSettings() {
             loadMinimalSettings();
-            alert('✅ Pengaturan berhasil dimuat ulang!');
+            alert('? Pengaturan berhasil dimuat ulang!');
         }
 
         // =============================================================================
-        // AUTO-REFRESH DASHBOARD - Refresh data setiap 3 detik
+        // AUTO-REFRESH DASHBOARD - Refresh data dengan interval optimal
         // =============================================================================
         let dashboardRefreshInterval = null;
         let statusSyncInterval = null;  // BARU: Sync status di semua halaman
@@ -2442,23 +2602,30 @@
                 clearInterval(dashboardRefreshInterval);
             }
             
+            // Initial load
             fetchStats();
             fetchHistory();
             
-            // Real-time refresh setiap 1 detik
+            // Refresh stats setiap 3 detik (sensor data terbaru)
+            // Refresh history setiap 10 detik (historical chart data)
             dashboardRefreshInterval = setInterval(() => {
                 fetchStats();
-                fetchHistory();
-            }, 1000);
+                
+                // Fetch history hanya setiap 10 detik untuk mengurangi beban network
+                if (Math.floor(Date.now() / 10000) !== window.lastHistoryTime) {
+                    window.lastHistoryTime = Math.floor(Date.now() / 10000);
+                    fetchHistory();
+                }
+            }, 3000);
             
-            console.log('✅ Real-time monitoring started (every 1 second)');
+            console.log('✓ Real-time monitoring started (stats every 3s, history every 10s)');
         }
 
         function stopDashboardAutoRefresh() {
             if (dashboardRefreshInterval) {
                 clearInterval(dashboardRefreshInterval);
                 dashboardRefreshInterval = null;
-                console.log('⏸️ Real-time monitoring stopped');
+                console.log('✗ Real-time monitoring stopped');
             }
         }
 
@@ -2476,14 +2643,14 @@
                 syncDeviceStatusToSidebar();
             }, 3000);
             
-            console.log('✅ Status sync started (every 3 seconds on all pages)');
+            console.log('? Status sync started (every 3 seconds on all pages)');
         }
 
         function stopStatusSync() {
             if (statusSyncInterval) {
                 clearInterval(statusSyncInterval);
                 statusSyncInterval = null;
-                console.log('⏸️ Status sync stopped');
+                console.log('?? Status sync stopped');
             }
         }
 
@@ -2495,4 +2662,7 @@
     </script>
 </body>
 </html>
+
+
+
 

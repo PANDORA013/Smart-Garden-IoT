@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 
 class Monitoring extends Model
 {
+    use HasFactory;
     /**
      * The attributes that are mass assignable.
      *
@@ -42,6 +45,6 @@ class Monitoring extends Model
         if (!$this->updated_at) {
             return false;
         }
-        return $this->updated_at->diffInSeconds(now()) < 30;
+        return $this->updated_at->diffInSeconds(Carbon::now()) < 30;
     }
 }
