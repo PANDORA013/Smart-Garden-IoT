@@ -7,6 +7,7 @@ use App\Models\Berita;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Validation\ValidationException;
@@ -25,7 +26,7 @@ class BeritaController extends Controller
     public function showBeritaAdmin()
     {
         $berita = Berita::all();
-        $userRole = auth()->user()->role;
+        $userRole = Auth::user()->role;
         $layout = $userRole === 'admin' ? 'layouts.admin' : 'layouts.user';
         return view('admin.berita.berita.index', compact('berita', 'userRole', 'layout'));
     }
