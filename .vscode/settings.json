@@ -1,3 +1,49 @@
 {
-    "C_Cpp.default.compilerPath": "c:\\xampp\\htdocs\\Smart Garden IoT\\arduino\\pico_smart_gateway.ino"
+    "C_Cpp.default.compilerPath": "c:\\xampp\\htdocs\\Smart Garden IoT\\arduino\\pico_smart_gateway.ino",
+    "intelephense.environment.includePaths": [
+        "${workspaceFolder}"
+    ],
+    "intelephense.files.exclude": [
+        "**/.git/**",
+        "**/node_modules/**",
+        "**/storage/framework/cache/**",
+        "**/public/build/**"
+    ],
+    "intelephense.stubs": [
+        "apache",
+        "bcmath",
+        "calendar",
+        "Core",
+        "ctype",
+        "curl",
+        "date",
+        "dom",
+        "fileinfo",
+        "filter",
+        "gd",
+        "hash",
+        "iconv",
+        "json",
+        "mbstring",
+        "mysql",
+        "mysqli",
+        "openssl",
+        "pcre",
+        "PDO",
+        "sqlite3",
+        "Phar",
+        "readline",
+        "Reflection",
+        "session",
+        "SimpleXML",
+        "soap",
+        "SPL",
+        "standard",
+        "tokenizer",
+        "xml",
+        "xmlreader",
+        "xmlwriter",
+        "zip",
+        "zlib"
+    ]
 }
