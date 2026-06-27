@@ -20,6 +20,7 @@
   "env": {
     "APP_ENV": "production",
     "APP_DEBUG": "false",
+    "APP_KEY": "base64:krQby4we1yEFdvaObNb2py7FGgQdk4/EzP8j8/5Og/Y=",
     "APP_URL": "https://smart-garden-iot.vercel.app",
     "LOG_CHANNEL": "stderr",
     "CACHE_DRIVER": "array",
